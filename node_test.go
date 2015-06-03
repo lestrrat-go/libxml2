@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+func init() {
+	ReportErrors(false)
+}
+
 type XmlNodeTypeToString struct {
 	v XmlNodeType
 	e string

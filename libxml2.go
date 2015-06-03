@@ -20,3 +20,34 @@ Also, the return values are still shaky -- I'm still debating how to handle erro
 */
 package libxml2
 
+/*
+#cgo pkg-config: libxml-2.0
+#include "libxml/xmlerror.h"
+
+static inline void MY_nilErrorHandler(void *ctx, const char *msg, ...) {}
+
+static inline void MY_xmlSilenceParseErrors() {
+	xmlSetGenericErrorFunc(NULL, MY_nilErrorHandler);
+}
+
+static inline void MY_xmlDefaultParseErrors() {
+	// Checked in the libxml2 source code that using NULL in the second
+	// argument restores the default error handler
+	xmlSetGenericErrorFunc(NULL, NULL);
+}
+
+*/
+import "C"
+
+// ReportErrors *globally* changes the behavior of reporting errors.
+// By default libxml2 spews out lots of data to stderr. When you call
+// this function with a `false` value, all those messages are surpressed.
+// When you call this function a `true` value, the default behavior is
+// restored
+func ReportErrors(b bool) {
+	if b {
+		C.MY_xmlDefaultParseErrors()
+	} else {
+		C.MY_xmlSilenceParseErrors()
+	}
+}
