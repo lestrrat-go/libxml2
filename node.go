@@ -75,6 +75,7 @@ type Node interface {
 	ChildNodes() []Node
 	OwnerDocument() *XmlDoc
 	FindNodes(string) ([]Node, error)
+	IsSameNode(Node) bool
 	LastChild() Node
 	NodeName() string
 	NextSibling() Node
@@ -174,6 +175,10 @@ func (n *xmlNode) FindNodes(xpath string) ([]Node, error) {
 	return findNodes(n, xpath)
 }
 
+func (n *xmlNode) IsSameNode(other Node) bool {
+	return n.pointer() == other.pointer()
+}
+
 func (n *xmlNode) LastChild() Node {
 	return wrapToNode(n.ptr.last)
 }
@@ -252,16 +257,20 @@ func (d *XmlDoc) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
 }
 
-func (d *XmlDoc) RootNode() (*XmlNode, error) {
+func (d *XmlDoc) DocumentElement() Node {
 	if d.ptr == nil || d.root == nil {
-		return nil, ErrNodeNotFound
+		return nil
 	}
 
-	return &XmlNode{&xmlNode{ptr: d.root}}, nil
+	return wrapToNode(d.root)
 }
 
 func (d *XmlDoc) FindNodes(xpath string) ([]Node, error) {
-	return wrapXmlNode(d.root).FindNodes(xpath)
+	root := d.DocumentElement()
+	if root == nil {
+		return nil, ErrNodeNotFound
+	}
+	return root.FindNodes(xpath)
 }
 
 func (d *XmlDoc) Free() {

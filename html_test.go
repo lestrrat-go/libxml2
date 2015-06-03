@@ -10,6 +10,12 @@ func TestParseHTML(t *testing.T) {
 	}
 	defer doc.Free()
 
+	root := doc.DocumentElement()
+	if ! root.IsSameNode(root) {
+		t.Errorf("IsSameNode fails...")
+		return
+	}
+
 	nodes, err := doc.FindNodes("/html/body/h1")
 	if err != nil {
 		t.Errorf("Failed to evaluate xpath: %s", err)
