@@ -30,3 +30,4 @@ func Parse(in io.Reader) (*XmlDoc, error) {
 
 	return ParseString(buf.String())
 }
+

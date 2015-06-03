@@ -273,6 +273,10 @@ func (d *XmlDoc) FindNodes(xpath string) ([]Node, error) {
 	return root.FindNodes(xpath)
 }
 
+func (d *XmlDoc) Encoding() string {
+	return xmlCharToString(d.ptr.encoding)
+}
+
 func (d *XmlDoc) Free() {
 	C.xmlFreeDoc(d.ptr)
 	d.ptr = nil
