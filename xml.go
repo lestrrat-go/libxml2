@@ -11,7 +11,7 @@ import (
 	"io"
 )
 
-func ParseString(s string) (*XmlDoc, error) {
+func ParseString(s string) (*Document, error) {
 	doc, err := C.xmlParseDoc(stringToXmlChar(s))
 	if err != nil {
 		return nil, err
@@ -19,10 +19,10 @@ func ParseString(s string) (*XmlDoc, error) {
 	if doc == nil {
 		return nil, errors.New("parse failed")
 	}
-	return wrapXmlDoc(doc), nil
+	return wrapDocument(doc), nil
 }
 
-func Parse(in io.Reader) (*XmlDoc, error) {
+func Parse(in io.Reader) (*Document, error) {
 	buf := &bytes.Buffer{}
 	if _, err := buf.ReadFrom(in); err != nil {
 		return nil, err

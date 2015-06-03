@@ -82,7 +82,7 @@ type Node interface {
 	AddChild(Node)
 	AppendChild(Node)
 	ChildNodes() []Node
-	OwnerDocument() *XmlDoc
+	OwnerDocument() *Document
 	FindNodes(string) ([]Node, error)
 	IsSameNode(Node) bool
 	LastChild() Node
@@ -110,7 +110,7 @@ type XmlElement struct {
 	*XmlNode
 }
 
-type XmlDoc struct {
+type Document struct {
 	ptr  *C.xmlDoc
 	root *C.xmlNode
 }
@@ -182,13 +182,13 @@ func (n *xmlNode) ChildNodes() []Node {
 	return childNodes(n)
 }
 
-func wrapXmlDoc(n *C.xmlDoc) *XmlDoc {
+func wrapDocument(n *C.xmlDoc) *Document {
 	r := C.xmlDocGetRootElement(n) // XXX Should check for n == nil
-	return &XmlDoc{ptr: n, root: r}
+	return &Document{ptr: n, root: r}
 }
 
-func (n *xmlNode) OwnerDocument() *XmlDoc {
-	return wrapXmlDoc(n.ptr.doc)
+func (n *xmlNode) OwnerDocument() *Document {
+	return wrapDocument(n.ptr.doc)
 }
 
 func (n *xmlNode) FindNodes(xpath string) ([]Node, error) {
@@ -273,16 +273,16 @@ func childNodes(n Node) []Node {
 	return ret
 }
 
-func NewDocument(version string) *XmlDoc {
+func NewDocument(version string) *Document {
 	doc := C.xmlNewDoc(stringToXmlChar(version))
-	return wrapXmlDoc(doc)
+	return wrapDocument(doc)
 }
 
-func (d *XmlDoc) pointer() unsafe.Pointer {
+func (d *Document) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
 }
 
-func (d *XmlDoc) CreateElement(name string) *XmlElement {
+func (d *Document) CreateElement(name string) *XmlElement {
 	// XXX Should think about properly encoding the 'name'
 	newNode := C.xmlNewNode(nil, stringToXmlChar(name))
 	if newNode == nil {
@@ -293,11 +293,11 @@ func (d *XmlDoc) CreateElement(name string) *XmlElement {
 	return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(newNode)))
 }
 
-func (d *XmlDoc) CreateTextNode(txt string) *XmlText {
+func (d *Document) CreateTextNode(txt string) *XmlText {
 	return wrapXmlText(C.xmlNewText(stringToXmlChar(txt)))
 }
 
-func (d *XmlDoc) DocumentElement() Node {
+func (d *Document) DocumentElement() Node {
 	if d.ptr == nil || d.root == nil {
 		return nil
 	}
@@ -305,7 +305,7 @@ func (d *XmlDoc) DocumentElement() Node {
 	return wrapToNode(d.root)
 }
 
-func (d *XmlDoc) FindNodes(xpath string) ([]Node, error) {
+func (d *Document) FindNodes(xpath string) ([]Node, error) {
 	root := d.DocumentElement()
 	if root == nil {
 		return nil, ErrNodeNotFound
@@ -313,32 +313,32 @@ func (d *XmlDoc) FindNodes(xpath string) ([]Node, error) {
 	return root.FindNodes(xpath)
 }
 
-func (d *XmlDoc) Encoding() string {
+func (d *Document) Encoding() string {
 	return xmlCharToString(d.ptr.encoding)
 }
 
-func (d *XmlDoc) Free() {
+func (d *Document) Free() {
 	C.xmlFreeDoc(d.ptr)
 	d.ptr = nil
 	d.root = nil
 }
 
-func (d *XmlDoc) String() string {
+func (d *Document) String() string {
 	var xc *C.xmlChar
 	i := C.int(0)
 	C.xmlDocDumpMemory(d.ptr, &xc, &i)
 	return xmlCharToString(xc)
 }
 
-func (d *XmlDoc) NodeType() XmlNodeType {
+func (d *Document) NodeType() XmlNodeType {
 	return XmlNodeType(d.ptr._type)
 }
 
-func (d *XmlDoc) SetDocumentElement(n Node) {
+func (d *Document) SetDocumentElement(n Node) {
 	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.pointer()))
 }
 
-func (n *XmlDoc) Walk(fn func(Node) error) {
+func (n *Document) Walk(fn func(Node) error) {
 	walk(wrapXmlNode(n.root), fn)
 }
 

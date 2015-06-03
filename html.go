@@ -33,7 +33,7 @@ func htmlReadDoc(content, url, encoding string, opts int) *C.xmlDoc {
 	)
 }
 
-func ParseHTMLString(content string) (*XmlDoc, error) {
+func ParseHTMLString(content string) (*Document, error) {
 	d := htmlReadDoc(content, "", "", DefaultHtmlParseFlags)
 	root, err := C.xmlDocGetRootElement(d)
 	if err != nil || root == nil {
@@ -41,10 +41,10 @@ func ParseHTMLString(content string) (*XmlDoc, error) {
 		return nil, err
 	}
 
-	return &XmlDoc{ptr: d, root: root}, nil
+	return &Document{ptr: d, root: root}, nil
 }
 
-func ParseHTML(in io.Reader) (*XmlDoc, error) {
+func ParseHTML(in io.Reader) (*Document, error) {
 	buf := &bytes.Buffer{}
 	if _, err := buf.ReadFrom(in); err != nil {
 		return nil, err
