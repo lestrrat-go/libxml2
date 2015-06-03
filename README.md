@@ -43,3 +43,19 @@ func ExampleHTML() {
 	}
 }
 ```
+
+# Caveats
+
+## Other libraries
+
+There exists many similar libraries. I want speed, I want DOM, and I want XPath.When all of these are met, I'd be happy to switch to another library.
+
+For now my closest contender was [xmlpath](https://github.com/go-xmlpath/xmlpath), but as of this writing it suffers in the speed (for xpath) area a bit:
+
+```
+go test -tags bench -bench=. -benchtime=5s
+PASS
+BenchmarkXmlpath      100000         88764 ns/op
+BenchmarkLibxml2      300000         22509 ns/op
+ok      github.com/lestrrat/go-libxml2  24.926s
+```
