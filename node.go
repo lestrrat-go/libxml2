@@ -17,6 +17,11 @@ static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 	return nodes[i];
 }
 
+static inline int MY_setXmlIndentTreeOutput(int i) {
+	int old = xmlIndentTreeOutput;
+	xmlIndentTreeOutput = i;
+	return old;
+}
 */
 import "C"
 import (
@@ -82,7 +87,9 @@ type Node interface {
 	ParetNode() Node
 	PreviousSibling() Node
 	SetNodeName(string)
+	String() string
 	TextContent() string
+	ToString(int, bool) string
 	Type() XmlElementType
 	Walk(func(Node) error)
 }
@@ -197,8 +204,25 @@ func (n *xmlNode) SetNodeName(name string) {
 	C.xmlNodeSetName(n.ptr, stringToXmlChar(name))
 }
 
+func (n *xmlNode) String() string {
+	return n.ToString(0, false)
+}
+
 func (n *xmlNode) TextContent() string {
 	return xmlCharToString(C.xmlXPathCastNodeToString(n.ptr))
+}
+
+func (n *xmlNode) ToString(format int, docencoding bool) string {
+	buffer := C.xmlBufferCreate()
+	defer C.xmlBufferFree(buffer)
+	if format <= 0 {
+		C.xmlNodeDump(buffer, n.ptr.doc, n.ptr, 0, 0)
+	} else {
+		oIndentTreeOutput := C.MY_setXmlIndentTreeOutput(1)
+		C.xmlNodeDump(buffer, n.ptr.doc, n.ptr, 0, C.int(format))
+		C.MY_setXmlIndentTreeOutput(oIndentTreeOutput)
+	}
+	return xmlCharToString(C.xmlBufferContent(buffer))
 }
 
 func (n *xmlNode) Type() XmlElementType {
