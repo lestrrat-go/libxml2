@@ -3,7 +3,8 @@ package libxml2
 import "testing"
 
 func TestParseEmpty(t *testing.T) {
-	doc, err := ParseString(``)
+	p := &Parser{}
+	doc, err := p.ParseString(``)
 	if err == nil {
 		t.Errorf("Parse of empty string should fail")
 		defer doc.Free()
@@ -32,8 +33,9 @@ func TestParseWFStrings(t *testing.T) {
 		stdXmlDecl + `<foobar foo="\` + "`" + `bar>"/>`,
 	}
 
+	p := &Parser{}
 	for _, s := range inputs {
-		if _, err := ParseString(s); err != nil {
+		if _, err := p.ParseString(s); err != nil {
 			t.Errorf("Failed to parse '%s': %s", s, err)
 		}
 	}
@@ -60,8 +62,10 @@ func TestParseBadWFStrings(t *testing.T) {
 		"<ouch><!---></ouch>",   // bad comment
 		"<ouch><!-----></ouch>", // bad either... (is this conform with the spec????)
 	}
+
+	p := &Parser{}
 	for _, s := range inputs {
-		if _, err := ParseString(s); err == nil {
+		if _, err := p.ParseString(s); err == nil {
 			t.Errorf("Expected failure to parse '%s'", s)
 		}
 	}

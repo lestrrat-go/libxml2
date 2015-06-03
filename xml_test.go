@@ -8,7 +8,8 @@ import (
 
 // TODO: parse real XML
 func TestParse(t *testing.T) {
-	doc, err := ParseString(`<html><body><h1>Hello, World!</h1><p>Lorem Ipsum</p></body></html>`)
+	p := &Parser{}
+	doc, err := p.ParseString(`<html><body><h1>Hello, World!</h1><p>Lorem Ipsum</p></body></html>`)
 	if err != nil {
 		t.Errorf("Failed to parse: %s", err)
 		return
@@ -41,7 +42,8 @@ func TestEncoding(t *testing.T) {
 		}
 		defer f.Close()
 
-		doc, err := Parse(f)
+		p := &Parser{}
+		doc, err := p.Parse(f)
 		if err != nil {
 			t.Errorf("Failed to parse %s: %s", fn, err)
 			return
