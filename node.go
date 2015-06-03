@@ -106,7 +106,7 @@ type XmlNode struct {
 	*xmlNode
 }
 
-type XmlElement struct {
+type Element struct {
 	*XmlNode
 }
 
@@ -119,8 +119,8 @@ type XmlText struct {
 	*XmlNode
 }
 
-func wrapXmlElement(n *C.xmlElement) *XmlElement {
-	return &XmlElement{wrapXmlNode((*C.xmlNode)(unsafe.Pointer(n)))}
+func wrapElement(n *C.xmlElement) *Element {
+	return &Element{wrapXmlNode((*C.xmlNode)(unsafe.Pointer(n)))}
 }
 
 func wrapXmlNode(n *C.xmlNode) *XmlNode {
@@ -138,7 +138,7 @@ func wrapXmlText(n *C.xmlNode) *XmlText {
 func wrapToNode(n *C.xmlNode) Node {
 	switch XmlNodeType(n._type) {
 	case ElementNode:
-		return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(n)))
+		return wrapElement((*C.xmlElement)(unsafe.Pointer(n)))
 	case TextNode:
 		return &XmlText{&XmlNode{&xmlNode{ptr: n}}}
 	default:
@@ -282,7 +282,7 @@ func (d *Document) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
 }
 
-func (d *Document) CreateElement(name string) *XmlElement {
+func (d *Document) CreateElement(name string) *Element {
 	// XXX Should think about properly encoding the 'name'
 	newNode := C.xmlNewNode(nil, stringToXmlChar(name))
 	if newNode == nil {
@@ -290,7 +290,7 @@ func (d *Document) CreateElement(name string) *XmlElement {
 	}
 	// XXX hmmm...
 	newNode.doc = d.ptr
-	return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(newNode)))
+	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode)))
 }
 
 func (d *Document) CreateTextNode(txt string) *XmlText {
@@ -342,7 +342,7 @@ func (n *Document) Walk(fn func(Node) error) {
 	walk(wrapXmlNode(n.root), fn)
 }
 
-func (n *XmlElement) AppendText(s string) {
+func (n *Element) AppendText(s string) {
 	txt := n.OwnerDocument().CreateTextNode(s)
 	n.AppendChild(txt)
 }
