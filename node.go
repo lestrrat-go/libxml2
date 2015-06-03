@@ -7,16 +7,18 @@ package libxml2
 #include "libxml/parser.h"
 #include "libxml/xpath.h"
 
+// Macro wrapper function
 static inline bool MY_xmlXPathNodeSetIsEmpty(xmlNodeSetPtr ptr) {
-	return ptr == NULL ||
-		ptr->nodeNr == 0 ||
-		ptr->nodeTab == NULL;
+	return xmlXPathNodeSetIsEmpty(ptr);
 }
 
+// Because Go can't do pointer airthmetics...
 static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 	return nodes[i];
 }
 
+// Change xmlIndentTreeOutput global, return old value, so caller can
+// change it back to old value later
 static inline int MY_setXmlIndentTreeOutput(int i) {
 	int old = xmlIndentTreeOutput;
 	xmlIndentTreeOutput = i;
@@ -77,6 +79,8 @@ type Node interface {
 	// slice it, dice it, do whatever the heck with it.
 	pointer() unsafe.Pointer
 
+	AddChild(Node)
+	AppendChild(Node)
 	ChildNodes() []Node
 	OwnerDocument() *XmlDoc
 	FindNodes(string) ([]Node, error)
@@ -157,6 +161,17 @@ func findNodes(n Node, xpath string) ([]Node, error) {
 
 func (n *xmlNode) pointer() unsafe.Pointer {
 	return unsafe.Pointer(n.ptr)
+}
+
+func (n *xmlNode) AddChild(child Node) {
+	C.xmlAddChild(n.ptr, (*C.xmlNode)(child.pointer()))
+}
+
+func (n *xmlNode) AppendChild(child Node) {
+	// XXX There must be lots more checks here because AddChild does things
+	// under the table like merging text nodes, freeing some nodes implicitly,
+	// et al
+	n.AddChild(child)
 }
 
 func (n *xmlNode) ChildNodes() []Node {
@@ -273,7 +288,6 @@ func (d *XmlDoc) CreateElement(name string) *XmlElement {
 	newNode.doc = d.ptr
 	return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(newNode)))
 }
-
 
 func (d *XmlDoc) DocumentElement() Node {
 	if d.ptr == nil || d.root == nil {

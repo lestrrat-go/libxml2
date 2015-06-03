@@ -1,6 +1,9 @@
 package libxml2
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 type XmlNodeTypeToString struct {
 	v XmlNodeType
@@ -107,10 +110,14 @@ func TestDOM(t *testing.T) {
 	root := doc.CreateElement("root")
 
 	doc.SetDocumentElement(root)
+	for i := 1; i <= 3; i++ {
+		child := doc.CreateElement(fmt.Sprintf("child%d", i))
+		root.AppendChild(child)
+	}
 
 	// Temporary test
 	expected := `<?xml version="1.0"?>
-<root/>
+<root><child1/><child2/><child3/></root>
 `
 	if doc.String() != expected {
 		t.Errorf("Failed to create XML document")
