@@ -16,8 +16,6 @@ func TestParseHTML(t *testing.T) {
 		return
 	}
 
-	t.Logf(root.ToString(1, false))
-
 	nodes, err := doc.FindNodes("/html/body/h1")
 	if err != nil {
 		t.Errorf("Failed to evaluate xpath: %s", err)
