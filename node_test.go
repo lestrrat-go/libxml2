@@ -2,94 +2,94 @@ package libxml2
 
 import "testing"
 
-type XmlElementTypeToString struct {
-	v XmlElementType
+type XmlNodeTypeToString struct {
+	v XmlNodeType
 	e string
 }
 
-func TestXmlElementTypeStringer(t *testing.T) {
-	values := []XmlElementTypeToString{
-		XmlElementTypeToString{
+func TestXmlNodeTypeStringer(t *testing.T) {
+	values := []XmlNodeTypeToString{
+		XmlNodeTypeToString{
 			v: ElementNode,
 			e: "ElementNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: AttributeNode,
 			e: "AttributeNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: TextNode,
 			e: "TextNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: CDataSectionNode,
 			e: "CDataSectionNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: EntityRefNode,
 			e: "EntityRefNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: EntityNode,
 			e: "EntityNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: PiNode,
 			e: "PiNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: CommentNode,
 			e: "CommentNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: DocumentNode,
 			e: "DocumentNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: DocumentTypeNode,
 			e: "DocumentTypeNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: DocumentFragNode,
 			e: "DocumentFragNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: NotationNode,
 			e: "NotationNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: HTMLDocumentNode,
 			e: "HTMLDocumentNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: DTDNode,
 			e: "DTDNode",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: ElementDecl,
 			e: "ElementDecl",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: AttributeDecl,
 			e: "AttributeDecl",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: EntityDecl,
 			e: "EntityDecl",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: NamespaceDecl,
 			e: "NamespaceDecl",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: XIncludeStart,
 			e: "XIncludeStart",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: XIncludeEnd,
 			e: "XIncludeEnd",
 		},
-		XmlElementTypeToString{
+		XmlNodeTypeToString{
 			v: DocbDocumentNode,
 			e: "DocbDocumentNode",
 		},

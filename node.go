@@ -30,10 +30,10 @@ import (
 	"unsafe"
 )
 
-type XmlElementType int
+type XmlNodeType int
 
 const (
-	ElementNode XmlElementType = iota + 1
+	ElementNode XmlNodeType = iota + 1
 	AttributeNode
 	TextNode
 	CDataSectionNode
@@ -56,16 +56,16 @@ const (
 	DocbDocumentNode
 )
 
-var _XmlElementType_index = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116, 132, 144, 160, 167, 178, 191, 201, 214, 227, 238, 254}
+var _XmlNodeType_index = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116, 132, 144, 160, 167, 178, 191, 201, 214, 227, 238, 254}
 
-const _XmlElementType_name = `ElementNodeAttributeNodeTextNodeCDataSectionNodeEntityRefNodeEntityNodePiNodeCommentNodeDocumentNodeDocumentTypeNodeDocumentFragNodeNotationNodeHTMLDocumentNodeDTDNodeElementDeclAttributeDeclEntityDeclNamespaceDeclXIncludeStartXIncludeEndDocbDocumentNode`
+const _XmlNodeType_name = `ElementNodeAttributeNodeTextNodeCDataSectionNodeEntityRefNodeEntityNodePiNodeCommentNodeDocumentNodeDocumentTypeNodeDocumentFragNodeNotationNodeHTMLDocumentNodeDTDNodeElementDeclAttributeDeclEntityDeclNamespaceDeclXIncludeStartXIncludeEndDocbDocumentNode`
 
-func (i XmlElementType) String() string {
+func (i XmlNodeType) String() string {
 	i -= 1
-	if i < 0 || i+1 >= XmlElementType(len(_XmlElementType_index)) {
-		return fmt.Sprintf("XmlElementType(%d)", i+1)
+	if i < 0 || i+1 >= XmlNodeType(len(_XmlNodeType_index)) {
+		return fmt.Sprintf("XmlNodeType(%d)", i+1)
 	}
-	return _XmlElementType_name[_XmlElementType_index[i]:_XmlElementType_index[i+1]]
+	return _XmlNodeType_name[_XmlNodeType_index[i]:_XmlNodeType_index[i+1]]
 }
 
 var ErrNodeNotFound = errors.New("node not found")
@@ -90,7 +90,7 @@ type Node interface {
 	String() string
 	TextContent() string
 	ToString(int, bool) string
-	Type() XmlElementType
+	Type() XmlNodeType
 	Walk(func(Node) error)
 }
 
@@ -128,7 +128,7 @@ func wrapXmlNode(n *C.xmlNode) *XmlNode {
 }
 
 func wrapToNode(n *C.xmlNode) Node {
-	switch XmlElementType(n._type) {
+	switch XmlNodeType(n._type) {
 	case ElementNode:
 		return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(n)))
 	case TextNode:
@@ -225,8 +225,8 @@ func (n *xmlNode) ToString(format int, docencoding bool) string {
 	return xmlCharToString(C.xmlBufferContent(buffer))
 }
 
-func (n *xmlNode) Type() XmlElementType {
-	return XmlElementType(n.ptr._type)
+func (n *xmlNode) Type() XmlNodeType {
+	return XmlNodeType(n.ptr._type)
 }
 
 func (n *xmlNode) Walk(fn func(Node) error) {
@@ -291,8 +291,8 @@ func (d *XmlDoc) String() string {
 	return xmlCharToString(xc)
 }
 
-func (d *XmlDoc) Type() XmlElementType {
-	return XmlElementType(d.ptr._type)
+func (d *XmlDoc) Type() XmlNodeType {
+	return XmlNodeType(d.ptr._type)
 }
 
 func (n *XmlDoc) Walk(fn func(Node) error) {
