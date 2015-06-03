@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/lestrrat/go-libxml2.svg?branch=master)](https://travis-ci.org/lestrrat/go-libxml2)
 
+[![GoDoc](https://godoc.org/github.com/lestrrat/go-libxml2?status.svg)](https://godoc.org/github.com/lestrrat/go-libxml2)
+
 Interface to libxml2, with DOM interface
 
 This library is still in very early stages of development. API may still change
