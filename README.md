@@ -28,7 +28,7 @@ func ExampleHTML() {
 	}
 	defer doc.Free()
 
-	doc.Walk(func(n Node) error {
+	doc.Walk(func(n libxml2.Node) error {
 		log.Printf(n.NodeName())
 		return nil
 	})
