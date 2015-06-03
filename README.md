@@ -11,7 +11,7 @@ import (
 	"log"
 	"net/http"
 
-        "github.com/lestrrat/go-libxml2"
+	"github.com/lestrrat/go-libxml2"
 )
 
 func ExampleHTML() {
