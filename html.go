@@ -35,8 +35,8 @@ func htmlReadDoc(content, url, encoding string, opts int) *C.xmlDoc {
 
 func ParseHTMLString(content string) (*XmlDoc, error) {
 	d := htmlReadDoc(content, "", "", DefaultHtmlParseFlags)
-	root, err := xmlDocGetRootElement(d)
-	if err != nil {
+	root, err := C.xmlDocGetRootElement(d)
+	if err != nil || root == nil {
 		C.xmlFreeDoc(d)
 		return nil, err
 	}
