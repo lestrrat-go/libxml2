@@ -1,8 +1,10 @@
-package libxml2
+package libxml2_test
 
 import (
 	"log"
 	"net/http"
+
+	"github.com/lestrrat/go-libxml2"
 )
 
 func ExampleHTML() {
@@ -11,13 +13,13 @@ func ExampleHTML() {
 		panic("failed to get golang.org: " + err.Error())
 	}
 
-	doc, err := ParseHTML(res.Body)
+	doc, err := libxml2.ParseHTML(res.Body)
 	if err != nil {
 		panic("failed to parse HTML: " + err.Error())
 	}
 	defer doc.Free()
 
-	doc.Walk(func(n Node) error {
+	doc.Walk(func(n libxml2.Node) error {
 		log.Printf(n.NodeName())
 		return nil
 	})
