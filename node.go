@@ -115,7 +115,7 @@ type Document struct {
 	root *C.xmlNode
 }
 
-type XmlText struct {
+type Text struct {
 	*XmlNode
 }
 
@@ -131,8 +131,8 @@ func wrapXmlNode(n *C.xmlNode) *XmlNode {
 	}
 }
 
-func wrapXmlText(n *C.xmlNode) *XmlText {
-	return &XmlText{wrapXmlNode(n)}
+func wrapText(n *C.xmlNode) *Text {
+	return &Text{wrapXmlNode(n)}
 }
 
 func wrapToNode(n *C.xmlNode) Node {
@@ -140,7 +140,7 @@ func wrapToNode(n *C.xmlNode) Node {
 	case ElementNode:
 		return wrapElement((*C.xmlElement)(unsafe.Pointer(n)))
 	case TextNode:
-		return &XmlText{&XmlNode{&xmlNode{ptr: n}}}
+		return &Text{&XmlNode{&xmlNode{ptr: n}}}
 	default:
 		return &XmlNode{&xmlNode{ptr: n}}
 	}
@@ -293,8 +293,8 @@ func (d *Document) CreateElement(name string) *Element {
 	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode)))
 }
 
-func (d *Document) CreateTextNode(txt string) *XmlText {
-	return wrapXmlText(C.xmlNewText(stringToXmlChar(txt)))
+func (d *Document) CreateTextNode(txt string) *Text {
+	return wrapText(C.xmlNewText(stringToXmlChar(txt)))
 }
 
 func (d *Document) DocumentElement() Node {
@@ -347,10 +347,10 @@ func (n *Element) AppendText(s string) {
 	n.AppendChild(txt)
 }
 
-func (n *XmlText) Data() string {
+func (n *Text) Data() string {
 	return xmlCharToString(n.ptr.content)
 }
 
-func (n *XmlText) Walk(fn func(Node) error) {
+func (n *Text) Walk(fn func(Node) error) {
 	walk(n, fn)
 }
