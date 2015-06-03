@@ -131,6 +131,10 @@ func wrapXmlNode(n *C.xmlNode) *XmlNode {
 	}
 }
 
+func wrapXmlText(n *C.xmlNode) *XmlText {
+	return &XmlText{wrapXmlNode(n)}
+}
+
 func wrapToNode(n *C.xmlNode) Node {
 	switch XmlNodeType(n._type) {
 	case ElementNode:
@@ -289,6 +293,10 @@ func (d *XmlDoc) CreateElement(name string) *XmlElement {
 	return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(newNode)))
 }
 
+func (d *XmlDoc) CreateTextNode(txt string) *XmlText {
+	return wrapXmlText(C.xmlNewText(stringToXmlChar(txt)))
+}
+
 func (d *XmlDoc) DocumentElement() Node {
 	if d.ptr == nil || d.root == nil {
 		return nil
@@ -332,6 +340,11 @@ func (d *XmlDoc) SetDocumentElement(n Node) {
 
 func (n *XmlDoc) Walk(fn func(Node) error) {
 	walk(wrapXmlNode(n.root), fn)
+}
+
+func (n *XmlElement) AppendText(s string) {
+	txt := n.OwnerDocument().CreateTextNode(s)
+	n.AppendChild(txt)
 }
 
 func (n *XmlText) Data() string {

@@ -112,12 +112,13 @@ func TestDOM(t *testing.T) {
 	doc.SetDocumentElement(root)
 	for i := 1; i <= 3; i++ {
 		child := doc.CreateElement(fmt.Sprintf("child%d", i))
+		child.AppendText(fmt.Sprintf("text%d", i))
 		root.AppendChild(child)
 	}
 
 	// Temporary test
 	expected := `<?xml version="1.0"?>
-<root><child1/><child2/><child3/></root>
+<root><child1>text1</child1><child2>text2</child2><child3>text3</child3></root>
 `
 	if doc.String() != expected {
 		t.Errorf("Failed to create XML document")
