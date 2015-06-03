@@ -82,15 +82,15 @@ type Node interface {
 	FindNodes(string) ([]Node, error)
 	IsSameNode(Node) bool
 	LastChild() Node
-	NodeName() string
 	NextSibling() Node
+	NodeName() string
+	NodeType() XmlNodeType
 	ParetNode() Node
 	PreviousSibling() Node
 	SetNodeName(string)
 	String() string
 	TextContent() string
 	ToString(int, bool) string
-	Type() XmlNodeType
 	Walk(func(Node) error)
 }
 
@@ -225,7 +225,7 @@ func (n *xmlNode) ToString(format int, docencoding bool) string {
 	return xmlCharToString(C.xmlBufferContent(buffer))
 }
 
-func (n *xmlNode) Type() XmlNodeType {
+func (n *xmlNode) NodeType() XmlNodeType {
 	return XmlNodeType(n.ptr._type)
 }
 
@@ -291,7 +291,7 @@ func (d *XmlDoc) String() string {
 	return xmlCharToString(xc)
 }
 
-func (d *XmlDoc) Type() XmlNodeType {
+func (d *XmlDoc) NodeType() XmlNodeType {
 	return XmlNodeType(d.ptr._type)
 }
 
