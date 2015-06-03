@@ -101,3 +101,21 @@ func TestXmlNodeTypeStringer(t *testing.T) {
 		}
 	}
 }
+
+func TestDOM(t *testing.T) {
+	doc := NewDocument("1.0")
+	root := doc.CreateElement("root")
+
+	doc.SetDocumentElement(root)
+
+	// Temporary test
+	expected := `<?xml version="1.0"?>
+<root/>
+`
+	if doc.String() != expected {
+		t.Errorf("Failed to create XML document")
+		t.Logf("Expected\n%s", expected)
+		t.Logf("Got\n%s", doc.String())
+		return
+	}
+}

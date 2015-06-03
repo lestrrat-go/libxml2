@@ -254,9 +254,26 @@ func childNodes(n Node) []Node {
 	return ret
 }
 
+func NewDocument(version string) *XmlDoc {
+	doc := C.xmlNewDoc(stringToXmlChar(version))
+	return wrapXmlDoc(doc)
+}
+
 func (d *XmlDoc) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
 }
+
+func (d *XmlDoc) CreateElement(name string) *XmlElement {
+	// XXX Should think about properly encoding the 'name'
+	newNode := C.xmlNewNode(nil, stringToXmlChar(name))
+	if newNode == nil {
+		return nil
+	}
+	// XXX hmmm...
+	newNode.doc = d.ptr
+	return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(newNode)))
+}
+
 
 func (d *XmlDoc) DocumentElement() Node {
 	if d.ptr == nil || d.root == nil {
@@ -293,6 +310,10 @@ func (d *XmlDoc) String() string {
 
 func (d *XmlDoc) NodeType() XmlNodeType {
 	return XmlNodeType(d.ptr._type)
+}
+
+func (d *XmlDoc) SetDocumentElement(n Node) {
+	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.pointer()))
 }
 
 func (n *XmlDoc) Walk(fn func(Node) error) {
