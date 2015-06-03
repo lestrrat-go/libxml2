@@ -33,27 +33,27 @@ import (
 type XmlElementType int
 
 const (
-	XmlElementNode XmlElementType = iota + 1
-	XmlAttributeNode
-	XmlTextNode
-	XmlCDataSectionNode
-	XmlEntityRefNode
-	XmlEntityNode
-	XmlPiNode
-	XmlCommentNode
-	XmlDocumentNode
-	XmlDocumentTypeNode
-	XmlDocumentFragNode
-	XmlNotationNode
-	XmlHTMLDocumentNode
-	XmlDTDNode
-	XmlElementDecl
-	XmlAttributeDecl
-	XmlEntityDecl
-	XmlNamespaceDecl
-	XmlXIncludeStart
-	XmlXIncludeEnd
-	XmlDocbDocumentNode
+	ElementNode XmlElementType = iota + 1
+	AttributeNode
+	TextNode
+	CDataSectionNode
+	EntityRefNode
+	EntityNode
+	PiNode
+	CommentNode
+	DocumentNode
+	DocumentTypeNode
+	DocumentFragNode
+	NotationNode
+	HTMLDocumentNode
+	DTDNode
+	ElementDecl
+	AttributeDecl
+	EntityDecl
+	NamespaceDecl
+	XIncludeStart
+	XIncludeEnd
+	DocbDocumentNode
 )
 
 var _XmlElementType_index = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116, 132, 144, 160, 167, 178, 191, 201, 214, 227, 238, 254}
@@ -129,9 +129,9 @@ func wrapXmlNode(n *C.xmlNode) *XmlNode {
 
 func wrapToNode(n *C.xmlNode) Node {
 	switch XmlElementType(n._type) {
-	case XmlElementNode:
+	case ElementNode:
 		return wrapXmlElement((*C.xmlElement)(unsafe.Pointer(n)))
-	case XmlTextNode:
+	case TextNode:
 		return &XmlText{&XmlNode{&xmlNode{ptr: n}}}
 	default:
 		return &XmlNode{&xmlNode{ptr: n}}

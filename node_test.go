@@ -10,87 +10,87 @@ type XmlElementTypeToString struct {
 func TestXmlElementTypeStringer(t *testing.T) {
 	values := []XmlElementTypeToString{
 		XmlElementTypeToString{
-			v: XmlElementNode,
+			v: ElementNode,
 			e: "ElementNode",
 		},
 		XmlElementTypeToString{
-			v: XmlAttributeNode,
+			v: AttributeNode,
 			e: "AttributeNode",
 		},
 		XmlElementTypeToString{
-			v: XmlTextNode,
+			v: TextNode,
 			e: "TextNode",
 		},
 		XmlElementTypeToString{
-			v: XmlCDataSectionNode,
+			v: CDataSectionNode,
 			e: "CDataSectionNode",
 		},
 		XmlElementTypeToString{
-			v: XmlEntityRefNode,
+			v: EntityRefNode,
 			e: "EntityRefNode",
 		},
 		XmlElementTypeToString{
-			v: XmlEntityNode,
+			v: EntityNode,
 			e: "EntityNode",
 		},
 		XmlElementTypeToString{
-			v: XmlPiNode,
+			v: PiNode,
 			e: "PiNode",
 		},
 		XmlElementTypeToString{
-			v: XmlCommentNode,
+			v: CommentNode,
 			e: "CommentNode",
 		},
 		XmlElementTypeToString{
-			v: XmlDocumentNode,
+			v: DocumentNode,
 			e: "DocumentNode",
 		},
 		XmlElementTypeToString{
-			v: XmlDocumentTypeNode,
+			v: DocumentTypeNode,
 			e: "DocumentTypeNode",
 		},
 		XmlElementTypeToString{
-			v: XmlDocumentFragNode,
+			v: DocumentFragNode,
 			e: "DocumentFragNode",
 		},
 		XmlElementTypeToString{
-			v: XmlNotationNode,
+			v: NotationNode,
 			e: "NotationNode",
 		},
 		XmlElementTypeToString{
-			v: XmlHTMLDocumentNode,
+			v: HTMLDocumentNode,
 			e: "HTMLDocumentNode",
 		},
 		XmlElementTypeToString{
-			v: XmlDTDNode,
+			v: DTDNode,
 			e: "DTDNode",
 		},
 		XmlElementTypeToString{
-			v: XmlElementDecl,
+			v: ElementDecl,
 			e: "ElementDecl",
 		},
 		XmlElementTypeToString{
-			v: XmlAttributeDecl,
+			v: AttributeDecl,
 			e: "AttributeDecl",
 		},
 		XmlElementTypeToString{
-			v: XmlEntityDecl,
+			v: EntityDecl,
 			e: "EntityDecl",
 		},
 		XmlElementTypeToString{
-			v: XmlNamespaceDecl,
+			v: NamespaceDecl,
 			e: "NamespaceDecl",
 		},
 		XmlElementTypeToString{
-			v: XmlXIncludeStart,
+			v: XIncludeStart,
 			e: "XIncludeStart",
 		},
 		XmlElementTypeToString{
-			v: XmlXIncludeEnd,
+			v: XIncludeEnd,
 			e: "XIncludeEnd",
 		},
 		XmlElementTypeToString{
-			v: XmlDocbDocumentNode,
+			v: DocbDocumentNode,
 			e: "DocbDocumentNode",
 		},
 	}
