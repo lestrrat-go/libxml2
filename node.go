@@ -188,7 +188,7 @@ type Node interface {
 	pointer() unsafe.Pointer
 
 	AddChild(Node)
-	AppendChild(Node)
+	AppendChild(Node) error
 	ChildNodes() []Node
 	OwnerDocument() *Document
 	FindNodes(string) ([]Node, error)
@@ -306,11 +306,12 @@ func (n *xmlNode) AddChild(child Node) {
 	C.xmlAddChild(n.ptr, (*C.xmlNode)(child.pointer()))
 }
 
-func (n *xmlNode) AppendChild(child Node) {
+func (n *xmlNode) AppendChild(child Node) error {
 	// XXX There must be lots more checks here because AddChild does things
 	// under the table like merging text nodes, freeing some nodes implicitly,
 	// et al
 	n.AddChild(child)
+	return nil
 }
 
 func (n *xmlNode) ChildNodes() []Node {
@@ -466,7 +467,11 @@ func (d *Document) CreateElement(name string) (*Element, error) {
 	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
 }
 
-func (d *Document) CreateElementNS(nsuri, name string) *Element {
+func (d *Document) CreateElementNS(nsuri, name string) (*Element, error) {
+	if C.MY_test_node_name(stringToXmlChar(name)) == 0 {
+		return nil, ErrInvalidNodeName
+	}
+
 	i := strings.IndexByte(name, ':')
 	nsuriDup := stringToXmlChar(nsuri)
 	prefix := stringToXmlChar(name[:i])
@@ -476,11 +481,11 @@ func (d *Document) CreateElementNS(nsuri, name string) *Element {
 	newNode := C.xmlNewDocNode(d.ptr, ns, localname, nil)
 	newNode.nsDef = ns
 
-	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode)))
+	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
 }
 
-func (d *Document) CreateTextNode(txt string) *Text {
-	return wrapText(C.xmlNewText(stringToXmlChar(txt)))
+func (d *Document) CreateTextNode(txt string) (*Text, error) {
+	return wrapText(C.xmlNewText(stringToXmlChar(txt))), nil
 }
 
 func (d *Document) DocumentElement() Node {
@@ -576,9 +581,12 @@ func (d *Document) Walk(fn func(Node) error) {
 	walk(wrapXmlNode(d.root), fn)
 }
 
-func (n *Element) AppendText(s string) {
-	txt := n.OwnerDocument().CreateTextNode(s)
-	n.AppendChild(txt)
+func (n *Element) AppendText(s string) error {
+	txt, err := n.OwnerDocument().CreateTextNode(s)
+	if err != nil {
+		return err
+	}
+	return n.AppendChild(txt)
 }
 
 func (n *Text) Data() string {

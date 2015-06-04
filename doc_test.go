@@ -90,7 +90,12 @@ func TestDocumentCreateElements(t *testing.T) {
 
 	withDocument(func(d *Document) {
 		caseName := "Create element with namespace"
-		e := d.CreateElementNS("http://kungfoo", "foo:bar")
+		e, err := d.CreateElementNS("http://kungfoo", "foo:bar")
+		if err != nil {
+			t.Errorf("failed to create namespaced element: %s", err)
+			return
+		}
+
 		checkElement(t, e, "foo:bar", caseName)
 
 		if e.Prefix() != "foo" {
