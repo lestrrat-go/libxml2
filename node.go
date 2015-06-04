@@ -215,6 +215,10 @@ type XmlNode struct {
 	*xmlNode
 }
 
+type Comment struct {
+	*XmlNode
+}
+
 type Element struct {
 	*XmlNode
 }
@@ -226,6 +230,10 @@ type Document struct {
 
 type Text struct {
 	*XmlNode
+}
+
+func wrapComment(n *C.xmlNode) *Comment {
+	return &Comment{wrapXmlNode(n)}
 }
 
 func wrapElement(n *C.xmlElement) *Element {
@@ -472,6 +480,10 @@ func NewDocument(version, encoding string) *Document {
 
 func (d *Document) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
+}
+
+func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
+	return wrapComment(C.xmlNewComment(stringToXmlChar(txt))), nil
 }
 
 func (d *Document) CreateElement(name string) (*Element, error) {

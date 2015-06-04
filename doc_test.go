@@ -140,3 +140,28 @@ func TestDocumentCreateText(t *testing.T) {
 		}
 	})
 }
+
+func TestDocumentCreateComment(t *testing.T) {
+	withDocument(func(d *Document) {
+		node, err := d.CreateCommentNode("foo")
+		if err != nil {
+			t.Errorf("Failed to create text node: %s", err)
+			return
+		}
+
+		if node.NodeType() != CommentNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", CommentNode, node.NodeType())
+			return
+		}
+
+		if node.NodeValue() != "foo" {
+			t.Errorf("Expeted NodeValue 'foo', got '%s'", node.NodeValue())
+			return
+		}
+
+		if node.String() != "<!--foo-->" {
+			t.Errorf("Expeted String() to return 'foo', got '%s'", node.String())
+			return
+		}
+	})
+}
