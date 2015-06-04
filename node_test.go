@@ -111,11 +111,21 @@ func TestXmlNodeTypeStringer(t *testing.T) {
 
 func TestDOM(t *testing.T) {
 	doc := CreateDocument()
-	root := doc.CreateElement("root")
+	defer doc.Free()
+
+	root, err := doc.CreateElement("root")
+	if err != nil {
+		t.Errorf("Failed to create root element: %s", err)
+		return
+	}
 
 	doc.SetDocumentElement(root)
 	for i := 1; i <= 3; i++ {
-		child := doc.CreateElement(fmt.Sprintf("child%d", i))
+		child, err := doc.CreateElement(fmt.Sprintf("child%d", i))
+		if err != nil {
+			t.Errorf("Failed to create child node: %s", err)
+			return
+		}
 		child.AppendText(fmt.Sprintf("text%d", i))
 		root.AppendChild(child)
 	}

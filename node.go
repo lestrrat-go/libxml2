@@ -6,6 +6,7 @@ package libxml2
 #include "libxml/globals.h"
 #include "libxml/tree.h"
 #include "libxml/parser.h"
+#include "libxml/parserInternals.h"
 #include "libxml/xpath.h"
 
 // Macro wrapper function
@@ -30,12 +31,109 @@ static inline int MY_setXmlIndentTreeOutput(int i) {
 	xmlIndentTreeOutput = i;
 	return old;
 }
+
+// Parse a single char out of cur
+// Stolen from XML::LibXML
+static inline int
+MY_parseChar( xmlChar *cur, int *len )
+{
+	unsigned char c;
+	unsigned int val;
+
+	// We are supposed to handle UTF8, check it's valid
+	// From rfc2044: encoding of the Unicode values on UTF-8:
+	//
+	// UCS-4 range (hex.)           UTF-8 octet sequence (binary)
+	// 0000 0000-0000 007F   0xxxxxxx
+	// 0000 0080-0000 07FF   110xxxxx 10xxxxxx
+	// 0000 0800-0000 FFFF   1110xxxx 10xxxxxx 10xxxxxx
+	//
+	// Check for the 0x110000 limit too
+
+	if ( cur == NULL || *cur == 0 ) {
+		*len = 0;
+		return(0);
+	}
+
+	c = *cur;
+	if ( (c & 0x80) == 0 ) {
+		*len = 1;
+		return((int)c);
+	}
+
+	if ((c & 0xe0) == 0xe0) {
+		if ((c & 0xf0) == 0xf0) {
+			// 4-byte code
+			*len = 4;
+			val = (cur[0] & 0x7) << 18;
+			val |= (cur[1] & 0x3f) << 12;
+			val |= (cur[2] & 0x3f) << 6;
+			val |= cur[3] & 0x3f;
+		} else {
+			// 3-byte code 
+			*len = 3;
+			val = (cur[0] & 0xf) << 12;
+			val |= (cur[1] & 0x3f) << 6;
+			val |= cur[2] & 0x3f;
+		}
+	} else {
+		// 2-byte code
+		*len = 2;
+		val = (cur[0] & 0x1f) << 6;
+		val |= cur[1] & 0x3f;
+	}
+
+	if ( !IS_CHAR(val) ) {
+		*len = -1;
+		return 0;
+	}
+	return val;
+}
+
+// Checks if the given name is a valid name in XML
+// stolen from XML::LibXML
+static inline int
+MY_test_node_name( xmlChar * name )
+{
+	xmlChar * cur = name;
+	int tc  = 0;
+	int len = 0;
+
+	if ( cur == NULL || *cur == 0 ) {
+		return 0;
+	}
+
+	tc = MY_parseChar( cur, &len );
+
+	if ( !( IS_LETTER( tc ) || (tc == '_') || (tc == ':')) ) {
+		return 0;
+	}
+
+	tc  =  0;
+	cur += len;
+
+	while (*cur != 0 ) {
+		tc = MY_parseChar( cur, &len );
+
+		if (!(IS_LETTER(tc) || IS_DIGIT(tc) || (tc == '_') ||
+				(tc == '-') || (tc == ':') || (tc == '.') ||
+				IS_COMBINING(tc) || IS_EXTENDER(tc)) )
+		{
+			return 0;
+		}
+		tc = 0;
+		cur += len;
+	}
+
+	return(1);
+}
 */
 import "C"
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 	"unsafe"
 )
 
@@ -77,8 +175,11 @@ func (i XmlNodeType) String() string {
 	return _XmlNodeType_name[_XmlNodeType_index[i]:_XmlNodeType_index[i+1]]
 }
 
-var ErrNodeNotFound = errors.New("node not found")
-var ErrInvalidArgument = errors.New("invalid argument")
+var (
+	ErrNodeNotFound = errors.New("node not found")
+	ErrInvalidArgument = errors.New("invalid argument")
+	ErrInvalidNodeName = errors.New("invalid node name")
+)
 
 // Node defines the basic DOM interface
 type Node interface {
@@ -170,6 +271,33 @@ func findNodes(n Node, xpath string) ([]Node, error) {
 	return ret, nil
 }
 
+func nodeName(n Node) string {
+	switch n.NodeType() {
+	case XIncludeStart, XIncludeEnd, EntityRefNode, EntityNode, DTDNode, EntityDecl, DocumentTypeNode, NotationNode, NamespaceDecl:
+		return xmlCharToString((*C.xmlNode)(n.pointer()).name)
+	case CommentNode:
+		return "#comment"
+	case CDataSectionNode:
+		return "#cdata-section"
+	case TextNode:
+		return "#text"
+	case DocumentNode, HTMLDocumentNode, DocbDocumentNode:
+		return "#document"
+	case DocumentFragNode:
+		return "#document-fragment"
+	case ElementNode, AttributeNode:
+		ptr := (*C.xmlNode)(n.pointer())
+		if ns := ptr.ns; ns != nil {
+			return fmt.Sprintf("%s:%s", xmlCharToString(ns.prefix), xmlCharToString(ptr.name))
+		}
+		return xmlCharToString(ptr.name)
+	case ElementDecl, AttributeDecl:
+		panic("unimplemented")
+	default:
+		panic("unknown")
+	}
+}
+
 func (n *xmlNode) pointer() unsafe.Pointer {
 	return unsafe.Pointer(n.ptr)
 }
@@ -210,8 +338,26 @@ func (n *xmlNode) LastChild() Node {
 	return wrapToNode(n.ptr.last)
 }
 
+func (n *xmlNode) LocalName() string {
+	switch n.NodeType() {
+	case ElementNode, AttributeNode, ElementDecl, AttributeDecl:
+		return xmlCharToString(n.ptr.name)
+	}
+	return ""
+}
+
+func (n *xmlNode) NamespaceURI() string {
+	switch n.NodeType() {
+	case ElementNode, AttributeNode, PiNode:
+		if ns := n.ptr.ns; ns != nil && ns.href != nil {
+			return xmlCharToString(ns.href)
+		}
+	}
+	return ""
+}
+
 func (n *xmlNode) NodeName() string {
-	return xmlCharToString(n.ptr.name)
+	return nodeName(n)
 }
 
 func (n *xmlNode) NextSibling() Node {
@@ -220,6 +366,16 @@ func (n *xmlNode) NextSibling() Node {
 
 func (n *xmlNode) ParetNode() Node {
 	return wrapToNode(n.ptr.parent)
+}
+
+func (n *xmlNode) Prefix() string {
+	switch n.NodeType() {
+	case ElementNode, AttributeNode, PiNode:
+		if ns := n.ptr.ns; ns != nil && ns.prefix != nil {
+			return xmlCharToString(ns.prefix)
+		}
+	}
+	return ""
 }
 
 func (n *xmlNode) PreviousSibling() Node {
@@ -296,14 +452,30 @@ func (d *Document) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
 }
 
-func (d *Document) CreateElement(name string) *Element {
-	// XXX Should think about properly encoding the 'name'
+func (d *Document) CreateElement(name string) (*Element, error) {
+	if C.MY_test_node_name(stringToXmlChar(name)) == 0 {
+		return nil, ErrInvalidNodeName
+	}
+
 	newNode := C.xmlNewNode(nil, stringToXmlChar(name))
 	if newNode == nil {
-		return nil
+		return nil, errors.New("element creation failed")
 	}
 	// XXX hmmm...
 	newNode.doc = d.ptr
+	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
+}
+
+func (d *Document) CreateElementNS(nsuri, name string) *Element {
+	i := strings.IndexByte(name, ':')
+	nsuriDup := stringToXmlChar(nsuri)
+	prefix := stringToXmlChar(name[:i])
+	localname := stringToXmlChar(name[i+1:])
+
+	ns := C.xmlNewNs(nil, nsuriDup, prefix)
+	newNode := C.xmlNewDocNode(d.ptr, ns, localname, nil)
+	newNode.nsDef = ns
+
 	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode)))
 }
 
@@ -348,6 +520,10 @@ func (d *Document) NodeType() XmlNodeType {
 	return XmlNodeType(d.ptr._type)
 }
 
+func (d *Document) SetBaseURI(s string) {
+	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(d.ptr)), stringToXmlChar(s))
+}
+
 func (d *Document) SetDocumentElement(n Node) {
 	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.pointer()))
 }
@@ -360,12 +536,20 @@ func (d *Document) SetEncoding(e string) {
 	d.ptr.encoding = C.xmlStrdup(stringToXmlChar(e))
 }
 
+func (d *Document) SetStandalone(v int) {
+	d.ptr.standalone = C.int(v)
+}
+
 func (d *Document) SetVersion(e string) {
 	if d.ptr.version != nil {
 		C.MY_xmlFree(unsafe.Pointer(d.ptr.version))
 	}
 
 	d.ptr.version = C.xmlStrdup(stringToXmlChar(e))
+}
+
+func (d *Document) Standalone() int {
+	return int(d.ptr.standalone)
 }
 
 func (d *Document) ToString(skipXmlDecl bool) string {
@@ -378,6 +562,10 @@ func (d *Document) ToString(skipXmlDecl bool) string {
 	}
 
 	return buf.String()
+}
+
+func (d *Document) URI() string {
+	return xmlCharToString(C.xmlStrdup(d.ptr.URL))
 }
 
 func (d *Document) Version() string {
