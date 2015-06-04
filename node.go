@@ -215,6 +215,10 @@ type XmlNode struct {
 	*xmlNode
 }
 
+type CDataSection struct {
+	*XmlNode
+}
+
 type Comment struct {
 	*XmlNode
 }
@@ -230,6 +234,10 @@ type Document struct {
 
 type Text struct {
 	*XmlNode
+}
+
+func wrapCDataSection(n *C.xmlNode) *CDataSection {
+	return &CDataSection{wrapXmlNode(n)}
 }
 
 func wrapComment(n *C.xmlNode) *Comment {
@@ -480,6 +488,10 @@ func NewDocument(version, encoding string) *Document {
 
 func (d *Document) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
+}
+
+func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
+	return wrapCDataSection(C.xmlNewCDataBlock(d.ptr, stringToXmlChar(txt), C.int(len(txt)))), nil
 }
 
 func (d *Document) CreateCommentNode(txt string) (*Comment, error) {

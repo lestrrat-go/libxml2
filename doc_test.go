@@ -165,3 +165,29 @@ func TestDocumentCreateComment(t *testing.T) {
 		}
 	})
 }
+
+func TestDocumentCreateCDataSection(t *testing.T) {
+	withDocument(func(d *Document) {
+		node, err := d.CreateCDataSection("foo")
+		if err != nil {
+			t.Errorf("Failed to create text node: %s", err)
+			return
+		}
+
+		if node.NodeType() != CDataSectionNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", CDataSectionNode, node.NodeType())
+			return
+		}
+
+		if node.NodeValue() != "foo" {
+			t.Errorf("Expeted NodeValue 'foo', got '%s'", node.NodeValue())
+			return
+		}
+
+		if node.String() != "<![CDATA[foo]]>" {
+			t.Errorf("Expeted String() to return 'foo', got '%s'", node.String())
+			return
+		}
+	})
+}
+
