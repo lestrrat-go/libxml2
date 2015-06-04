@@ -145,7 +145,7 @@ func TestDocumentCreateComment(t *testing.T) {
 	withDocument(func(d *Document) {
 		node, err := d.CreateCommentNode("foo")
 		if err != nil {
-			t.Errorf("Failed to create text node: %s", err)
+			t.Errorf("Failed to create Comment node: %s", err)
 			return
 		}
 
@@ -170,7 +170,7 @@ func TestDocumentCreateCDataSection(t *testing.T) {
 	withDocument(func(d *Document) {
 		node, err := d.CreateCDataSection("foo")
 		if err != nil {
-			t.Errorf("Failed to create text node: %s", err)
+			t.Errorf("Failed to create CDataSection node: %s", err)
 			return
 		}
 
@@ -190,4 +190,52 @@ func TestDocumentCreateCDataSection(t *testing.T) {
 		}
 	})
 }
+
+func TestDocumentCreateAttribute(t *testing.T) {
+	withDocument(func(d *Document) {
+		node, err := d.CreateAttribute("foo", "bar")
+		if err != nil {
+			t.Errorf("Failed to create Attribute node: %s", err)
+			return
+		}
+
+		if node.NodeType() != AttributeNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", AttributeNode, node.NodeType())
+			return
+		}
+
+		if node.NodeName() != "foo" {
+			t.Errorf("Expeted NodeName 'foo', got '%s'", node.NodeName())
+			return
+		}
+
+		if node.NodeValue() != "bar" {
+			t.Errorf("Expeted NodeValue 'foo', got '%s'", node.NodeValue())
+			return
+		}
+
+		if node.String() != ` foo="bar"` {
+			t.Errorf(`Expeted String() to return ' foo="bar"', got '%s'`, node.String())
+			return
+		}
+
+		if node.HasChildNodes() {
+			t.Errorf("Expected HashChildNodes to return false")
+			return
+		}
+
+		// Attribute nodes claim to not have any child nodes, but they do?!
+		content := node.FirstChild()
+		if content == nil {
+			t.Errorf("Expected FirstChild to return a node")
+			return
+		}
+
+		if content.NodeType() != TextNode {
+			t.Errorf("Expected content node NodeType '%s', got '%s'", TextNode, content.NodeType())
+			return
+		}
+	})
+}
+
 

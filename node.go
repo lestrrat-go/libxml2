@@ -192,6 +192,8 @@ type Node interface {
 	ChildNodes() []Node
 	OwnerDocument() *Document
 	FindNodes(string) ([]Node, error)
+	FirstChild() Node
+	HasChildNodes() bool
 	IsSameNode(Node) bool
 	LastChild() Node
 	NextSibling() Node
@@ -215,6 +217,10 @@ type XmlNode struct {
 	*xmlNode
 }
 
+type Attribute struct {
+	*XmlNode
+}
+
 type CDataSection struct {
 	*XmlNode
 }
@@ -234,6 +240,10 @@ type Document struct {
 
 type Text struct {
 	*XmlNode
+}
+
+func wrapAttribute(n *C.xmlAttr) *Attribute {
+	return &Attribute{wrapXmlNode((*C.xmlNode)(unsafe.Pointer(n)))}
 }
 
 func wrapCDataSection(n *C.xmlNode) *CDataSection {
@@ -364,6 +374,18 @@ func (n *xmlNode) FindNodes(xpath string) ([]Node, error) {
 	return findNodes(n, xpath)
 }
 
+func (n *xmlNode) FirstChild() Node {
+	if !n.HasChildNodes() {
+		return nil
+	}
+
+	return wrapToNode(((*C.xmlNode)(n.pointer())).children)
+}
+
+func (n *xmlNode) HasChildNodes() bool {
+	return n.ptr.children != nil
+}
+
 func (n *xmlNode) IsSameNode(other Node) bool {
 	return n.pointer() == other.pointer()
 }
@@ -488,6 +510,19 @@ func NewDocument(version, encoding string) *Document {
 
 func (d *Document) pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
+}
+
+func (d *Document) CreateAttribute(k, v string) (*Attribute, error) {
+	kx := stringToXmlChar(k)
+	vx := stringToXmlChar(v)
+	if C.MY_test_node_name(kx) == 0 {
+		return nil, ErrInvalidNodeName
+	}
+
+	buf := C.xmlEncodeEntitiesReentrant(d.ptr, vx)
+	newAttr := C.xmlNewDocProp(d.ptr, kx, buf)
+
+	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(newAttr))), nil
 }
 
 func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
@@ -640,4 +675,8 @@ func (n *Text) Data() string {
 
 func (n *Text) Walk(fn func(Node) error) {
 	walk(n, fn)
+}
+
+func (n *Attribute) HasChildNodes() bool {
+	return false
 }
