@@ -110,7 +110,6 @@ func TestDocumentCreateElements(t *testing.T) {
 	})
 
 	// Bad elements
-
 	withDocument(func(d *Document) {
 		badnames := []string{";", "&", "<><", "/", "1A"}
 		for _, name := range badnames {
@@ -234,6 +233,16 @@ func TestDocumentCreateAttribute(t *testing.T) {
 		if content.NodeType() != TextNode {
 			t.Errorf("Expected content node NodeType '%s', got '%s'", TextNode, content.NodeType())
 			return
+		}
+	})
+
+	// Bad elements
+	withDocument(func(d *Document) {
+		badnames := []string{";", "&", "<><", "/", "1A"}
+		for _, name := range badnames {
+			if _, err := d.CreateAttribute(name, "bar"); err == nil {
+				t.Errorf("Creation of attribute name '%s' should fail", name)
+			}
 		}
 	})
 }
