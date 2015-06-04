@@ -27,6 +27,7 @@ static inline int MY_setXmlIndentTreeOutput(int i) {
 */
 import "C"
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"unsafe"
@@ -336,6 +337,18 @@ func (d *Document) NodeType() XmlNodeType {
 
 func (d *Document) SetDocumentElement(n Node) {
 	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.pointer()))
+}
+
+func (d *Document) ToString(skipXmlDecl bool) string {
+	buf := &bytes.Buffer{}
+	for _, n := range childNodes(wrapXmlNode((*C.xmlNode)(d.pointer()))) {
+		if n.NodeType() == DTDNode {
+			continue
+		}
+		buf.WriteString(n.String())
+	}
+
+	return buf.String()
 }
 
 func (n *Document) Walk(fn func(Node) error) {

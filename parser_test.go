@@ -231,3 +231,19 @@ func TestParseNoBlanks(t *testing.T) {
 		parseShouldSucceed(t, p, input)
 	}
 }
+
+func TestRoundtripNoBlanks(t *testing.T) {
+	p := &Parser{}
+	p.Options.Set(XmlParseNoBlanks)
+
+	doc, err := p.ParseString(`<a>    <b/> </a>`)
+	if err != nil {
+		t.Errorf("failed to parse string: %s", err)
+		return
+	}
+
+	expected := `<a><b/></a>`
+	if doc.ToString(true) != expected {
+		t.Errorf("expected '%s', got '%s'", expected, doc.String())
+	}
+}
