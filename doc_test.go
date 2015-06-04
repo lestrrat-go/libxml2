@@ -119,5 +119,24 @@ func TestDocumentCreateElements(t *testing.T) {
 			}
 		}
 	})
+}
 
+func TestDocumentCreateText(t *testing.T) {
+	withDocument(func(d *Document) {
+		node, err := d.CreateTextNode("foo")
+		if err != nil {
+			t.Errorf("Failed to create text node: %s", err)
+			return
+		}
+
+		if node.NodeType() != TextNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", TextNode, node.NodeType())
+			return
+		}
+
+		if node.NodeValue() != "foo" {
+			t.Errorf("Expeted NodeValue 'foo', got '%s'", node.NodeValue())
+			return
+		}
+	})
 }

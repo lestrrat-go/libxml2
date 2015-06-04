@@ -197,6 +197,7 @@ type Node interface {
 	NextSibling() Node
 	NodeName() string
 	NodeType() XmlNodeType
+	NodeValue() string
 	ParetNode() Node
 	PreviousSibling() Node
 	SetNodeName(string)
@@ -298,6 +299,22 @@ func nodeName(n Node) string {
 	}
 }
 
+func nodeValue(n Node) string {
+	switch n.NodeType() {
+	case AttributeNode, TextNode, CommentNode, CDataSectionNode, PiNode, EntityRefNode:
+		return xmlCharToString(C.xmlXPathCastNodeToString((*C.xmlNode)(n.pointer())))
+	case EntityDecl:
+		np := (*C.xmlNode)(n.pointer())
+		if np.content != nil {
+			return xmlCharToString(C.xmlStrdup(np.content))
+		}
+
+		panic("unimplmented")
+	}
+
+	return ""
+}
+
 func (n *xmlNode) pointer() unsafe.Pointer {
 	return unsafe.Pointer(n.ptr)
 }
@@ -359,6 +376,10 @@ func (n *xmlNode) NamespaceURI() string {
 
 func (n *xmlNode) NodeName() string {
 	return nodeName(n)
+}
+
+func (n *xmlNode) NodeValue() string {
+	return nodeValue(n)
 }
 
 func (n *xmlNode) NextSibling() Node {
