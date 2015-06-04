@@ -110,7 +110,7 @@ func TestXmlNodeTypeStringer(t *testing.T) {
 }
 
 func TestDOM(t *testing.T) {
-	doc := NewDocument("1.0")
+	doc := CreateDocument()
 	root := doc.CreateElement("root")
 
 	doc.SetDocumentElement(root)

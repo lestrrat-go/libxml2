@@ -3,6 +3,7 @@ package libxml2
 /*
 #cgo pkg-config: libxml-2.0
 #include <stdbool.h>
+#include "libxml/globals.h"
 #include "libxml/tree.h"
 #include "libxml/parser.h"
 #include "libxml/xpath.h"
@@ -10,6 +11,11 @@ package libxml2
 // Macro wrapper function
 static inline bool MY_xmlXPathNodeSetIsEmpty(xmlNodeSetPtr ptr) {
 	return xmlXPathNodeSetIsEmpty(ptr);
+}
+
+// Macro wrapper function
+static inline void MY_xmlFree(void *p) {
+	xmlFree(p);
 }
 
 // Because Go can't do pointer airthmetics...
@@ -274,8 +280,15 @@ func childNodes(n Node) []Node {
 	return ret
 }
 
-func NewDocument(version string) *Document {
+func CreateDocument() *Document {
+	return NewDocument("1.0", "")
+}
+
+func NewDocument(version, encoding string) *Document {
 	doc := C.xmlNewDoc(stringToXmlChar(version))
+	if encoding != "" {
+		doc.encoding = C.xmlStrdup(stringToXmlChar(encoding))
+	}
 	return wrapDocument(doc)
 }
 
@@ -339,6 +352,22 @@ func (d *Document) SetDocumentElement(n Node) {
 	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.pointer()))
 }
 
+func (d *Document) SetEncoding(e string) {
+	if d.ptr.encoding != nil {
+		C.MY_xmlFree(unsafe.Pointer(d.ptr.encoding))
+	}
+
+	d.ptr.encoding = C.xmlStrdup(stringToXmlChar(e))
+}
+
+func (d *Document) SetVersion(e string) {
+	if d.ptr.version != nil {
+		C.MY_xmlFree(unsafe.Pointer(d.ptr.version))
+	}
+
+	d.ptr.version = C.xmlStrdup(stringToXmlChar(e))
+}
+
 func (d *Document) ToString(skipXmlDecl bool) string {
 	buf := &bytes.Buffer{}
 	for _, n := range childNodes(wrapXmlNode((*C.xmlNode)(d.pointer()))) {
@@ -351,8 +380,12 @@ func (d *Document) ToString(skipXmlDecl bool) string {
 	return buf.String()
 }
 
-func (n *Document) Walk(fn func(Node) error) {
-	walk(wrapXmlNode(n.root), fn)
+func (d *Document) Version() string {
+	return xmlCharToString(d.ptr.version)
+}
+
+func (d *Document) Walk(fn func(Node) error) {
+	walk(wrapXmlNode(d.root), fn)
 }
 
 func (n *Element) AppendText(s string) {
