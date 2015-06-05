@@ -10,18 +10,8 @@ package libxml2
 #include "libxml/xpath.h"
 
 // Macro wrapper function
-static inline bool MY_xmlXPathNodeSetIsEmpty(xmlNodeSetPtr ptr) {
-	return xmlXPathNodeSetIsEmpty(ptr);
-}
-
-// Macro wrapper function
 static inline void MY_xmlFree(void *p) {
 	xmlFree(p);
-}
-
-// Because Go can't do pointer airthmetics...
-static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
-	return nodes[i];
 }
 
 // Change xmlIndentTreeOutput global, return old value, so caller can
@@ -280,23 +270,6 @@ func wrapToNode(n *C.xmlNode) Node {
 	default:
 		return &XmlNode{&xmlNode{ptr: n}}
 	}
-}
-
-func findNodes(n Node, xpath string) ([]Node, error) {
-	ctx := C.xmlXPathNewContext((*C.xmlNode)(n.pointer()).doc)
-	defer C.xmlXPathFreeContext(ctx)
-
-	res := C.xmlXPathEvalExpression(stringToXmlChar(xpath), ctx)
-	defer C.xmlXPathFreeObject(res)
-	if C.MY_xmlXPathNodeSetIsEmpty(res.nodesetval) {
-		return []Node(nil), nil
-	}
-
-	ret := make([]Node, res.nodesetval.nodeNr)
-	for i := 0; i < int(res.nodesetval.nodeNr); i++ {
-		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(res.nodesetval.nodeTab, C.int(i)))
-	}
-	return ret, nil
 }
 
 func nodeName(n Node) string {
