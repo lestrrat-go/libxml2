@@ -247,4 +247,52 @@ func TestDocumentCreateAttribute(t *testing.T) {
 	})
 }
 
+func TestDocumentCreateAttributeNS(t *testing.T) {
+	withDocument(func(d *Document) {
+		elem, err := d.CreateElement("foo")
+		if err != nil {
+			t.Errorf("Failed to create Element node: %s", err)
+			return
+		}
+		d.SetDocumentElement(elem)
+
+		attr, err := d.CreateAttribute("attr", "e & f")
+		if err != nil {
+			t.Errorf("Failed to create Attribute node: %s", err)
+			return
+		}
+		elem.AddChild(attr)
+
+		if elem.String() != `<foo attr="e &amp; f"/>` {
+			t.Errorf(`Expected String '<foo attr="e &amp; f"/>', got '%s'`, elem.String())
+			return
+		}
+		elem.RemoveAttribute("attr")
+
+		attr, err = d.CreateAttributeNS("", "attr2", "a & b")
+		if err != nil {
+			t.Errorf("Failed to create Attribute node: %s", err)
+			return
+		}
+		elem.AddChild(attr)
+
+		if elem.String() != `<foo attr2="a &amp; b"/>` {
+			t.Errorf(`Expected String '<foo attr2="a &amp; b"/>', got '%s'`, elem.String())
+			return
+		}
+		elem.RemoveAttribute("attr2")
+
+		attr, err = d.CreateAttributeNS("http://kungfoo", "foo:attr3", "g & h")
+		if err != nil {
+			t.Errorf("Failed to create Attribute node: %s", err)
+			return
+		}
+		elem.AddChild(attr)
+
+		if elem.String() != `<foo xmlns:foo="http://kungfoo" foo:attr3="g &amp; h"/>` {
+			t.Errorf(`Expected String '<foo xmlns:foo="http://kungfoo" foo:attr3="g &amp; h"/>', got '%s'`, elem.String())
+			return
+		}
+	})
+}
 

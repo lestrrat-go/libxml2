@@ -525,6 +525,39 @@ func (d *Document) CreateAttribute(k, v string) (*Attribute, error) {
 	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(newAttr))), nil
 }
 
+func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
+	if nsuri == "" {
+		return d.CreateAttribute(k, v)
+	}
+
+	kx := stringToXmlChar(k)
+	if C.MY_test_node_name(kx) == 0 {
+		return nil, ErrInvalidNodeName
+	}
+
+	root := d.DocumentElement()
+	if root == nil {
+		return nil, errors.New("attribute with namespaces require a root node")
+	}
+
+	prefix, local := splitPrefixLocal(k)
+
+	ns := C.xmlSearchNsByHref(d.ptr, (*C.xmlNode)(root.pointer()), stringToXmlChar(nsuri))
+	if ns == nil {
+		ns = C.xmlNewNs((*C.xmlNode)(root.pointer()), stringToXmlChar(nsuri), stringToXmlChar(prefix))
+		if ns == nil {
+			return nil, errors.New("failed to create namespace")
+		}
+	}
+
+	vx := stringToXmlChar(v)
+	buf := C.xmlEncodeEntitiesReentrant(d.ptr, vx)
+	newAttr := C.xmlNewDocProp(d.ptr, stringToXmlChar(local), buf)
+	C.xmlSetNs((*C.xmlNode)(unsafe.Pointer(newAttr)), ns)
+
+	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(newAttr))), nil
+}
+
 func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
 	return wrapCDataSection(C.xmlNewCDataBlock(d.ptr, stringToXmlChar(txt), C.int(len(txt)))), nil
 }
@@ -569,8 +602,16 @@ func (d *Document) CreateTextNode(txt string) (*Text, error) {
 }
 
 func (d *Document) DocumentElement() Node {
-	if d.ptr == nil || d.root == nil {
+	if d.ptr == nil {
 		return nil
+	}
+
+	if d.root == nil {
+		n := C.xmlDocGetRootElement(d.ptr)
+		if n == nil {
+			return nil
+		}
+		d.root = n
 	}
 
 	return wrapToNode(d.root)
@@ -611,6 +652,7 @@ func (d *Document) SetBaseURI(s string) {
 
 func (d *Document) SetDocumentElement(n Node) {
 	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.pointer()))
+	d.root = (*C.xmlNode)(n.pointer())
 }
 
 func (d *Document) SetEncoding(e string) {
@@ -667,6 +709,45 @@ func (n *Element) AppendText(s string) error {
 		return err
 	}
 	return n.AppendChild(txt)
+}
+
+func splitPrefixLocal(s string) (string, string) {
+	i := strings.IndexByte(s, ':')
+	if i == -1 {
+		return "", s
+	}
+	return s[:i], s[i+1:]
+}
+
+func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
+	prop := C.xmlHasNsProp(n.ptr, stringToXmlChar(name), nil)
+	if prop != nil {
+		prefix, local := splitPrefixLocal(name)
+		if local != "" {
+			ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix))
+			if ns != nil {
+				prop = C.xmlHasNsProp(n.ptr, stringToXmlChar(local), ns.href)
+			}
+		}
+	}
+
+	if prop == nil || XmlNodeType(prop._type) != AttributeNode {
+		return nil, errors.New("attribute not found")
+	}
+
+	return prop, nil
+}
+
+func (n *Element) RemoveAttribute(name string) error {
+	prop, err := n.getAttributeNode(name)
+	if err != nil {
+		return err
+	}
+
+	C.xmlUnlinkNode((*C.xmlNode)(unsafe.Pointer(prop)))
+	C.xmlFreeProp(prop)
+
+	return nil
 }
 
 func (n *Text) Data() string {
