@@ -336,5 +336,21 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 			return
 		}
 	})
-}
 
+	// Bad elements
+	withDocument(func(d *Document) {
+		elem, err := d.CreateElement("foo")
+		if err != nil {
+			t.Errorf("Failed to create Element node: %s", err)
+			return
+		}
+		d.SetDocumentElement(elem)
+
+		badnames := []string{";", "&", "<><", "/", "1A"}
+		for _, name := range badnames {
+			if _, err := d.CreateAttributeNS("http://kungfoo", name, "bar"); err == nil {
+				t.Errorf("Creation of attribute name '%s' should fail", name)
+			}
+		}
+	})
+}
