@@ -86,7 +86,17 @@ func (x *XPathContext) Free() {
 	C.xmlXPathFreeContext(x.ptr)
 }
 
-func (x *XPathContext) FindNodes(expr *XPathExpression) ([]Node, error) {
+func (x *XPathContext) FindNodes(s string) ([]Node, error) {
+	expr, err := NewXPathExpression(s)
+	if err != nil {
+		return nil, err
+	}
+	defer expr.Free()
+
+	return x.FindNodesExpr(expr)
+}
+
+func (x *XPathContext) FindNodesExpr(expr *XPathExpression) ([]Node, error) {
 	if expr == nil {
 		return nil, errors.New("empty XPathExpression")
 	}

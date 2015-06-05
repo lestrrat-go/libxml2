@@ -9,13 +9,6 @@ func TestXPathContext(t *testing.T) {
 	}
 	defer doc.Free()
 
-	expr, err := NewXPathExpression(`/*`)
-	if err != nil {
-		t.Errorf("Failed to compile xpath: %s", err)
-		return
-	}
-	defer expr.Free()
-
 	root := doc.DocumentElement()
 	if root == nil {
 		t.Errorf("Failed to get root element")
@@ -29,7 +22,9 @@ func TestXPathContext(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	nodes, err := ctx.FindNodes(expr)
+	// Use a string
+	exprString := `/*`
+	nodes, err := ctx.FindNodes(exprString)
 	if err != nil {
 		t.Errorf("Failed to execute FindNodes: %s", err)
 		return
@@ -40,5 +35,22 @@ func TestXPathContext(t *testing.T) {
 		return
 	}
 
+	// Use an explicitly compiled expression
+	expr, err := NewXPathExpression(exprString)
+	if err != nil {
+		t.Errorf("Failed to compile xpath: %s", err)
+		return
+	}
+	defer expr.Free()
 
+	nodes, err = ctx.FindNodesExpr(expr)
+	if err != nil {
+		t.Errorf("Failed to execute FindNodesExpr: %s", err)
+		return
+	}
+
+	if len(nodes) != 1 {
+		t.Errorf("Expected 1 nodes, got %d", len(nodes))
+		return
+	}
 }
