@@ -203,6 +203,7 @@ type Node interface {
 	ParetNode() Node
 	PreviousSibling() Node
 	SetNodeName(string)
+	SetNodeValue(string)
 	String() string
 	TextContent() string
 	ToString(int, bool) string
@@ -444,6 +445,24 @@ func (n *xmlNode) PreviousSibling() Node {
 
 func (n *xmlNode) SetNodeName(name string) {
 	C.xmlNodeSetName(n.ptr, stringToXmlChar(name))
+}
+
+func (n *xmlNode) SetNodeValue(value string) {
+	if n.NodeType() != AttributeNode {
+		C.xmlNodeSetContent( n.ptr, stringToXmlChar(value))
+		return
+	}
+
+	ptr := n.ptr
+	if ptr.children != nil {
+		ptr.last = nil
+		C.xmlFreeNodeList(ptr.children)
+	}
+
+	ptr.children = C.xmlNewText(stringToXmlChar(value))
+	ptr.children.parent = ptr
+	ptr.children.doc = ptr.doc
+	ptr.last = ptr.children
 }
 
 func (n *xmlNode) String() string {

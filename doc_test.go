@@ -294,5 +294,47 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 			return
 		}
 	})
+
+	withDocument(func(d *Document) {
+		attr, err := d.CreateAttributeNS("http://kungfoo", "kung:foo","bar");
+		if err == nil {
+			t.Errorf("Creating Attribute node w/o root node should have failed")
+			return
+		}
+
+		elem, err := d.CreateElement("foo")
+		if err != nil {
+			t.Errorf("Failed to create Element node: %s", err)
+			return
+		}
+		d.SetDocumentElement(elem)
+
+		attr, err = d.CreateAttributeNS("http://kungfoo", "kung:foo","bar");
+		if err != nil {
+			t.Errorf("Failed to create Attribute node: %s", err)
+			return
+		}
+
+		if attr.NodeName() != "kung:foo" {
+			t.Errorf("Expected NodeName 'kung:foo', got '%s'", attr.NodeName())
+			return
+		}
+
+		if attr.LocalName() != "foo" {
+			t.Errorf("Expected LocalName 'foo', got '%s'", attr.LocalName())
+			return
+		}
+
+		if attr.NodeValue() != "bar" {
+			t.Errorf("Expected NodeValue() 'bar', got '%s'", attr.NodeValue())
+			return
+		}
+
+		attr.SetNodeValue(`bar&amp;`)
+		if attr.NodeValue() != `bar&amp;` {
+			t.Errorf("Expected NodeValue() 'bar&amp;', got '%s'", attr.NodeValue())
+			return
+		}
+	})
 }
 
