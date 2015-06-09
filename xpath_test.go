@@ -54,3 +54,30 @@ func TestXPathContext(t *testing.T) {
 		return
 	}
 }
+
+func TestXPathContextExpression(t *testing.T) {
+	withDocument(func(d *Document) {
+		ctx, err := NewXPathContext()
+		if err != nil {
+			t.Errorf("Failed to initialize XPathContext: %s", err)
+			return
+		}
+		defer ctx.Free()
+
+		res, err := ctx.FindValue("1+1")
+		if err != nil {
+			t.Errorf("Failed to evaluate XPath expression: %s", err)
+			return
+		}
+		defer res.Free()
+
+		switch res.Type() {
+		case XPathNumber:
+			if res.Float64() != 2 {
+				t.Errorf("Expected result number to be 2, got %f", res.Float64())
+			}
+		default:
+			t.Errorf("Expected type to be XPathObjectNumber, got %d", res.Type())
+		}
+	})
+}

@@ -21,24 +21,6 @@ static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 import "C"
 import "errors"
 
-// This compiles the expression every time. Ponder if we really need it
-func findNodes(n Node, xpath string) ([]Node, error) {
-	ctx := C.xmlXPathNewContext((*C.xmlNode)(n.pointer()).doc)
-	defer C.xmlXPathFreeContext(ctx)
-
-	res := C.xmlXPathEvalExpression(stringToXmlChar(xpath), ctx)
-	defer C.xmlXPathFreeObject(res)
-	if C.MY_xmlXPathNodeSetIsEmpty(res.nodesetval) {
-		return []Node(nil), nil
-	}
-
-	ret := make([]Node, res.nodesetval.nodeNr)
-	for i := 0; i < int(res.nodesetval.nodeNr); i++ {
-		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(res.nodesetval.nodeTab, C.int(i)))
-	}
-	return ret, nil
-}
-
 type XPathContext struct {
 	ptr *C.xmlXPathContext
 }
@@ -96,7 +78,7 @@ func (x *XPathContext) FindNodes(s string) ([]Node, error) {
 	return x.FindNodesExpr(expr)
 }
 
-func (x *XPathContext) FindNodesExpr(expr *XPathExpression) ([]Node, error) {
+func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
 	if expr == nil {
 		return nil, errors.New("empty XPathExpression")
 	}
@@ -104,7 +86,11 @@ func (x *XPathContext) FindNodesExpr(expr *XPathExpression) ([]Node, error) {
 	// If there is no document associated with this context,
 	// then xmlXPathCompiledEval() just fails to match
 	ctx := x.ptr
-	ctx.doc = ctx.node.doc
+
+	if ctx.node != nil && ctx.node.doc != nil {
+		ctx.doc = ctx.node.doc
+	}
+
 	if ctx.doc == nil {
 		ctx.doc = C.xmlNewDoc(stringToXmlChar("1.0"))
 		defer C.xmlFreeDoc(ctx.doc)
@@ -115,16 +101,90 @@ func (x *XPathContext) FindNodesExpr(expr *XPathExpression) ([]Node, error) {
 		return nil, errors.New("empty result")
 	}
 
-	if res.nodesetval.nodeNr == 0 {
-		return []Node(nil), nil
+	return &XPathObject{res}, nil
+}
+
+func (x *XPathContext) FindNodesExpr(expr *XPathExpression) ([]Node, error) {
+	res, err := x.evalXPath(expr)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Free()
+
+	return res.NodeList(), nil
+}
+
+type XPathObjectType int
+const (
+	XPathUndefined XPathObjectType = iota
+	XPathNodeSet
+	XPathBoolean
+	XPathNumber
+	XPathString
+	XPathPoint
+	XPathRange
+	XPathLocationSet
+	XPathUSers
+	XPathXsltTree
+)
+
+type XPathObject struct {
+	ptr *C.xmlXPathObject
+}
+
+func (x XPathObject) Type() XPathObjectType {
+	return XPathObjectType(x.ptr._type)
+}
+
+func (x XPathObject) Float64() float64 {
+	return float64(x.ptr.floatval)
+}
+
+func (x XPathObject) Boolean() bool {
+	return C.int(x.ptr.boolval) == 1
+}
+
+func (x XPathObject) String() string {
+	return xmlCharToString(x.ptr.stringval)
+}
+
+func (x XPathObject) NodeList() []Node {
+	if x.ptr.nodesetval.nodeNr == 0 {
+		return []Node(nil)
 	}
 
-	ret := make([]Node, res.nodesetval.nodeNr)
-	for i := 0; i < int(res.nodesetval.nodeNr); i++ {
-		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(res.nodesetval.nodeTab, C.int(i)))
+	ret := make([]Node, x.ptr.nodesetval.nodeNr)
+	for i := 0; i < int(x.ptr.nodesetval.nodeNr); i++ {
+		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(x.ptr.nodesetval.nodeTab, C.int(i)))
 	}
 
-	C.xmlXPathFreeObject(res)
+	return ret
+}
 
-	return ret, nil
+func (x *XPathObject) Free() {
+//	if x.ptr.nodesetval != nil {
+//		C.xmlXPathFreeNodeSet(x.ptr.nodesetval)
+//	}
+	C.xmlXPathFreeObject(x.ptr)
+}
+
+func (x *XPathContext) FindValue(s string) (*XPathObject, error) {
+	expr, err := NewXPathExpression(s)
+	if err != nil {
+		return nil, err
+	}
+	defer expr.Free()
+
+	return x.FindValueExpr(expr)
+}
+
+// FindValueExpr evaluates the given XPath expression and returns an XPathObject.
+// You must call `Free()` on this returned object
+func (x *XPathContext) FindValueExpr(expr *XPathExpression) (*XPathObject, error) {
+	res, err := x.evalXPath(expr)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

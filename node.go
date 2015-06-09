@@ -60,7 +60,7 @@ MY_parseChar( xmlChar *cur, int *len )
 			val |= (cur[2] & 0x3f) << 6;
 			val |= cur[3] & 0x3f;
 		} else {
-			// 3-byte code 
+			// 3-byte code
 			*len = 3;
 			val = (cur[0] & 0xf) << 12;
 			val |= (cur[1] & 0x3f) << 6;
@@ -166,7 +166,7 @@ func (i XmlNodeType) String() string {
 }
 
 var (
-	ErrNodeNotFound = errors.New("node not found")
+	ErrNodeNotFound    = errors.New("node not found")
 	ErrInvalidArgument = errors.New("invalid argument")
 	ErrInvalidNodeName = errors.New("invalid node name")
 )
@@ -345,7 +345,13 @@ func (n *xmlNode) OwnerDocument() *Document {
 }
 
 func (n *xmlNode) FindNodes(xpath string) ([]Node, error) {
-	return findNodes(n, xpath)
+	ctx, err := NewXPathContext(n)
+	if err != nil {
+		return nil, err
+	}
+	defer ctx.Free()
+
+	return ctx.FindNodes(xpath)
 }
 
 func (n *xmlNode) FirstChild() Node {
@@ -421,8 +427,9 @@ func (n *xmlNode) SetNodeName(name string) {
 }
 
 func (n *xmlNode) SetNodeValue(value string) {
+	// TODO: Implement this in C
 	if n.NodeType() != AttributeNode {
-		C.xmlNodeSetContent( n.ptr, stringToXmlChar(value))
+		C.xmlNodeSetContent(n.ptr, stringToXmlChar(value))
 		return
 	}
 
@@ -447,6 +454,7 @@ func (n *xmlNode) TextContent() string {
 }
 
 func (n *xmlNode) ToString(format int, docencoding bool) string {
+	// TODO: Implement htis in C
 	buffer := C.xmlBufferCreate()
 	defer C.xmlBufferFree(buffer)
 	if format <= 0 {
