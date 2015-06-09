@@ -179,9 +179,9 @@ type Node interface {
 
 	AddChild(Node)
 	AppendChild(Node) error
-	ChildNodes() []Node
+	ChildNodes() NodeList
 	OwnerDocument() *Document
-	FindNodes(string) ([]Node, error)
+	FindNodes(string) (NodeList, error)
 	FirstChild() Node
 	HasChildNodes() bool
 	IsSameNode(Node) bool
@@ -205,7 +205,6 @@ type NodeList []Node
 func (n NodeList) String() string {
 	buf := &bytes.Buffer{}
 	for i := 0; i < len(n); i++ {
-fmt.Printf("NodeList.String() -> %v\n", n[i])
 		buf.WriteString(n[i].String())
 	}
 	return buf.String()
@@ -342,7 +341,7 @@ func (n *xmlNode) AppendChild(child Node) error {
 	return nil
 }
 
-func (n *xmlNode) ChildNodes() []Node {
+func (n *xmlNode) ChildNodes() NodeList {
 	return childNodes(n)
 }
 
@@ -355,7 +354,7 @@ func (n *xmlNode) OwnerDocument() *Document {
 	return wrapDocument(n.ptr.doc)
 }
 
-func (n *xmlNode) FindNodes(xpath string) ([]Node, error) {
+func (n *xmlNode) FindNodes(xpath string) (NodeList, error) {
 	ctx, err := NewXPathContext(n)
 	if err != nil {
 		return nil, err
@@ -363,6 +362,16 @@ func (n *xmlNode) FindNodes(xpath string) ([]Node, error) {
 	defer ctx.Free()
 
 	return ctx.FindNodes(xpath)
+}
+
+func (n *xmlNode) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
+	ctx, err := NewXPathContext(n)
+	if err != nil {
+		return nil, err
+	}
+	defer ctx.Free()
+
+	return ctx.FindNodesExpr(expr)
 }
 
 func (n *xmlNode) FirstChild() Node {
@@ -499,8 +508,8 @@ func walk(n Node, fn func(Node) error) {
 	}
 }
 
-func childNodes(n Node) []Node {
-	ret := []Node(nil)
+func childNodes(n Node) NodeList {
+	ret := NodeList(nil)
 	for chld := ((*C.xmlNode)(n.pointer())).children; chld != nil; chld = chld.next {
 		ret = append(ret, wrapToNode(chld))
 	}
@@ -628,7 +637,7 @@ func (d *Document) DocumentElement() Node {
 	return wrapToNode(d.root)
 }
 
-func (d *Document) FindNodes(xpath string) ([]Node, error) {
+func (d *Document) FindNodes(xpath string) (NodeList, error) {
 	root := d.DocumentElement()
 	if root == nil {
 		return nil, ErrNodeNotFound
