@@ -19,7 +19,10 @@ static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 
 */
 import "C"
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type XPathContext struct {
 	ptr *C.xmlXPathContext
@@ -68,7 +71,7 @@ func (x *XPathContext) Free() {
 	C.xmlXPathFreeContext(x.ptr)
 }
 
-func (x *XPathContext) FindNodes(s string) ([]Node, error) {
+func (x *XPathContext) FindNodes(s string) (NodeList, error) {
 	expr, err := NewXPathExpression(s)
 	if err != nil {
 		return nil, err
@@ -104,7 +107,7 @@ func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
 	return &XPathObject{res}, nil
 }
 
-func (x *XPathContext) FindNodesExpr(expr *XPathExpression) ([]Node, error) {
+func (x *XPathContext) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
 	res, err := x.evalXPath(expr)
 	if err != nil {
 		return nil, err
@@ -115,6 +118,7 @@ func (x *XPathContext) FindNodesExpr(expr *XPathExpression) ([]Node, error) {
 }
 
 type XPathObjectType int
+
 const (
 	XPathUndefined XPathObjectType = iota
 	XPathNodeSet
@@ -127,6 +131,17 @@ const (
 	XPathUSers
 	XPathXsltTree
 )
+
+const _XPathObjectType_name = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberXPathStringXPathPointXPathRangeXPathLocationSetXPathUSersXPathXsltTree"
+
+var _XPathObjectType_index = [...]uint8{0, 14, 26, 38, 49, 60, 70, 80, 96, 106, 119}
+
+func (i XPathObjectType) String() string {
+	if i < 0 || i+1 >= XPathObjectType(len(_XPathObjectType_index)) {
+		return fmt.Sprintf("XPathObjectType(%d)", i)
+	}
+	return _XPathObjectType_name[_XPathObjectType_index[i]:_XPathObjectType_index[i+1]]
+}
 
 type XPathObject struct {
 	ptr *C.xmlXPathObject
@@ -148,12 +163,12 @@ func (x XPathObject) String() string {
 	return xmlCharToString(x.ptr.stringval)
 }
 
-func (x XPathObject) NodeList() []Node {
+func (x XPathObject) NodeList() NodeList {
 	if x.ptr.nodesetval.nodeNr == 0 {
-		return []Node(nil)
+		return NodeList(nil)
 	}
 
-	ret := make([]Node, x.ptr.nodesetval.nodeNr)
+	ret := make(NodeList, x.ptr.nodesetval.nodeNr)
 	for i := 0; i < int(x.ptr.nodesetval.nodeNr); i++ {
 		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(x.ptr.nodesetval.nodeTab, C.int(i)))
 	}
@@ -162,9 +177,9 @@ func (x XPathObject) NodeList() []Node {
 }
 
 func (x *XPathObject) Free() {
-//	if x.ptr.nodesetval != nil {
-//		C.xmlXPathFreeNodeSet(x.ptr.nodesetval)
-//	}
+	//	if x.ptr.nodesetval != nil {
+	//		C.xmlXPathFreeNodeSet(x.ptr.nodesetval)
+	//	}
 	C.xmlXPathFreeObject(x.ptr)
 }
 

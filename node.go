@@ -200,6 +200,17 @@ type Node interface {
 	Walk(func(Node) error)
 }
 
+type NodeList []Node
+
+func (n NodeList) String() string {
+	buf := &bytes.Buffer{}
+	for i := 0; i < len(n); i++ {
+fmt.Printf("NodeList.String() -> %v\n", n[i])
+		buf.WriteString(n[i].String())
+	}
+	return buf.String()
+}
+
 type xmlNode struct {
 	ptr *C.xmlNode
 }
