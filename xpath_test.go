@@ -141,3 +141,56 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 		t.Errorf("Expected type to be XPathObjectNodeSet, got %s", res.Type())
 	}
 }
+
+func TestXPathContextExpression_Namespaces(t *testing.T) {
+	doc, err := (&Parser{}).ParseString(`<foo xmlns="http://example.com/foobar"><bar a="b"></bar></foo>`)
+	if err != nil {
+		t.Errorf("Failed to parse string: %s", err)
+	}
+	defer doc.Free()
+
+	root := doc.DocumentElement()
+	if root == nil {
+		t.Errorf("Failed to get root element")
+		return
+	}
+
+	ctx, err := NewXPathContext(root)
+	if err != nil {
+		t.Errorf("Failed to initialize XPathContext: %s", err)
+		return
+	}
+	defer ctx.Free()
+
+	prefix := `xxx`
+	nsuri := `http://example.com/foobar`
+	if err := ctx.RegisterNs(prefix, nsuri); err != nil {
+		t.Errorf("Failed to register namespace: %s", err)
+		return
+	}
+
+	nodes, err := ctx.FindNodes(`/xxx:foo`)
+	if err != nil {
+		t.Errorf(`Failed to evaluate "/xxx:foo": %s`, err)
+		return
+	}
+	if len(nodes) != 1 {
+		t.Errorf(`Expected 1 node, got %d`, len(nodes))
+		return
+	}
+	if nodes[0].NodeName() != "foo" {
+		t.Errorf(`Expected NodeName() "foo", got "%s"`, nodes[0].NodeName())
+		return
+	}
+
+	gotns, err := ctx.LookupNamespaceURI(prefix)
+	if err != nil {
+		t.Errorf(`LookupNamespaceURI failed: %s`, err)
+		return
+	}
+
+	if gotns != nsuri {
+		t.Errorf(`Expected LookupNamespaceURI("%s") "%s", got "%s"`, prefix, nsuri, gotns)
+		return
+	}
+}

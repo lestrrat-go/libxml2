@@ -8,6 +8,11 @@ package libxml2
 #include <libxml/xpathInternals.h>
 
 // Macro wrapper function
+static inline void MY_xmlFree(void *p) {
+	xmlFree(p);
+}
+
+// Macro wrapper function
 static inline bool MY_xmlXPathNodeSetIsEmpty(xmlNodeSetPtr ptr) {
 	return xmlXPathNodeSetIsEmpty(ptr);
 }
@@ -159,10 +164,6 @@ func (x XPathObject) Bool() bool {
 	return C.int(x.ptr.boolval) == 1
 }
 
-func (x XPathObject) String() string {
-	return xmlCharToString(x.ptr.stringval)
-}
-
 func (x XPathObject) NodeList() NodeList {
 	if x.ptr.nodesetval.nodeNr == 0 {
 		return NodeList(nil)
@@ -174,6 +175,15 @@ func (x XPathObject) NodeList() NodeList {
 	}
 
 	return ret
+}
+
+func (x XPathObject) String() string {
+	switch x.Type() {
+	case XPathNodeSet:
+		return x.NodeList().String()
+	default:
+		return fmt.Sprintf("%v", x)
+	}
 }
 
 func (x *XPathObject) Free() {
@@ -202,4 +212,20 @@ func (x *XPathContext) FindValueExpr(expr *XPathExpression) (*XPathObject, error
 	}
 
 	return res, nil
+}
+
+func (x *XPathContext) LookupNamespaceURI(name string) (string, error) {
+	s := C.xmlXPathNsLookup(x.ptr, stringToXmlChar(name))
+	if s == nil {
+		return "", errors.New("not found")
+	}
+	return xmlCharToString(s), nil
+}
+
+func (x *XPathContext) RegisterNs(name, nsuri string) error {
+	res := C.xmlXPathRegisterNs(x.ptr, stringToXmlChar(name), stringToXmlChar(nsuri))
+	if res == -1 {
+		return errors.New("cannot register namespace")
+	}
+	return nil
 }

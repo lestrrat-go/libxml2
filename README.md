@@ -36,10 +36,20 @@ func ExmapleXML() {
     return nil
   })
 
-  // XML with namespaces needs XPathContext, and we haven't
-  // gotten around to implementing it yet
-  //
-  // doc.FindNodes(...)
+  ctx, err := libxml2.NewXPathContext(doc.DocumentElement())
+  if err != nil {
+    log.Printf("Failed to create xpath context: %s", err)
+    return
+  }
+  defer ctx.Free()
+
+  ctx.RegisterNs("atom", "http://www.w3.org/2005/Atom")
+  title, err := ctx.FindValue("/atom:feed/atom:title/text()")
+  if err != nil {
+    log.Printf("Failed to run FindValue: %s", err)
+    return
+  }
+  log.Printf("feed title = %s", title)
 }
 
 func ExampleHTML() {
