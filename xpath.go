@@ -140,7 +140,7 @@ func (x XPathObject) Float64() float64 {
 	return float64(x.ptr.floatval)
 }
 
-func (x XPathObject) Boolean() bool {
+func (x XPathObject) Bool() bool {
 	return C.int(x.ptr.boolval) == 1
 }
 
