@@ -29,99 +29,6 @@ import (
 	"fmt"
 )
 
-type XPathContext struct {
-	ptr *C.xmlXPathContext
-}
-
-// XPathExpression is a compiled XPath.
-type XPathExpression struct {
-	ptr *C.xmlXPathCompExpr
-	// This exists mainly for debugging purposes
-	expr string
-}
-
-func NewXPathExpression(s string) (*XPathExpression, error) {
-	p := C.xmlXPathCompile(stringToXmlChar(s))
-	if p == nil {
-		return nil, errors.New("xpath compilation failed")
-	}
-
-	return &XPathExpression{ptr: p, expr: s}, nil
-}
-
-func (x *XPathExpression) Free() {
-	if x.ptr == nil {
-		return
-	}
-	C.xmlXPathFreeCompExpr(x.ptr)
-}
-
-// Note that although we are specifying `n... Node` for the argument,
-// only the first, node is considered for the context node
-func NewXPathContext(n ...Node) (*XPathContext, error) {
-	ctx := C.xmlXPathNewContext(nil)
-	ctx.namespaces = nil
-
-	if len(n) > 0 && n[0] != nil {
-		ctx.node = (*C.xmlNode)(n[0].pointer())
-	}
-	return &XPathContext{ptr: ctx}, nil
-}
-
-func (x *XPathContext) Free() {
-	if x.ptr == nil {
-		return
-	}
-
-	C.xmlXPathFreeContext(x.ptr)
-}
-
-func (x *XPathContext) FindNodes(s string) (NodeList, error) {
-	expr, err := NewXPathExpression(s)
-	if err != nil {
-		return nil, err
-	}
-	defer expr.Free()
-
-	return x.FindNodesExpr(expr)
-}
-
-func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
-	if expr == nil {
-		return nil, errors.New("empty XPathExpression")
-	}
-
-	// If there is no document associated with this context,
-	// then xmlXPathCompiledEval() just fails to match
-	ctx := x.ptr
-
-	if ctx.node != nil && ctx.node.doc != nil {
-		ctx.doc = ctx.node.doc
-	}
-
-	if ctx.doc == nil {
-		ctx.doc = C.xmlNewDoc(stringToXmlChar("1.0"))
-		defer C.xmlFreeDoc(ctx.doc)
-	}
-
-	res := C.xmlXPathCompiledEval(expr.ptr, ctx)
-	if res == nil {
-		return nil, errors.New("empty result")
-	}
-
-	return &XPathObject{res}, nil
-}
-
-func (x *XPathContext) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
-	res, err := x.evalXPath(expr)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Free()
-
-	return res.NodeList(), nil
-}
-
 type XPathObjectType int
 
 const (
@@ -191,6 +98,115 @@ func (x *XPathObject) Free() {
 	//		C.xmlXPathFreeNodeSet(x.ptr.nodesetval)
 	//	}
 	C.xmlXPathFreeObject(x.ptr)
+}
+
+type XPathContext struct {
+	ptr *C.xmlXPathContext
+}
+
+// XPathExpression is a compiled XPath.
+type XPathExpression struct {
+	ptr *C.xmlXPathCompExpr
+	// This exists mainly for debugging purposes
+	expr string
+}
+
+func NewXPathExpression(s string) (*XPathExpression, error) {
+	p := C.xmlXPathCompile(stringToXmlChar(s))
+	if p == nil {
+		return nil, errors.New("xpath compilation failed")
+	}
+
+	return &XPathExpression{ptr: p, expr: s}, nil
+}
+
+func (x *XPathExpression) Free() {
+	if x.ptr == nil {
+		return
+	}
+	C.xmlXPathFreeCompExpr(x.ptr)
+}
+
+// Note that although we are specifying `n... Node` for the argument,
+// only the first, node is considered for the context node
+func NewXPathContext(n ...Node) (*XPathContext, error) {
+	ctx := C.xmlXPathNewContext(nil)
+	ctx.namespaces = nil
+
+	if len(n) > 0 && n[0] != nil {
+		ctx.node = (*C.xmlNode)(n[0].pointer())
+	}
+	return &XPathContext{ptr: ctx}, nil
+}
+
+func (x *XPathContext) Exists(xpath string) bool {
+	res, err := x.FindValue(xpath)
+	if err != nil {
+		return false
+	}
+	defer res.Free()
+
+	switch res.Type() {
+	case XPathNodeSet:
+		return res.ptr.nodesetval.nodeNr > 0
+	default:
+		panic("unimplemented")
+	}
+	return false
+}
+
+func (x *XPathContext) Free() {
+	if x.ptr == nil {
+		return
+	}
+
+	C.xmlXPathFreeContext(x.ptr)
+}
+
+func (x *XPathContext) FindNodes(s string) (NodeList, error) {
+	expr, err := NewXPathExpression(s)
+	if err != nil {
+		return nil, err
+	}
+	defer expr.Free()
+
+	return x.FindNodesExpr(expr)
+}
+
+func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
+	if expr == nil {
+		return nil, errors.New("empty XPathExpression")
+	}
+
+	// If there is no document associated with this context,
+	// then xmlXPathCompiledEval() just fails to match
+	ctx := x.ptr
+
+	if ctx.node != nil && ctx.node.doc != nil {
+		ctx.doc = ctx.node.doc
+	}
+
+	if ctx.doc == nil {
+		ctx.doc = C.xmlNewDoc(stringToXmlChar("1.0"))
+		defer C.xmlFreeDoc(ctx.doc)
+	}
+
+	res := C.xmlXPathCompiledEval(expr.ptr, ctx)
+	if res == nil {
+		return nil, errors.New("empty result")
+	}
+
+	return &XPathObject{res}, nil
+}
+
+func (x *XPathContext) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
+	res, err := x.evalXPath(expr)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Free()
+
+	return res.NodeList(), nil
 }
 
 func (x *XPathContext) FindValue(s string) (*XPathObject, error) {

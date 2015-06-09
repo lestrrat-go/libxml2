@@ -193,4 +193,13 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 		t.Errorf(`Expected LookupNamespaceURI("%s") "%s", got "%s"`, prefix, nsuri, gotns)
 		return
 	}
+
+	if !ctx.Exists(`//xxx:bar/@a`) {
+		t.Errorf(`Expected "//xxx:bar/@a" to exist`)
+		return
+	}
+	if ctx.Exists(`//xxx:bar/@b`) {
+		t.Errorf(`Expected "//xxx:bar/@b" to NOT exist`)
+		return
+	}
 }
