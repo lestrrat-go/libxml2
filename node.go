@@ -299,7 +299,9 @@ func nodeName(n Node) string {
 	case ElementNode, AttributeNode:
 		ptr := (*C.xmlNode)(n.pointer())
 		if ns := ptr.ns; ns != nil {
-			return fmt.Sprintf("%s:%s", xmlCharToString(ns.prefix), xmlCharToString(ptr.name))
+			if nsstr := xmlCharToString(ns.prefix); nsstr != "" {
+				return fmt.Sprintf("%s:%s", xmlCharToString(ns.prefix), xmlCharToString(ptr.name))
+			}
 		}
 		return xmlCharToString(ptr.name)
 	case ElementDecl, AttributeDecl:
