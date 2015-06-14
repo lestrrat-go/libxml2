@@ -63,11 +63,11 @@ func (x XPathObject) Type() XPathObjectType {
 	return XPathObjectType(x.ptr._type)
 }
 
-func (x XPathObject) Float64() float64 {
+func (x XPathObject) Float64Value() float64 {
 	return float64(x.ptr.floatval)
 }
 
-func (x XPathObject) Bool() bool {
+func (x XPathObject) BoolValue() bool {
 	return C.int(x.ptr.boolval) == 1
 }
 
@@ -84,7 +84,7 @@ func (x XPathObject) NodeList() NodeList {
 	return ret
 }
 
-func (x XPathObject) String() string {
+func (x XPathObject) StringValue() string {
 	switch x.Type() {
 	case XPathNodeSet:
 		return x.NodeList().String()
@@ -196,7 +196,7 @@ func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
 		return nil, errors.New("empty result")
 	}
 
-	return &XPathObject{res}, nil
+	return &XPathObject{ptr: res}, nil
 }
 
 func (x *XPathContext) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
