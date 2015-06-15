@@ -146,10 +146,18 @@ func NewXPathContext(n ...Node) (*XPathContext, error) {
 	ctx := C.xmlXPathNewContext(nil)
 	ctx.namespaces = nil
 
-	if len(n) > 0 && n[0] != nil {
-		ctx.node = (*C.xmlNode)(n[0].pointer())
+	obj := &XPathContext{ptr: ctx}
+	if len(n) > 0 {
+		obj.SetContextNode(n[0])
 	}
-	return &XPathContext{ptr: ctx}, nil
+	return obj, nil
+}
+
+func (x *XPathContext) SetContextNode(n Node) {
+	if n == nil {
+		return
+	}
+	x.ptr.node = (*C.xmlNode)(n.pointer())
 }
 
 func (x *XPathContext) Exists(xpath string) bool {
