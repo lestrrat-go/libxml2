@@ -72,8 +72,8 @@ func TestXPathContextExpression_Number(t *testing.T) {
 
 	switch res.Type() {
 	case XPathNumber:
-		if res.Float64() != 2 {
-			t.Errorf("Expected result number to be 2, got %f", res.Float64())
+		if res.Float64Value() != 2 {
+			t.Errorf("Expected result number to be 2, got %f", res.Float64Value())
 		}
 	default:
 		t.Errorf("Expected type to be XPathObjectNumber, got %s", res.Type())
@@ -97,8 +97,8 @@ func TestXPathContextExpression_Boolean(t *testing.T) {
 
 	switch res.Type() {
 	case XPathBoolean:
-		if !res.Bool() {
-			t.Errorf("Expected result number to be false, got %s", res.Bool())
+		if !res.BoolValue() {
+			t.Errorf("Expected result number to be false, got %s", res.BoolValue())
 		}
 	default:
 		t.Errorf("Expected type to be XPathObjectBoolean, got %s", res.Type())
@@ -125,7 +125,7 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	res, err := ctx.FindValue("/foo/bar/text()")
+	res, err := ctx.FindValue("/foo/bar")
 	if err != nil {
 		t.Errorf("Failed to evaluate XPath expression: %s", err)
 		return
@@ -134,8 +134,8 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 
 	switch res.Type() {
 	case XPathNodeSet:
-		if res.NodeList().String() != "baz" {
-			t.Errorf("Expected result NodeList to be baz, got %s", res.NodeList().String())
+		if res.StringValue() != "baz" {
+			t.Errorf("Expected result to be baz, got %s", res.StringValue())
 		}
 	default:
 		t.Errorf("Expected type to be XPathObjectNodeSet, got %s", res.Type())

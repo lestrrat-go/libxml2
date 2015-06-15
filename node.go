@@ -186,6 +186,10 @@ type Node interface {
 	HasChildNodes() bool
 	IsSameNode(Node) bool
 	LastChild() Node
+	// Literal is almost the same as String(), except for things like Element
+	// and Attribute nodes. String() will return the XML stringification of
+	// these, but Literal() will return the "value" associated with them.
+	Literal() string
 	NextSibling() Node
 	NodeName() string
 	NodeType() XmlNodeType
@@ -203,9 +207,17 @@ type Node interface {
 type NodeList []Node
 
 func (n NodeList) String() string {
-	buf := &bytes.Buffer{}
-	for i := 0; i < len(n); i++ {
-		buf.WriteString(n[i].String())
+	buf := bytes.Buffer{}
+	for _, x := range n {
+		buf.WriteString(x.String())
+	}
+	return buf.String()
+}
+
+func (n NodeList) Literal() string {
+	buf := bytes.Buffer{}
+	for _, x := range n {
+		buf.WriteString(x.Literal())
 	}
 	return buf.String()
 }
@@ -394,6 +406,10 @@ func (n *xmlNode) IsSameNode(other Node) bool {
 
 func (n *xmlNode) LastChild() Node {
 	return wrapToNode(n.ptr.last)
+}
+
+func (n xmlNode) Literal() string {
+	return n.String()
 }
 
 func (n *xmlNode) LocalName() string {
@@ -772,7 +788,15 @@ func (n *Element) RemoveAttribute(name string) error {
 	return nil
 }
 
-func (n *Text) Data() string {
+func (n Element) Literal() string {
+	buf := bytes.Buffer{}
+	for _, c := range n.ChildNodes() {
+		buf.WriteString(c.Literal())
+	}
+	return buf.String()
+}
+
+func (n Text) Data() string {
 	return xmlCharToString(n.ptr.content)
 }
 

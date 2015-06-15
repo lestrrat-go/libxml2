@@ -27,6 +27,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"log"
 )
 
 type XPathObjectType int
@@ -57,6 +58,9 @@ func (i XPathObjectType) String() string {
 
 type XPathObject struct {
 	ptr *C.xmlXPathObject
+	// This flag controls if the StringValue should use the *contents* (literal value)
+	// of the nodeset instead of stringifying the node
+	ForceLiteral bool
 }
 
 func (x XPathObject) Type() XPathObjectType {
@@ -72,13 +76,18 @@ func (x XPathObject) BoolValue() bool {
 }
 
 func (x XPathObject) NodeList() NodeList {
-	if x.ptr.nodesetval.nodeNr == 0 {
+	nodeset := x.ptr.nodesetval
+	if nodeset == nil {
 		return NodeList(nil)
 	}
 
-	ret := make(NodeList, x.ptr.nodesetval.nodeNr)
-	for i := 0; i < int(x.ptr.nodesetval.nodeNr); i++ {
-		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(x.ptr.nodesetval.nodeTab, C.int(i)))
+	if nodeset.nodeNr == 0 {
+		return NodeList(nil)
+	}
+
+	ret := make(NodeList, nodeset.nodeNr)
+	for i := 0; i < int(nodeset.nodeNr); i++ {
+		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(nodeset.nodeTab, C.int(i)))
 	}
 
 	return ret
@@ -87,6 +96,10 @@ func (x XPathObject) NodeList() NodeList {
 func (x XPathObject) StringValue() string {
 	switch x.Type() {
 	case XPathNodeSet:
+		if x.ForceLiteral {
+			log.Printf("Returning literal value: %v", x.NodeList().Literal())
+			return x.NodeList().Literal()
+		}
 		return x.NodeList().String()
 	default:
 		return fmt.Sprintf("%v", x)
@@ -227,6 +240,7 @@ func (x *XPathContext) FindValueExpr(expr *XPathExpression) (*XPathObject, error
 		return nil, err
 	}
 
+	res.ForceLiteral = true
 	return res, nil
 }
 
