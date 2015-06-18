@@ -27,7 +27,6 @@ import "C"
 import (
 	"errors"
 	"fmt"
-	"log"
 )
 
 type XPathObjectType int
@@ -97,7 +96,6 @@ func (x XPathObject) StringValue() string {
 	switch x.Type() {
 	case XPathNodeSet:
 		if x.ForceLiteral {
-			log.Printf("Returning literal value: %v", x.NodeList().Literal())
 			return x.NodeList().Literal()
 		}
 		return x.NodeList().String()
