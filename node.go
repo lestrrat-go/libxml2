@@ -8,6 +8,7 @@ package libxml2
 #include "libxml/parser.h"
 #include "libxml/parserInternals.h"
 #include "libxml/xpath.h"
+#include "libxml/c14n.h"
 
 // Macro wrapper function
 static inline void MY_xmlFree(void *p) {
@@ -201,6 +202,7 @@ type Node interface {
 	String() string
 	TextContent() string
 	ToString(int, bool) string
+	ToStringC14N(bool) (string, error)
 	Walk(func(Node) error)
 }
 
@@ -505,6 +507,27 @@ func (n *xmlNode) ToString(format int, docencoding bool) string {
 	return xmlCharToString(C.xmlBufferContent(buffer))
 }
 
+func (n *xmlNode) ToStringC14N(exclusive bool) (string, error) {
+	var result *C.xmlChar
+	var exclInt C.int
+	if exclusive {
+		exclInt = 1
+	}
+
+	ret := C.xmlC14NDocDumpMemory(
+		n.ptr.doc,
+		nil,
+		exclInt,
+		nil,
+		0,
+		&result,
+	)
+	if ret == 0 {
+		return "", errors.New("Boo")
+	}
+	return xmlCharToString(result), nil
+}
+
 func (n *xmlNode) NodeType() XmlNodeType {
 	return XmlNodeType(n.ptr._type)
 }
@@ -727,6 +750,10 @@ func (d *Document) ToString(skipXmlDecl bool) string {
 	}
 
 	return buf.String()
+}
+
+func (d *Document) ToStringC14N(exclusive bool) (string, error) {
+	return d.DocumentElement().ToStringC14N(exclusive)
 }
 
 func (d *Document) URI() string {
