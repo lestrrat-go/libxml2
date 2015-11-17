@@ -128,32 +128,6 @@ import (
 	"unsafe"
 )
 
-type XmlNodeType int
-
-const (
-	ElementNode XmlNodeType = iota + 1
-	AttributeNode
-	TextNode
-	CDataSectionNode
-	EntityRefNode
-	EntityNode
-	PiNode
-	CommentNode
-	DocumentNode
-	DocumentTypeNode
-	DocumentFragNode
-	NotationNode
-	HTMLDocumentNode
-	DTDNode
-	ElementDecl
-	AttributeDecl
-	EntityDecl
-	NamespaceDecl
-	XIncludeStart
-	XIncludeEnd
-	DocbDocumentNode
-)
-
 var _XmlNodeType_index = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116, 132, 144, 160, 167, 178, 191, 201, 214, 227, 238, 254}
 
 const _XmlNodeType_name = `ElementNodeAttributeNodeTextNodeCDataSectionNodeEntityRefNodeEntityNodePiNodeCommentNodeDocumentNodeDocumentTypeNodeDocumentFragNodeNotationNodeHTMLDocumentNodeDTDNodeElementDeclAttributeDeclEntityDeclNamespaceDeclXIncludeStartXIncludeEndDocbDocumentNode`
@@ -165,48 +139,6 @@ func (i XmlNodeType) String() string {
 	}
 	return _XmlNodeType_name[_XmlNodeType_index[i]:_XmlNodeType_index[i+1]]
 }
-
-var (
-	ErrNodeNotFound    = errors.New("node not found")
-	ErrInvalidArgument = errors.New("invalid argument")
-	ErrInvalidNodeName = errors.New("invalid node name")
-)
-
-// Node defines the basic DOM interface
-type Node interface {
-	// pointer() returns the underlying C pointer. Only we are allowed to
-	// slice it, dice it, do whatever the heck with it.
-	pointer() unsafe.Pointer
-
-	AddChild(Node)
-	AppendChild(Node) error
-	ChildNodes() NodeList
-	OwnerDocument() *Document
-	FindNodes(string) (NodeList, error)
-	FirstChild() Node
-	HasChildNodes() bool
-	IsSameNode(Node) bool
-	LastChild() Node
-	// Literal is almost the same as String(), except for things like Element
-	// and Attribute nodes. String() will return the XML stringification of
-	// these, but Literal() will return the "value" associated with them.
-	Literal() string
-	NextSibling() Node
-	NodeName() string
-	NodeType() XmlNodeType
-	NodeValue() string
-	ParetNode() Node
-	PreviousSibling() Node
-	SetNodeName(string)
-	SetNodeValue(string)
-	String() string
-	TextContent() string
-	ToString(int, bool) string
-	ToStringC14N(bool) (string, error)
-	Walk(func(Node) error)
-}
-
-type NodeList []Node
 
 func (n NodeList) String() string {
 	buf := bytes.Buffer{}
@@ -222,39 +154,6 @@ func (n NodeList) Literal() string {
 		buf.WriteString(x.Literal())
 	}
 	return buf.String()
-}
-
-type xmlNode struct {
-	ptr *C.xmlNode
-}
-
-type XmlNode struct {
-	*xmlNode
-}
-
-type Attribute struct {
-	*XmlNode
-}
-
-type CDataSection struct {
-	*XmlNode
-}
-
-type Comment struct {
-	*XmlNode
-}
-
-type Element struct {
-	*XmlNode
-}
-
-type Document struct {
-	ptr  *C.xmlDoc
-	root *C.xmlNode
-}
-
-type Text struct {
-	*XmlNode
 }
 
 func wrapAttribute(n *C.xmlAttr) *Attribute {

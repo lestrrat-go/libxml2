@@ -29,21 +29,6 @@ import (
 	"fmt"
 )
 
-type XPathObjectType int
-
-const (
-	XPathUndefined XPathObjectType = iota
-	XPathNodeSet
-	XPathBoolean
-	XPathNumber
-	XPathString
-	XPathPoint
-	XPathRange
-	XPathLocationSet
-	XPathUSers
-	XPathXsltTree
-)
-
 const _XPathObjectType_name = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberXPathStringXPathPointXPathRangeXPathLocationSetXPathUSersXPathXsltTree"
 
 var _XPathObjectType_index = [...]uint8{0, 14, 26, 38, 49, 60, 70, 80, 96, 106, 119}
@@ -53,13 +38,6 @@ func (i XPathObjectType) String() string {
 		return fmt.Sprintf("XPathObjectType(%d)", i)
 	}
 	return _XPathObjectType_name[_XPathObjectType_index[i]:_XPathObjectType_index[i+1]]
-}
-
-type XPathObject struct {
-	ptr *C.xmlXPathObject
-	// This flag controls if the StringValue should use the *contents* (literal value)
-	// of the nodeset instead of stringifying the node
-	ForceLiteral bool
 }
 
 func (x XPathObject) Type() XPathObjectType {
@@ -109,17 +87,6 @@ func (x *XPathObject) Free() {
 	//		C.xmlXPathFreeNodeSet(x.ptr.nodesetval)
 	//	}
 	C.xmlXPathFreeObject(x.ptr)
-}
-
-type XPathContext struct {
-	ptr *C.xmlXPathContext
-}
-
-// XPathExpression is a compiled XPath.
-type XPathExpression struct {
-	ptr *C.xmlXPathCompExpr
-	// This exists mainly for debugging purposes
-	expr string
 }
 
 func NewXPathExpression(s string) (*XPathExpression, error) {
