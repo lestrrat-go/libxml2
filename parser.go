@@ -58,7 +58,6 @@ func (opts ParseOption) String() string {
 	b := bytes.Buffer{}
 	b.Write([]byte{'['})
 	for x := 1; x < int(XmlParseMax); x = x << 1 {
-		log.Printf("x = %d", x)
 		if (i & x) == x {
 			v, ok := _ParseOption_map[x]
 			if !ok {
