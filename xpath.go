@@ -122,7 +122,7 @@ func (x *XPathContext) SetContextNode(n Node) {
 	if n == nil {
 		return
 	}
-	x.ptr.node = (*C.xmlNode)(n.pointer())
+	x.ptr.node = (*C.xmlNode)(n.Pointer())
 }
 
 func (x *XPathContext) Exists(xpath string) bool {

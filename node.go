@@ -198,7 +198,7 @@ func wrapToNode(n *C.xmlNode) Node {
 func nodeName(n Node) string {
 	switch n.NodeType() {
 	case XIncludeStart, XIncludeEnd, EntityRefNode, EntityNode, DTDNode, EntityDecl, DocumentTypeNode, NotationNode, NamespaceDecl:
-		return xmlCharToString((*C.xmlNode)(n.pointer()).name)
+		return xmlCharToString((*C.xmlNode)(n.Pointer()).name)
 	case CommentNode:
 		return "#comment"
 	case CDataSectionNode:
@@ -210,7 +210,7 @@ func nodeName(n Node) string {
 	case DocumentFragNode:
 		return "#document-fragment"
 	case ElementNode, AttributeNode:
-		ptr := (*C.xmlNode)(n.pointer())
+		ptr := (*C.xmlNode)(n.Pointer())
 		if ns := ptr.ns; ns != nil {
 			if nsstr := xmlCharToString(ns.prefix); nsstr != "" {
 				return fmt.Sprintf("%s:%s", xmlCharToString(ns.prefix), xmlCharToString(ptr.name))
@@ -227,9 +227,9 @@ func nodeName(n Node) string {
 func nodeValue(n Node) string {
 	switch n.NodeType() {
 	case AttributeNode, TextNode, CommentNode, CDataSectionNode, PiNode, EntityRefNode:
-		return xmlCharToString(C.xmlXPathCastNodeToString((*C.xmlNode)(n.pointer())))
+		return xmlCharToString(C.xmlXPathCastNodeToString((*C.xmlNode)(n.Pointer())))
 	case EntityDecl:
-		np := (*C.xmlNode)(n.pointer())
+		np := (*C.xmlNode)(n.Pointer())
 		if np.content != nil {
 			return xmlCharToString(C.xmlStrdup(np.content))
 		}
@@ -240,12 +240,12 @@ func nodeValue(n Node) string {
 	return ""
 }
 
-func (n *xmlNode) pointer() unsafe.Pointer {
+func (n *xmlNode) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(n.ptr)
 }
 
 func (n *xmlNode) AddChild(child Node) {
-	C.xmlAddChild(n.ptr, (*C.xmlNode)(child.pointer()))
+	C.xmlAddChild(n.ptr, (*C.xmlNode)(child.Pointer()))
 }
 
 func (n *xmlNode) AppendChild(child Node) error {
@@ -294,7 +294,7 @@ func (n *xmlNode) FirstChild() Node {
 		return nil
 	}
 
-	return wrapToNode(((*C.xmlNode)(n.pointer())).children)
+	return wrapToNode(((*C.xmlNode)(n.Pointer())).children)
 }
 
 func (n *xmlNode) HasChildNodes() bool {
@@ -302,7 +302,7 @@ func (n *xmlNode) HasChildNodes() bool {
 }
 
 func (n *xmlNode) IsSameNode(other Node) bool {
-	return n.pointer() == other.pointer()
+	return n.Pointer() == other.Pointer()
 }
 
 func (n *xmlNode) LastChild() Node {
@@ -450,7 +450,7 @@ func walk(n Node, fn func(Node) error) {
 
 func childNodes(n Node) NodeList {
 	ret := NodeList(nil)
-	for chld := ((*C.xmlNode)(n.pointer())).children; chld != nil; chld = chld.next {
+	for chld := ((*C.xmlNode)(n.Pointer())).children; chld != nil; chld = chld.next {
 		ret = append(ret, wrapToNode(chld))
 	}
 	return ret
@@ -468,7 +468,7 @@ func NewDocument(version, encoding string) *Document {
 	return wrapDocument(doc)
 }
 
-func (d *Document) pointer() unsafe.Pointer {
+func (d *Document) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
 }
 
@@ -502,9 +502,9 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 
 	prefix, local := splitPrefixLocal(k)
 
-	ns := C.xmlSearchNsByHref(d.ptr, (*C.xmlNode)(root.pointer()), stringToXmlChar(nsuri))
+	ns := C.xmlSearchNsByHref(d.ptr, (*C.xmlNode)(root.Pointer()), stringToXmlChar(nsuri))
 	if ns == nil {
-		ns = C.xmlNewNs((*C.xmlNode)(root.pointer()), stringToXmlChar(nsuri), stringToXmlChar(prefix))
+		ns = C.xmlNewNs((*C.xmlNode)(root.Pointer()), stringToXmlChar(nsuri), stringToXmlChar(prefix))
 		if ns == nil {
 			return nil, errors.New("failed to create namespace")
 		}
@@ -611,8 +611,8 @@ func (d *Document) SetBaseURI(s string) {
 }
 
 func (d *Document) SetDocumentElement(n Node) {
-	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.pointer()))
-	d.root = (*C.xmlNode)(n.pointer())
+	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.Pointer()))
+	d.root = (*C.xmlNode)(n.Pointer())
 }
 
 func (d *Document) SetEncoding(e string) {
@@ -641,7 +641,7 @@ func (d *Document) Standalone() int {
 
 func (d *Document) ToString(skipXmlDecl bool) string {
 	buf := &bytes.Buffer{}
-	for _, n := range childNodes(wrapXmlNode((*C.xmlNode)(d.pointer()))) {
+	for _, n := range childNodes(wrapXmlNode((*C.xmlNode)(d.Pointer()))) {
 		if n.NodeType() == DTDNode {
 			continue
 		}

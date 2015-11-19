@@ -46,9 +46,11 @@ var (
 
 // Node defines the basic DOM interface
 type Node interface {
-	// pointer() returns the underlying C pointer. Only we are allowed to
-	// slice it, dice it, do whatever the heck with it.
-	pointer() unsafe.Pointer
+	// Pointer() returns the underlying C pointer. This is an exported
+	// method to allow various internal go-libxml2 packages to interoperate
+	// on each other. End users are STRONGLY advised not to touch this
+	// method or its return values
+	Pointer() unsafe.Pointer
 
 	AddChild(Node)
 	AppendChild(Node) error
