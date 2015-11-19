@@ -51,7 +51,7 @@ func TestXSD(t *testing.T) {
 			return
 		}
 		for _, e := range serr.Errors() {
-			t.Logf("err (OK): %s", e)
+			t.Logf("err (OK): '%s'", e)
 		}
 	}()
 

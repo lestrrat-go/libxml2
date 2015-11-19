@@ -65,8 +65,14 @@ MY_accumulateErr(void *ctx, const char *msg, ...) {
 		return;
 	}
 
-	char *out = (char *) malloc(sizeof(char) * len);
+	char *out = (char *) calloc(sizeof(char), len);
+	if (buf[len-1] == '\n') {
+		// don't want newlines in my error values
+		buf[len-1] = '\0';
+		len--;
+	}
 	memcpy(out, buf, len);
+
   int i = accum->erridx++;
 	accum->errors[i] = out;
 }
