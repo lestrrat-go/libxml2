@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"log"
 )
 
 const _ParseOption_name = "RecoverNoEntDTDLoadDTDAttrDTDValidNoErrorNoWarningPedanticNoBlanksSAX1XIncludeNoNetNoDictNscleanNoCDATANoXIncNodeCompactOld10NoBaseFixHugeOldSAXIgnoreEncBigLines"
