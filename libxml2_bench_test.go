@@ -42,7 +42,7 @@ func BenchmarkLibxml2(b *testing.B) {
 	}
 	defer res.Body.Close()
 
-	doc, err := Parse(res.Body)
+	doc, err := ParseReader(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

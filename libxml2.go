@@ -38,6 +38,7 @@ static inline void MY_xmlDefaultParseErrors() {
 
 */
 import "C"
+import "io"
 
 // ReportErrors *globally* changes the behavior of reporting errors.
 // By default libxml2 spews out lots of data to stderr. When you call
@@ -64,5 +65,7 @@ func ParseString(s string, o ...ParseOption) (*Document, error) {
 	return p.ParseString(s)
 }
 
-
-
+func ParseReader(rdr io.Reader, o ...ParseOption) (*Document, error) {
+	p := NewParser(o...)
+	return p.ParseReader(rdr)
+}
