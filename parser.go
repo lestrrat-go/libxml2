@@ -72,6 +72,20 @@ func (i ParseOptions) String() string {
 	return "[ " + strings.Join(list, " | ") + " ]"
 }
 
+func NewParser(opts ...ParseOptions) *Parser {
+	var o ParseOptions
+	if len(opts) > 0 {
+		o = opts[0]
+	}
+	return &Parser{
+		Options: o,
+	}
+}
+
+func (p *Parser) Parse(buf []byte) (*Document, error) {
+	return p.ParseString(string(buf))
+}
+
 func (p *Parser) ParseString(s string) (*Document, error) {
 	ctx := C.xmlCreateMemoryParserCtxt(C.CString(s), C.int(len(s)))
 	if ctx == nil {
@@ -93,7 +107,7 @@ func (p *Parser) ParseString(s string) (*Document, error) {
 	return wrapDocument(doc), nil
 }
 
-func (p *Parser) Parse(in io.Reader) (*Document, error) {
+func (p *Parser) ParseReader(in io.Reader) (*Document, error) {
 	buf := &bytes.Buffer{}
 	if _, err := buf.ReadFrom(in); err != nil {
 		return nil, err

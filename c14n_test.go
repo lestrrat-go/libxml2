@@ -3,7 +3,7 @@ package libxml2
 import "testing"
 
 func TestC14N(t *testing.T) {
-	p := &Parser{}
+	p := NewParser()
 	doc, err := p.ParseString(`<?xml version="1.0"?>
 <Root xmlns="uri:go-libxml2:test" xmlns:test2="uri:go-libxml2:test2">
 	<EmptyElement foo="bar"/>
@@ -23,7 +23,7 @@ func TestC14N(t *testing.T) {
 }
 
 func TestC14NNonExclusive(t *testing.T) {
-	p := &Parser{}
+	p := NewParser()
 	doc, err := p.ParseString(`<?xml version="1.0"?>
 <Root xmlns="uri:go-libxml2:test" xmlns:test2="uri:go-libxml2:test2">
 	<EmptyElement foo="bar"/>

@@ -16,8 +16,8 @@ func TestEncoding(t *testing.T) {
 		}
 		defer f.Close()
 
-		p := &Parser{}
-		doc, err := p.Parse(f)
+		p := NewParser()
+		doc, err := p.ParseReader(f)
 		if err != nil {
 			t.Errorf("Failed to parse %s: %s", fn, err)
 			return

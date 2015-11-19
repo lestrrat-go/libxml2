@@ -13,8 +13,8 @@ func ExmapleXML() {
 		panic("failed to get blog.golang.org: " + err.Error())
 	}
 
-	p := &libxml2.Parser{}
-	doc, err := p.Parse(res.Body)
+	p := libxml2.NewParser()
+	doc, err := p.ParseReader(res.Body)
 	defer res.Body.Close()
 
 	if err != nil {

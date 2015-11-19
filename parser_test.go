@@ -187,7 +187,7 @@ func TestParseOptionStringer(t *testing.T) {
 }
 
 func TestParseEmpty(t *testing.T) {
-	p := &Parser{}
+	p := NewParser()
 	doc, err := p.ParseString(``)
 	if err == nil {
 		t.Errorf("Parse of empty string should fail")
@@ -202,7 +202,7 @@ func TestParse(t *testing.T) {
 		goodWFDTDStrings,
 	}
 
-	p := &Parser{}
+	p := NewParser()
 	for _, input := range inputs {
 		parseShouldSucceed(t, p, input)
 	}
@@ -213,7 +213,7 @@ func TestParseBad(t *testing.T) {
 		badWFStrings,
 	}
 
-	p := &Parser{}
+	p := NewParser()
 	for _, input := range inputs {
 		parseShouldFail(t, p, input)
 	}
@@ -225,7 +225,7 @@ func TestParseNoBlanks(t *testing.T) {
 		goodWFNSStrings,
 		goodWFDTDStrings,
 	}
-	p := &Parser{}
+	p := NewParser()
 	p.Options.Set(XmlParseNoBlanks)
 	for _, input := range inputs {
 		parseShouldSucceed(t, p, input)
@@ -233,7 +233,7 @@ func TestParseNoBlanks(t *testing.T) {
 }
 
 func TestRoundtripNoBlanks(t *testing.T) {
-	p := &Parser{}
+	p := NewParser()
 	p.Options.Set(XmlParseNoBlanks)
 
 	doc, err := p.ParseString(`<a>    <b/> </a>`)

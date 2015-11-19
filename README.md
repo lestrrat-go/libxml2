@@ -22,7 +22,7 @@ func ExmapleXML() {
     panic("failed to get blog.golang.org: " + err.Error())
   }
 
-  p := &libxml2.Parser{}
+  p := libxml2.NewParser()
   doc, err := p.Parse(res.Body)
   defer res.Body.Close()
 

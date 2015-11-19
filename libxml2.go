@@ -51,3 +51,10 @@ func ReportErrors(b bool) {
 		C.MY_xmlSilenceParseErrors()
 	}
 }
+
+// Parse parses the given buffer and returns a Document.
+// If you need fine-grained control over the parser behavior,
+// look at the Parser struct and its options
+func Parse(buf []byte) {
+
+}
