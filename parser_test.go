@@ -61,18 +61,22 @@ var (
 	}
 )
 
-func parseShouldSucceed(t *testing.T, p *Parser, inputs []string) {
-	t.Logf("Test parsing with parser %v", p)
+func parseShouldSucceed(t *testing.T, opts ParseOption, inputs []string) {
+	t.Logf("Test parsing with parser %v", opts)
 	for _, s := range inputs {
-		if _, err := p.ParseString(s); err != nil {
+		d, err := ParseString(s, opts)
+		if err != nil {
 			t.Errorf("Failed to parse '%s': %s", s, err)
 		}
+		d.Free()
 	}
 }
 
-func parseShouldFail(t *testing.T, p *Parser, inputs []string) {
+func parseShouldFail(t *testing.T, opts ParseOption, inputs []string) {
 	for _, s := range inputs {
-		if _, err := p.ParseString(s); err == nil {
+		d, err := ParseString(s, opts)
+		if err == nil {
+			d.Free()
 			t.Errorf("Expected failure to parse '%s'", s)
 		}
 	}
@@ -180,15 +184,14 @@ func TestParseOptionStringer(t *testing.T) {
 	}
 
 	for _, d := range values {
-		if d.v.String() != d.e {
+		if d.v.String() != "[" + d.e + "]"{
 			t.Errorf("e '%s', got '%s'", d.e, d.v.String())
 		}
 	}
 }
 
 func TestParseEmpty(t *testing.T) {
-	p := NewParser()
-	doc, err := p.ParseString(``)
+	doc, err := ParseString(``)
 	if err == nil {
 		t.Errorf("Parse of empty string should fail")
 		defer doc.Free()
@@ -202,9 +205,8 @@ func TestParse(t *testing.T) {
 		goodWFDTDStrings,
 	}
 
-	p := NewParser()
 	for _, input := range inputs {
-		parseShouldSucceed(t, p, input)
+		parseShouldSucceed(t, 0, input)
 	}
 }
 
@@ -213,9 +215,8 @@ func TestParseBad(t *testing.T) {
 		badWFStrings,
 	}
 
-	p := NewParser()
 	for _, input := range inputs {
-		parseShouldFail(t, p, input)
+		parseShouldFail(t, 0, input)
 	}
 }
 
@@ -225,18 +226,13 @@ func TestParseNoBlanks(t *testing.T) {
 		goodWFNSStrings,
 		goodWFDTDStrings,
 	}
-	p := NewParser()
-	p.Options.Set(XmlParseNoBlanks)
 	for _, input := range inputs {
-		parseShouldSucceed(t, p, input)
+		parseShouldSucceed(t, XmlParseNoBlanks, input)
 	}
 }
 
 func TestRoundtripNoBlanks(t *testing.T) {
-	p := NewParser()
-	p.Options.Set(XmlParseNoBlanks)
-
-	doc, err := p.ParseString(`<a>    <b/> </a>`)
+	doc, err := ParseString(`<a>    <b/> </a>`, XmlParseNoBlanks)
 	if err != nil {
 		t.Errorf("failed to parse string: %s", err)
 		return

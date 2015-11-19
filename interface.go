@@ -148,39 +148,37 @@ type XPathExpression struct {
 	expr string
 }
 
-// ParseOption represents each of the parser option bit
+// ParseOption represents the parser option bit
 type ParseOption int
 
-// ParseOption represents the parser option bit set
-type ParseOptions int
-
 const (
-	XmlParseRecover    ParseOption = 1 << iota /* recover on errors */
-	XmlParseNoEnt                              /* substitute entities */
-	XmlParseDTDLoad                            /* load the external subset */
-	XmlParseDTDAttr                            /* default DTD attributes */
-	XmlParseDTDValid                           /* validate with the DTD */
-	XmlParseNoError                            /* suppress error reports */
-	XmlParseNoWarning                          /* suppress warning reports */
-	XmlParsePedantic                           /* pedantic error reporting */
-	XmlParseNoBlanks                           /* remove blank nodes */
-	XmlParseSAX1                               /* use the SAX1 interface internally */
-	XmlParseXInclude                           /* Implement XInclude substitition  */
-	XmlParseNoNet                              /* Forbid network access */
-	XmlParseNoDict                             /* Do not reuse the context dictionnary */
-	XmlParseNsclean                            /* remove redundant namespaces declarations */
-	XmlParseNoCDATA                            /* merge CDATA as text nodes */
-	XmlParseNoXIncNode                         /* do not generate XINCLUDE START/END nodes */
-	XmlParseCompact                            /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
-	XmlParseOld10                              /* parse using XML-1.0 before update 5 */
-	XmlParseNoBaseFix                          /* do not fixup XINCLUDE xml:base uris */
-	XmlParseHuge                               /* relax any hardcoded limit from the parser */
-	XmlParseOldSAX                             /* parse using SAX2 interface before 2.7.0 */
-	XmlParseIgnoreEnc                          /* ignore internal document encoding hint */
-	XmlParseBigLines                           /* Store big lines numbers in text PSVI field */
+	XmlParseRecover     ParseOption = 1 << iota /* recover on errors */
+	XmlParseNoEnt                               /* substitute entities */
+	XmlParseDTDLoad                             /* load the external subset */
+	XmlParseDTDAttr                             /* default DTD attributes */
+	XmlParseDTDValid                            /* validate with the DTD */
+	XmlParseNoError                             /* suppress error reports */
+	XmlParseNoWarning                           /* suppress warning reports */
+	XmlParsePedantic                            /* pedantic error reporting */
+	XmlParseNoBlanks                            /* remove blank nodes */
+	XmlParseSAX1                                /* use the SAX1 interface internally */
+	XmlParseXInclude                            /* Implement XInclude substitition  */
+	XmlParseNoNet                               /* Forbid network access */
+	XmlParseNoDict                              /* Do not reuse the context dictionnary */
+	XmlParseNsclean                             /* remove redundant namespaces declarations */
+	XmlParseNoCDATA                             /* merge CDATA as text nodes */
+	XmlParseNoXIncNode                          /* do not generate XINCLUDE START/END nodes */
+	XmlParseCompact                             /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
+	XmlParseOld10                               /* parse using XML-1.0 before update 5 */
+	XmlParseNoBaseFix                           /* do not fixup XINCLUDE xml:base uris */
+	XmlParseHuge                                /* relax any hardcoded limit from the parser */
+	XmlParseOldSAX                              /* parse using SAX2 interface before 2.7.0 */
+	XmlParseIgnoreEnc                           /* ignore internal document encoding hint */
+	XmlParseBigLines                            /* Store big lines numbers in text PSVI field */
 	XmlParseMax
+	XmlParseEmptyOption ParseOption = 0
 )
 
 type Parser struct {
-	Options ParseOptions
+	Options ParseOption
 }

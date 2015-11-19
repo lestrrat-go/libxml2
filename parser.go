@@ -9,14 +9,13 @@ import "C"
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
-	"strings"
+	"log"
 )
 
 const _ParseOption_name = "RecoverNoEntDTDLoadDTDAttrDTDValidNoErrorNoWarningPedanticNoBlanksSAX1XIncludeNoNetNoDictNscleanNoCDATANoXIncNodeCompactOld10NoBaseFixHugeOldSAXIgnoreEncBigLines"
 
-var _ParseOption_map = map[ParseOption]string{
+var _ParseOption_map = map[int]string{
 	1:       _ParseOption_name[0:7],
 	2:       _ParseOption_name[7:12],
 	4:       _ParseOption_name[12:19],
@@ -42,38 +41,44 @@ var _ParseOption_map = map[ParseOption]string{
 	4194304: _ParseOption_name[153:161],
 }
 
-func (i ParseOption) String() string {
-	if str, ok := _ParseOption_map[i]; ok {
-		return str
-	}
-	return fmt.Sprintf("ParseOption(%d)", i)
-}
-
-func (i *ParseOptions) Set(options ...ParseOption) {
+func (i *ParseOption) Set(options ...ParseOption) {
 	v := int(*i) // current value
 	for _, o := range options {
 		v = v | int(o)
 	}
-	*i = ParseOptions(v)
+	*i = ParseOption(v)
 }
 
-func (i ParseOptions) String() string {
-	if int(i) == 0 {
+func (opts ParseOption) String() string {
+	if opts == XmlParseEmptyOption {
 		return "[]"
 	}
 
-	list := make([]string, 0, 24)
+	i := int(opts)
+	b := bytes.Buffer{}
+	b.Write([]byte{'['})
 	for x := 1; x < int(XmlParseMax); x = x << 1 {
-		if (int(i) & x) == x {
-			list = append(list, ParseOption(x).String())
+		log.Printf("x = %d", x)
+		if (i & x) == x {
+			v, ok := _ParseOption_map[x]
+			if !ok {
+				v = "ParseOption(Unknown)"
+			}
+			b.WriteString(v)
+			b.Write([]byte{'|'})
 		}
 	}
-
-	return "[ " + strings.Join(list, " | ") + " ]"
+	x := b.Bytes()
+	if x[len(x)-1] == '|' {
+		x[len(x)-1] = ']'
+	} else {
+		x = append(x, ']')
+	}
+	return string(x)
 }
 
-func NewParser(opts ...ParseOptions) *Parser {
-	var o ParseOptions
+func NewParser(opts ...ParseOption) *Parser {
+	var o ParseOption
 	if len(opts) > 0 {
 		o = opts[0]
 	}

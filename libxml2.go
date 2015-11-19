@@ -53,8 +53,16 @@ func ReportErrors(b bool) {
 }
 
 // Parse parses the given buffer and returns a Document.
-// If you need fine-grained control over the parser behavior,
-// look at the Parser struct and its options
-func Parse(buf []byte) {
-
+func Parse(buf []byte, o ...ParseOption) (*Document, error) {
+	p := NewParser(o...)
+	return p.Parse(buf)
 }
+
+// ParseString parses the given string and returns a Document.
+func ParseString(s string, o ...ParseOption) (*Document, error) {
+	p := NewParser(o...)
+	return p.ParseString(s)
+}
+
+
+
