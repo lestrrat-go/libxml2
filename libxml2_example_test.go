@@ -50,7 +50,7 @@ func ExampleHTML() {
 		panic("failed to get golang.org: " + err.Error())
 	}
 
-	doc, err := libxml2.ParseHTML(res.Body)
+	doc, err := libxml2.ParseHTMLReader(res.Body)
 	if err != nil {
 		panic("failed to parse HTML: " + err.Error())
 	}

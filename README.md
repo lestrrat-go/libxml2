@@ -23,7 +23,7 @@ func ExmapleXML() {
   }
 
   p := libxml2.NewParser()
-  doc, err := p.Parse(res.Body)
+  doc, err := p.ParseReader(res.Body)
   defer res.Body.Close()
 
   if err != nil {
@@ -53,30 +53,30 @@ func ExmapleXML() {
 }
 
 func ExampleHTML() {
-	res, err := http.Get("http://golang.org")
-	if err != nil {
-		panic("failed to get golang.org: " + err.Error())
-	}
+  res, err := http.Get("http://golang.org")
+  if err != nil {
+    panic("failed to get golang.org: " + err.Error())
+  }
 
-	doc, err := libxml2.ParseHTML(res.Body)
-	if err != nil {
-		panic("failed to parse HTML: " + err.Error())
-	}
-	defer doc.Free()
+  doc, err := libxml2.ParseHTMLReader(res.Body)
+  if err != nil {
+    panic("failed to parse HTML: " + err.Error())
+  }
+  defer doc.Free()
 
-	doc.Walk(func(n libxml2.Node) error {
-		log.Printf(n.NodeName())
-		return nil
-	})
+  doc.Walk(func(n libxml2.Node) error {
+    log.Printf(n.NodeName())
+    return nil
+  })
 
-	nodes, err := doc.FindNodes(`//div[@id="menu"]/a`)
-	if err != nil {
-		panic("failed to evaluate xpath: " + err.Error())
-	}
+  nodes, err := doc.FindNodes(`//div[@id="menu"]/a`)
+  if err != nil {
+    panic("failed to evaluate xpath: " + err.Error())
+  }
 
-	for i := 0; i < len(nodes); i++ {
-		log.Printf("Found node: %s", nodes[i].NodeName())
-	}
+  for i := 0; i < len(nodes); i++ {
+    log.Printf("Found node: %s", nodes[i].NodeName())
+  }
 }
 ```
 
