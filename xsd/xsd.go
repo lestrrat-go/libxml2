@@ -17,9 +17,10 @@ typedef struct go_libxml2_errwarn_accumulator {
 static
 go_libxml2_errwarn_accumulator*
 MY_createErrWarnAccumulator() {
+	int i;
 	go_libxml2_errwarn_accumulator *ctx;
 	ctx = (go_libxml2_errwarn_accumulator *) malloc(sizeof(go_libxml2_errwarn_accumulator));
-	for (int i = 0; i < GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE; i++) {
+	for (i = 0; i < GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE; i++) {
 		ctx->errors[i] = NULL;
 		ctx->warnings[i] = NULL;
 	}
@@ -31,7 +32,8 @@ MY_createErrWarnAccumulator() {
 static
 void
 MY_freeErrWarnAccumulator(go_libxml2_errwarn_accumulator* ctx) {
-	for (int i = 0; i < GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE; i++) {
+	int i = 0;
+	for (i = 0; i < GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE; i++) {
 		if (ctx->errors[i] != NULL) {
 			free(ctx->errors[i]);
 		}
