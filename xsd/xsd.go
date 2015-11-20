@@ -1,3 +1,19 @@
+// Package xsd contains some of the tools available from libxml2
+// that allows you to validate your XML against an XSD
+//
+// This is basically all you need to do:
+//
+//    schema, err := xsd.Parse(xsdsrc)
+//    if err != nil {
+//        panic(err)
+//    }
+//    defer schema.Free()
+//    if err := schema.Validate(doc); err != nil{
+//        for _, e := range err.(SchemaValidationErr).Error() {
+//             println(e.Error())
+//        }
+//    }
+//
 package xsd
 
 /*
