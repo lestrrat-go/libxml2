@@ -3,6 +3,8 @@ package libxml2
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -138,6 +140,37 @@ func TestDOM(t *testing.T) {
 		t.Errorf("Failed to create XML document")
 		t.Logf("Expected\n%s", expected)
 		t.Logf("Got\n%s", doc.String())
+		return
+	}
+}
+
+func TestNode_StandaloneWithNamespaces(t *testing.T) {
+	uri := "http://kungfoo"
+	prefix := "foo"
+	name := "bar"
+
+	doc := CreateDocument()
+	elem, err := doc.CreateElementNS(uri, prefix+":"+name)
+	if !assert.NoError(t, err, "CreateElementNS snould succeed") {
+		return
+	}
+
+	if !assert.Equal(t, uri, elem.LookupNamespaceURI(prefix), "LookupNamespaceURI succeeds") {
+		return
+	}
+
+	if !assert.Equal(t, prefix, elem.LookupNamespacePrefix(uri), "LookupNamespacePrefix succeeds") {
+		return
+	}
+
+	nslist := elem.GetNamespaces()
+	defer func() {
+		for _, ns := range nslist {
+			ns.Free()
+		}
+	}()
+
+	if !assert.Len(t, nslist, 1, "GetNamespaces returns 1 namespace") {
 		return
 	}
 }

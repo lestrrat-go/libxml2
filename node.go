@@ -157,11 +157,8 @@ func (n NodeList) Literal() string {
 	return buf.String()
 }
 
-func NewNamespace(prefix, uri string) *Namespace {
-	return &Namespace{
-		Prefix: prefix,
-		URI:    uri,
-	}
+func wrapNamespace(n *C.xmlNs) *Namespace {
+	return &Namespace{wrapXmlNode((*C.xmlNode)(unsafe.Pointer(n)))}
 }
 
 func wrapAttribute(n *C.xmlAttr) *Attribute {
@@ -435,6 +432,32 @@ func (n *xmlNode) ToStringC14N(exclusive bool) (string, error) {
 	return xmlCharToString(result), nil
 }
 
+func (n *xmlNode) LookupNamespacePrefix(href string) string {
+	if href == "" {
+		return ""
+	}
+
+	ns := C.xmlSearchNsByHref(n.ptr.doc, n.ptr, stringToXmlChar(href))
+	if ns == nil {
+		return ""
+	}
+
+	return xmlCharToString(ns.prefix)
+}
+
+func (n *xmlNode) LookupNamespaceURI(prefix string) string {
+	if prefix == "" {
+		return ""
+	}
+
+	ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix))
+	if ns == nil {
+		return ""
+	}
+
+	return xmlCharToString(ns.href)
+}
+
 func (n *xmlNode) NodeType() XmlNodeType {
 	return XmlNodeType(n.ptr._type)
 }
@@ -560,10 +583,15 @@ func (d *Document) CreateElementNS(nsuri, name string) (*Element, error) {
 	var localname *C.xmlChar
 	var ns *C.xmlNs
 	nsuriDup := stringToXmlChar(nsuri)
+
 	if i := strings.IndexByte(name, ':'); i > 0 {
+		// split it into prefix and localname
 		prefix := stringToXmlChar(name[:i])
+
+		// Is this namespace prefix registered already?
 		ns = C.xmlSearchNs(d.ptr, d.root, prefix)
 		if ns == nil {
+			// nope, create a new one.
 			localname = stringToXmlChar(name[i+1:])
 			ns = C.xmlNewNs(nil, nsuriDup, prefix)
 		} else {
@@ -579,12 +607,12 @@ func (d *Document) CreateElementNS(nsuri, name string) (*Element, error) {
 	} else {
 		// If the name does not contain a prefix, check for the
 		// existence of this namespace via the URI
-		ns = C.xmlSearchNsByHref(d.ptr, d.root, nsuriDup)
-		if ns != nil {
+		if ns = C.xmlSearchNsByHref(d.ptr, d.root, nsuriDup); ns != nil {
 			// Well, you can safely inherit the prefix and stuff
 			return d.CreateElement(xmlCharToString(ns.prefix) + ":" + name)
 		}
-log.Printf("Create new namespace for %s", nsuri)
+
+		log.Printf("Create new namespace for %s", nsuri)
 		// ns doesn't exist, got to create it here
 		ns = C.xmlNewNs(nil, nsuriDup, nil)
 		// ... and my localname shall be == name
@@ -764,14 +792,34 @@ func (n *Element) GetAttribute(name string) (*Attribute, error) {
 	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(attrNode))), nil
 }
 
+func (n *Element) Attributes() ([]*Attribute, error) {
+	log.Printf("n.ptr.properties = %v", n.ptr.properties)
+	for attr := n.ptr.properties; attr != nil; {
+		log.Printf("type -> %s\n", attr._type)
+		attr = attr.next
+	}
+	return nil, nil
+}
+
 func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
-log.Printf("n = %s", n.String())
-log.Printf("getAttributeNode(%s)", name)
+	// if this is "xmlns", look for the first namespace without
+	// the prefix
+	if name == "xmlns" {
+		for nsdef := n.ptr.nsDef; nsdef != nil; nsdef = nsdef.next {
+			if nsdef.prefix != nil {
+				continue
+			}
+log.Printf("nsdef.href -> %s", xmlCharToString(nsdef.href))
+		}
+	}
+
+	log.Printf("n = %s", n.String())
+	log.Printf("getAttributeNode(%s)", name)
 	prop := C.xmlHasNsProp(n.ptr, stringToXmlChar(name), nil)
-log.Printf("prop = %v", prop)
+	log.Printf("prop = %v", prop)
 	if prop == nil {
 		prefix, local := splitPrefixLocal(name)
-log.Printf("prefix = %s, local = %s", prefix, local)
+		log.Printf("prefix = %s, local = %s", prefix, local)
 		if local != "" {
 			if ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix)); ns != nil {
 				prop = C.xmlHasNsProp(n.ptr, stringToXmlChar(local), ns.href)
@@ -799,6 +847,27 @@ func (n *Element) RemoveAttribute(name string) error {
 	return nil
 }
 
+// GetNamespaces returns Namespace objects associated with this
+// element. WARNING: This method currently returns namespace
+// objects which allocates C structures for each namespace.
+// Therefore you MUST free the structures, or otherwise you
+// WILL leak memory.
+func (n *Element) GetNamespaces() []*Namespace {
+	ret := []*Namespace{}
+	for ns := n.ptr.nsDef; ns != nil; ns = ns.next {
+		if ns.prefix == nil && ns.href == nil {
+			continue
+		}
+		newns := C.xmlCopyNamespace(ns)
+		if newns == nil { // XXX this is an error, no?
+			continue
+		}
+
+		ret = append(ret, wrapNamespace((*C.xmlNs)(unsafe.Pointer(newns))))
+	}
+	return ret
+}
+
 func (n Element) Literal() string {
 	buf := bytes.Buffer{}
 	for _, c := range n.ChildNodes() {
@@ -822,3 +891,24 @@ func (n *Attribute) HasChildNodes() bool {
 func (n *Attribute) Value() string {
 	return nodeValue(n)
 }
+
+func (n *Namespace) URI() string {
+	if ptr := n.ptr; ptr != nil {
+		return xmlCharToString(((*C.xmlNs)(unsafe.Pointer(ptr))).href)
+	}
+	return ""
+}
+
+func (n *Namespace) Prefix() string {
+	if ptr := n.ptr; ptr != nil {
+		return xmlCharToString(((*C.xmlNs)(unsafe.Pointer(ptr))).prefix)
+	}
+	return ""
+}
+
+func (n *Namespace) Free() {
+	if ptr := n.ptr; ptr != nil {
+		C.MY_xmlFree(unsafe.Pointer(ptr))
+	}
+}
+
