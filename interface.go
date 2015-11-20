@@ -182,3 +182,10 @@ const (
 type Parser struct {
 	Options ParseOption
 }
+
+// Namespace is a utility struct -- doesn't really exist in the underlying
+// libxml2 library.
+type Namespace struct {
+	Prefix string
+	URI    string
+}

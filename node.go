@@ -124,6 +124,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"unsafe"
 )
@@ -154,6 +155,13 @@ func (n NodeList) Literal() string {
 		buf.WriteString(x.Literal())
 	}
 	return buf.String()
+}
+
+func NewNamespace(prefix, uri string) *Namespace {
+	return &Namespace{
+		Prefix: prefix,
+		URI:    uri,
+	}
 }
 
 func wrapAttribute(n *C.xmlAttr) *Attribute {
@@ -545,12 +553,44 @@ func (d *Document) CreateElementNS(nsuri, name string) (*Element, error) {
 		return nil, ErrInvalidNodeName
 	}
 
-	i := strings.IndexByte(name, ':')
-	nsuriDup := stringToXmlChar(nsuri)
-	prefix := stringToXmlChar(name[:i])
-	localname := stringToXmlChar(name[i+1:])
+	if nsuri == "" {
+		return d.CreateElement(name)
+	}
 
-	ns := C.xmlNewNs(nil, nsuriDup, prefix)
+	var localname *C.xmlChar
+	var ns *C.xmlNs
+	nsuriDup := stringToXmlChar(nsuri)
+	if i := strings.IndexByte(name, ':'); i > 0 {
+		prefix := stringToXmlChar(name[:i])
+		ns = C.xmlSearchNs(d.ptr, d.root, prefix)
+		if ns == nil {
+			localname = stringToXmlChar(name[i+1:])
+			ns = C.xmlNewNs(nil, nsuriDup, prefix)
+		} else {
+			// prefix is registered. do they have matching URI?
+			if xmlCharToString(ns.prefix) != name[:i] {
+				return nil, errors.New("prefix registered to the wrong URI")
+			}
+
+			// Okay, so we can register this, but we won't be
+			// needing to register the namespace
+			return d.CreateElement(name)
+		}
+	} else {
+		// If the name does not contain a prefix, check for the
+		// existence of this namespace via the URI
+		ns = C.xmlSearchNsByHref(d.ptr, d.root, nsuriDup)
+		if ns != nil {
+			// Well, you can safely inherit the prefix and stuff
+			return d.CreateElement(xmlCharToString(ns.prefix) + ":" + name)
+		}
+log.Printf("Create new namespace for %s", nsuri)
+		// ns doesn't exist, got to create it here
+		ns = C.xmlNewNs(nil, nsuriDup, nil)
+		// ... and my localname shall be == name
+		localname = stringToXmlChar(name)
+	}
+
 	newNode := C.xmlNewDocNode(d.ptr, ns, localname, nil)
 	newNode.nsDef = ns
 
@@ -667,6 +707,34 @@ func (d *Document) Walk(fn func(Node) error) {
 	walk(wrapXmlNode(d.root), fn)
 }
 
+func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
+	activateflag := false
+	if len(activate) < 1 {
+		activateflag = true
+	} else {
+		activateflag = activate[0]
+	}
+
+	if uri == "" && prefix == "" {
+		// Empty namespace
+
+		ns := C.xmlSearchNs(n.ptr.doc, n.ptr, nil)
+		if ns != nil && ns.href != nil {
+			log.Printf("ns = %s\n", ns)
+		}
+		if activateflag {
+			C.xmlSetNs(n.ptr, nil)
+		}
+		return nil
+	}
+
+	ns := C.xmlNewNs(n.ptr, stringToXmlChar(uri), stringToXmlChar(prefix))
+	if activateflag {
+		C.xmlSetNs(n.ptr, ns)
+	}
+	return nil
+}
+
 func (n *Element) AppendText(s string) error {
 	txt, err := n.OwnerDocument().CreateTextNode(s)
 	if err != nil {
@@ -683,15 +751,32 @@ func splitPrefixLocal(s string) (string, string) {
 	return s[:i], s[i+1:]
 }
 
+func (n *Element) SetAttribute(name, value string) error {
+	C.xmlSetProp(n.ptr, stringToXmlChar(name), stringToXmlChar(value))
+	return nil
+}
+
+func (n *Element) GetAttribute(name string) (*Attribute, error) {
+	attrNode, err := n.getAttributeNode(name)
+	if err != nil {
+		return nil, err
+	}
+	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(attrNode))), nil
+}
+
 func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
+log.Printf("n = %s", n.String())
+log.Printf("getAttributeNode(%s)", name)
 	prop := C.xmlHasNsProp(n.ptr, stringToXmlChar(name), nil)
-	if prop != nil {
+log.Printf("prop = %v", prop)
+	if prop == nil {
 		prefix, local := splitPrefixLocal(name)
+log.Printf("prefix = %s, local = %s", prefix, local)
 		if local != "" {
-			ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix))
-			if ns != nil {
+			if ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix)); ns != nil {
 				prop = C.xmlHasNsProp(n.ptr, stringToXmlChar(local), ns.href)
 			}
+
 		}
 	}
 
@@ -732,4 +817,8 @@ func (n *Text) Walk(fn func(Node) error) {
 
 func (n *Attribute) HasChildNodes() bool {
 	return false
+}
+
+func (n *Attribute) Value() string {
+	return nodeValue(n)
 }
