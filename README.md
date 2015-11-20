@@ -8,6 +8,10 @@ Interface to libxml2, with DOM interface
 
 This library is still in very early stages of development. API may still change
 
+# Examples
+
+## Basic XML Example
+
 ```go
 import (
   "log"
@@ -51,7 +55,11 @@ func ExmapleXML() {
   }
   log.Printf("feed title = %s", title)
 }
+```
 
+## Basic HTML Example
+
+```go
 func ExampleHTML() {
   res, err := http.Get("http://golang.org")
   if err != nil {
@@ -77,6 +85,58 @@ func ExampleHTML() {
   for i := 0; i < len(nodes); i++ {
     log.Printf("Found node: %s", nodes[i].NodeName())
   }
+}
+```
+
+## XSD Validation
+
+```go
+import (
+  "io/ioutil"
+  "log"
+  "os"
+  "path/filepath"
+
+  "github.com/lestrrat/go-libxml2"
+  "github.com/lestrrat/go-libxml2/xsd"
+)
+
+func ExampleXSD() {
+  xsdfile := filepath.Join("test", "xmldsig-core-schema.xsd")
+  f, err := os.Open(xsdfile)
+  if err != nil {
+    log.Printf("failed to open file: %s", err)
+    return
+  }
+  defer f.Close()
+
+  buf, err := ioutil.ReadAll(f)
+  if err != nil {
+    log.Printf("failed to read file: %s", err)
+    return
+  }
+
+  s, err := xsd.Parse(buf)
+  if err != nil {
+    log.Printf("failed to parse XSD: %s", err)
+    return
+  }
+  defer s.Free()
+
+  d, err := libxml2.ParseString(`<foo></foo>`)
+  if err != nil {
+    log.Printf("failed to parse XML: %s", err)
+    return
+  }
+
+  if err := s.Validate(d); err != nil {
+    for _, e := range err.(SchemaValidationErr).Errors() {
+      log.Printf("error: %s", e.Error())
+    }
+    return
+  }
+
+  log.Printf("validation successful!")
 }
 ```
 
