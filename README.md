@@ -10,10 +10,10 @@ This library is still in very early stages of development. API may still change
 
 ```go
 import (
-	"log"
-	"net/http"
+  "log"
+  "net/http"
 
-	"github.com/lestrrat/go-libxml2"
+  "github.com/lestrrat/go-libxml2"
 )
 
 func ExmapleXML() {
