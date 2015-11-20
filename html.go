@@ -39,13 +39,7 @@ func ParseHTML(content []byte) (*Document, error) {
 
 func ParseHTMLString(content string) (*Document, error) {
 	d := htmlReadDoc(content, "", "", DefaultHtmlParseFlags)
-	root, err := C.xmlDocGetRootElement(d)
-	if err != nil || root == nil {
-		C.xmlFreeDoc(d)
-		return nil, err
-	}
-
-	return &Document{ptr: d, root: root}, nil
+	return &Document{ptr: d}, nil
 }
 
 func ParseHTMLReader(in io.Reader) (*Document, error) {

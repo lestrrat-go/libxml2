@@ -133,6 +133,130 @@ var _XmlNodeType_index = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116,
 
 const _XmlNodeType_name = `ElementNodeAttributeNodeTextNodeCDataSectionNodeEntityRefNodeEntityNodePiNodeCommentNodeDocumentNodeDocumentTypeNodeDocumentFragNodeNotationNodeHTMLDocumentNodeDTDNodeElementDeclAttributeDeclEntityDeclNamespaceDeclXIncludeStartXIncludeEndDocbDocumentNode`
 
+
+func xmlNewDoc(version string) *C.xmlDoc {
+	return C.xmlNewDoc(stringToXmlChar(version))
+}
+
+func xmlStrdup(s string) *C.xmlChar {
+	return C.xmlStrdup(stringToXmlChar(s))
+}
+
+func xmlEncodeEntitiesReentrant(doc *Document, s string) *C.xmlChar {
+	return C.xmlEncodeEntitiesReentrant(doc.ptr, stringToXmlChar(s))
+}
+
+func myTestNodeName(n string) error {
+	if C.MY_test_node_name(stringToXmlChar(n)) == 0 {
+		return ErrInvalidNodeName
+	}
+	return nil
+}
+
+func xmlMakeSafeName(k string) (*C.xmlChar, error) {
+	if err := myTestNodeName(k); err != nil {
+		return nil, err
+	}
+	return stringToXmlChar(k), nil
+}
+
+func xmlNewNode(ns *Namespace, name string) *C.xmlElement {
+	var nsptr *C.xmlNs
+	if ns != nil {
+		nsptr = (*C.xmlNs)(unsafe.Pointer(ns.ptr))
+	}
+
+	n := C.xmlNewNode(
+		nsptr,
+		stringToXmlChar(name),
+	)
+	return (*C.xmlElement)(unsafe.Pointer(n))
+}
+
+func xmlNewDocProp(doc *Document, k, v string) (*C.xmlAttr, error) {
+	kx, err := xmlMakeSafeName(k)
+	if err != nil {
+		return nil, err
+	}
+
+	attr := C.xmlNewDocProp(
+		doc.ptr,
+		kx,
+		xmlEncodeEntitiesReentrant(doc, v),
+	)
+	return attr, nil
+}
+
+func xmlSearchNsByHref(doc *Document, n Node, uri string) *C.xmlNs {
+	var xcuri *C.xmlChar
+	if len(uri) > 0 {
+		xcuri = stringToXmlChar(uri)
+	}
+
+	return C.xmlSearchNsByHref(
+		doc.ptr,
+		(*C.xmlNode)(n.Pointer()),
+		xcuri,
+	)
+}
+
+func xmlSearchNs(doc *Document, n Node, prefix string) *C.xmlNs {
+	var nptr *C.xmlNode
+	if n != nil {
+		nptr = (*C.xmlNode)(n.Pointer())
+	}
+	return C.xmlSearchNs(
+		doc.ptr,
+		nptr,
+		stringToXmlChar(prefix),
+	)
+}
+
+func xmlNewDocNode(doc *Document, ns *Namespace, localname, content string) *C.xmlNode {
+	var c *C.xmlChar
+	if len(content) > 0 {
+		c = stringToXmlChar(content)
+	}
+	return C.xmlNewDocNode(
+		doc.ptr,
+		(*C.xmlNs)(unsafe.Pointer(ns.ptr)),
+		stringToXmlChar(localname),
+		c,
+	)
+}
+
+func xmlNewNs(n Node, nsuri, prefix string) *C.xmlNs {
+	var nptr *C.xmlNode
+	if n != nil {
+		nptr = (*C.xmlNode)(n.Pointer())
+	}
+
+	return C.xmlNewNs(
+		nptr,
+		stringToXmlChar(nsuri),
+		stringToXmlChar(prefix),
+	)
+}
+
+func xmlSetNs(n Node, ns *Namespace) {
+	C.xmlSetNs(
+		(*C.xmlNode)(n.Pointer()),
+		(*C.xmlNs)(unsafe.Pointer(ns.ptr)),
+	)
+}
+
+func xmlNewCDataBlock(doc *Document, txt string) *C.xmlNode {
+	return C.xmlNewCDataBlock(doc.ptr, stringToXmlChar(txt), C.int(len(txt)))
+}
+
+func xmlNewComment(txt string) *C.xmlNode {
+	return C.xmlNewComment(stringToXmlChar(txt))
+}
+
+func xmlNewText(txt string) *C.xmlNode {
+	return C.xmlNewText(stringToXmlChar(txt))
+}
+
 func (i XmlNodeType) String() string {
 	i -= 1
 	if i < 0 || i+1 >= XmlNodeType(len(_XmlNodeType_index)) {
@@ -266,8 +390,7 @@ func (n *xmlNode) ChildNodes() NodeList {
 }
 
 func wrapDocument(n *C.xmlDoc) *Document {
-	r := C.xmlDocGetRootElement(n) // XXX Should check for n == nil
-	return &Document{ptr: n, root: r}
+	return &Document{ptr: n}
 }
 
 func (n *xmlNode) OwnerDocument() *Document {
@@ -479,296 +602,12 @@ func walk(n Node, fn func(Node) error) {
 	}
 }
 
-func childNodes(n Node) NodeList {
+func childNodes(n ptr) NodeList {
 	ret := NodeList(nil)
 	for chld := ((*C.xmlNode)(n.Pointer())).children; chld != nil; chld = chld.next {
 		ret = append(ret, wrapToNode(chld))
 	}
 	return ret
-}
-
-func CreateDocument() *Document {
-	return NewDocument("1.0", "")
-}
-
-func NewDocument(version, encoding string) *Document {
-	doc := C.xmlNewDoc(stringToXmlChar(version))
-	if encoding != "" {
-		doc.encoding = C.xmlStrdup(stringToXmlChar(encoding))
-	}
-	return wrapDocument(doc)
-}
-
-func (d *Document) Pointer() unsafe.Pointer {
-	return unsafe.Pointer(d.ptr)
-}
-
-func (d *Document) CreateAttribute(k, v string) (*Attribute, error) {
-	kx := stringToXmlChar(k)
-	vx := stringToXmlChar(v)
-	if C.MY_test_node_name(kx) == 0 {
-		return nil, ErrInvalidNodeName
-	}
-
-	buf := C.xmlEncodeEntitiesReentrant(d.ptr, vx)
-	newAttr := C.xmlNewDocProp(d.ptr, kx, buf)
-
-	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(newAttr))), nil
-}
-
-func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
-	if nsuri == "" {
-		return d.CreateAttribute(k, v)
-	}
-
-	kx := stringToXmlChar(k)
-	if C.MY_test_node_name(kx) == 0 {
-		return nil, ErrInvalidNodeName
-	}
-
-	root := d.DocumentElement()
-	if root == nil {
-		return nil, errors.New("attribute with namespaces require a root node")
-	}
-
-	prefix, local := splitPrefixLocal(k)
-
-	ns := C.xmlSearchNsByHref(d.ptr, (*C.xmlNode)(root.Pointer()), stringToXmlChar(nsuri))
-	if ns == nil {
-		ns = C.xmlNewNs((*C.xmlNode)(root.Pointer()), stringToXmlChar(nsuri), stringToXmlChar(prefix))
-		if ns == nil {
-			return nil, errors.New("failed to create namespace")
-		}
-	}
-
-	vx := stringToXmlChar(v)
-	buf := C.xmlEncodeEntitiesReentrant(d.ptr, vx)
-	newAttr := C.xmlNewDocProp(d.ptr, stringToXmlChar(local), buf)
-	C.xmlSetNs((*C.xmlNode)(unsafe.Pointer(newAttr)), ns)
-
-	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(newAttr))), nil
-}
-
-func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
-	return wrapCDataSection(C.xmlNewCDataBlock(d.ptr, stringToXmlChar(txt), C.int(len(txt)))), nil
-}
-
-func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
-	return wrapComment(C.xmlNewComment(stringToXmlChar(txt))), nil
-}
-
-func (d *Document) CreateElement(name string) (*Element, error) {
-	if C.MY_test_node_name(stringToXmlChar(name)) == 0 {
-		return nil, ErrInvalidNodeName
-	}
-
-	newNode := C.xmlNewNode(nil, stringToXmlChar(name))
-	if newNode == nil {
-		return nil, errors.New("element creation failed")
-	}
-	// XXX hmmm...
-	newNode.doc = d.ptr
-	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
-}
-
-func (d *Document) CreateElementNS(nsuri, name string) (*Element, error) {
-	if C.MY_test_node_name(stringToXmlChar(name)) == 0 {
-		return nil, ErrInvalidNodeName
-	}
-
-	if nsuri == "" {
-		return d.CreateElement(name)
-	}
-
-	var localname *C.xmlChar
-	var ns *C.xmlNs
-	nsuriDup := stringToXmlChar(nsuri)
-
-	if i := strings.IndexByte(name, ':'); i > 0 {
-		// split it into prefix and localname
-		prefix := stringToXmlChar(name[:i])
-
-		// Is this namespace prefix registered already?
-		ns = C.xmlSearchNs(d.ptr, d.root, prefix)
-		if ns == nil {
-			// nope, create a new one.
-			localname = stringToXmlChar(name[i+1:])
-			ns = C.xmlNewNs(nil, nsuriDup, prefix)
-		} else {
-			// prefix is registered. do they have matching URI?
-			if xmlCharToString(ns.prefix) != name[:i] {
-				return nil, errors.New("prefix registered to the wrong URI")
-			}
-
-			// Okay, so we can register this, but we won't be
-			// needing to register the namespace
-			return d.CreateElement(name)
-		}
-	} else {
-		// If the name does not contain a prefix, check for the
-		// existence of this namespace via the URI
-		if ns = C.xmlSearchNsByHref(d.ptr, d.root, nsuriDup); ns != nil {
-			// Well, you can safely inherit the prefix and stuff
-			return d.CreateElement(xmlCharToString(ns.prefix) + ":" + name)
-		}
-
-		log.Printf("Create new namespace for %s", nsuri)
-		// ns doesn't exist, got to create it here
-		ns = C.xmlNewNs(nil, nsuriDup, nil)
-		// ... and my localname shall be == name
-		localname = stringToXmlChar(name)
-	}
-
-	newNode := C.xmlNewDocNode(d.ptr, ns, localname, nil)
-	newNode.nsDef = ns
-
-	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
-}
-
-func (d *Document) CreateTextNode(txt string) (*Text, error) {
-	return wrapText(C.xmlNewText(stringToXmlChar(txt))), nil
-}
-
-func (d *Document) DocumentElement() Node {
-	if d.ptr == nil {
-		return nil
-	}
-
-	if d.root == nil {
-		n := C.xmlDocGetRootElement(d.ptr)
-		if n == nil {
-			return nil
-		}
-		d.root = n
-	}
-
-	return wrapToNode(d.root)
-}
-
-func (d *Document) FindNodes(xpath string) (NodeList, error) {
-	root := d.DocumentElement()
-	if root == nil {
-		return nil, ErrNodeNotFound
-	}
-	return root.FindNodes(xpath)
-}
-
-func (d *Document) Encoding() string {
-	return xmlCharToString(d.ptr.encoding)
-}
-
-func (d *Document) Free() {
-	C.xmlFreeDoc(d.ptr)
-	d.ptr = nil
-	d.root = nil
-}
-
-func (d *Document) String() string {
-	var xc *C.xmlChar
-	i := C.int(0)
-	C.xmlDocDumpMemory(d.ptr, &xc, &i)
-	return xmlCharToString(xc)
-}
-
-func (d *Document) NodeType() XmlNodeType {
-	return XmlNodeType(d.ptr._type)
-}
-
-func (d *Document) SetBaseURI(s string) {
-	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(d.ptr)), stringToXmlChar(s))
-}
-
-func (d *Document) SetDocumentElement(n Node) {
-	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.Pointer()))
-	d.root = (*C.xmlNode)(n.Pointer())
-}
-
-func (d *Document) SetEncoding(e string) {
-	if d.ptr.encoding != nil {
-		C.MY_xmlFree(unsafe.Pointer(d.ptr.encoding))
-	}
-
-	d.ptr.encoding = C.xmlStrdup(stringToXmlChar(e))
-}
-
-func (d *Document) SetStandalone(v int) {
-	d.ptr.standalone = C.int(v)
-}
-
-func (d *Document) SetVersion(e string) {
-	if d.ptr.version != nil {
-		C.MY_xmlFree(unsafe.Pointer(d.ptr.version))
-	}
-
-	d.ptr.version = C.xmlStrdup(stringToXmlChar(e))
-}
-
-func (d *Document) Standalone() int {
-	return int(d.ptr.standalone)
-}
-
-func (d *Document) ToString(skipXmlDecl bool) string {
-	buf := &bytes.Buffer{}
-	for _, n := range childNodes(wrapXmlNode((*C.xmlNode)(d.Pointer()))) {
-		if n.NodeType() == DTDNode {
-			continue
-		}
-		buf.WriteString(n.String())
-	}
-
-	return buf.String()
-}
-
-func (d *Document) ToStringC14N(exclusive bool) (string, error) {
-	return d.DocumentElement().ToStringC14N(exclusive)
-}
-
-func (d *Document) URI() string {
-	return xmlCharToString(C.xmlStrdup(d.ptr.URL))
-}
-
-func (d *Document) Version() string {
-	return xmlCharToString(d.ptr.version)
-}
-
-func (d *Document) Walk(fn func(Node) error) {
-	walk(wrapXmlNode(d.root), fn)
-}
-
-func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
-	activateflag := false
-	if len(activate) < 1 {
-		activateflag = true
-	} else {
-		activateflag = activate[0]
-	}
-
-	if uri == "" && prefix == "" {
-		// Empty namespace
-
-		ns := C.xmlSearchNs(n.ptr.doc, n.ptr, nil)
-		if ns != nil && ns.href != nil {
-			log.Printf("ns = %s\n", ns)
-		}
-		if activateflag {
-			C.xmlSetNs(n.ptr, nil)
-		}
-		return nil
-	}
-
-	ns := C.xmlNewNs(n.ptr, stringToXmlChar(uri), stringToXmlChar(prefix))
-	if activateflag {
-		C.xmlSetNs(n.ptr, ns)
-	}
-	return nil
-}
-
-func (n *Element) AppendText(s string) error {
-	txt, err := n.OwnerDocument().CreateTextNode(s)
-	if err != nil {
-		return err
-	}
-	return n.AppendChild(txt)
 }
 
 func splitPrefixLocal(s string) (string, string) {
@@ -777,111 +616,6 @@ func splitPrefixLocal(s string) (string, string) {
 		return "", s
 	}
 	return s[:i], s[i+1:]
-}
-
-func (n *Element) SetAttribute(name, value string) error {
-	C.xmlSetProp(n.ptr, stringToXmlChar(name), stringToXmlChar(value))
-	return nil
-}
-
-func (n *Element) GetAttribute(name string) (*Attribute, error) {
-	attrNode, err := n.getAttributeNode(name)
-	if err != nil {
-		return nil, err
-	}
-	return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(attrNode))), nil
-}
-
-func (n *Element) Attributes() ([]*Attribute, error) {
-	log.Printf("n.ptr.properties = %v", n.ptr.properties)
-	for attr := n.ptr.properties; attr != nil; {
-		log.Printf("type -> %s\n", attr._type)
-		attr = attr.next
-	}
-	return nil, nil
-}
-
-func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
-	// if this is "xmlns", look for the first namespace without
-	// the prefix
-	if name == "xmlns" {
-		for nsdef := n.ptr.nsDef; nsdef != nil; nsdef = nsdef.next {
-			if nsdef.prefix != nil {
-				continue
-			}
-log.Printf("nsdef.href -> %s", xmlCharToString(nsdef.href))
-		}
-	}
-
-	log.Printf("n = %s", n.String())
-	log.Printf("getAttributeNode(%s)", name)
-	prop := C.xmlHasNsProp(n.ptr, stringToXmlChar(name), nil)
-	log.Printf("prop = %v", prop)
-	if prop == nil {
-		prefix, local := splitPrefixLocal(name)
-		log.Printf("prefix = %s, local = %s", prefix, local)
-		if local != "" {
-			if ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix)); ns != nil {
-				prop = C.xmlHasNsProp(n.ptr, stringToXmlChar(local), ns.href)
-			}
-
-		}
-	}
-
-	if prop == nil || XmlNodeType(prop._type) != AttributeNode {
-		return nil, errors.New("attribute not found")
-	}
-
-	return prop, nil
-}
-
-func (n *Element) RemoveAttribute(name string) error {
-	prop, err := n.getAttributeNode(name)
-	if err != nil {
-		return err
-	}
-
-	C.xmlUnlinkNode((*C.xmlNode)(unsafe.Pointer(prop)))
-	C.xmlFreeProp(prop)
-
-	return nil
-}
-
-// GetNamespaces returns Namespace objects associated with this
-// element. WARNING: This method currently returns namespace
-// objects which allocates C structures for each namespace.
-// Therefore you MUST free the structures, or otherwise you
-// WILL leak memory.
-func (n *Element) GetNamespaces() []*Namespace {
-	ret := []*Namespace{}
-	for ns := n.ptr.nsDef; ns != nil; ns = ns.next {
-		if ns.prefix == nil && ns.href == nil {
-			continue
-		}
-		newns := C.xmlCopyNamespace(ns)
-		if newns == nil { // XXX this is an error, no?
-			continue
-		}
-
-		ret = append(ret, wrapNamespace((*C.xmlNs)(unsafe.Pointer(newns))))
-	}
-	return ret
-}
-
-func (n Element) Literal() string {
-	buf := bytes.Buffer{}
-	for _, c := range n.ChildNodes() {
-		buf.WriteString(c.Literal())
-	}
-	return buf.String()
-}
-
-func (n Text) Data() string {
-	return xmlCharToString(n.ptr.content)
-}
-
-func (n *Text) Walk(fn func(Node) error) {
-	walk(n, fn)
 }
 
 func (n *Attribute) HasChildNodes() bool {
@@ -910,5 +644,157 @@ func (n *Namespace) Free() {
 	if ptr := n.ptr; ptr != nil {
 		C.MY_xmlFree(unsafe.Pointer(ptr))
 	}
+}
+
+func createElementNS(doc *Document, nsuri, name string) (*Element, error) {
+	if err := myTestNodeName(name); err != nil {
+		return nil, err
+	}
+
+	if nsuri == "" {
+		return doc.CreateElement(name)
+	}
+
+	var localname string
+	var ns *C.xmlNs
+
+	if i := strings.IndexByte(name, ':'); i > 0 {
+		// split it into prefix and localname
+		prefix := name[:i]
+
+		// Is this namespace prefix registered already?
+		ns = xmlSearchNs(doc, doc.DocumentElement(), prefix)
+		if ns == nil {
+			// nope, create a new one.
+			localname = name[i+1:]
+			ns = xmlNewNs(nil, nsuri, prefix)
+		} else {
+			// prefix is registered. do they have matching URI?
+			if xmlCharToString(ns.prefix) != name[:i] {
+				return nil, errors.New("prefix registered to the wrong URI")
+			}
+
+			// Okay, so we can register this, but we won't be
+			// needing to register the namespace
+			return doc.CreateElement(name)
+		}
+	} else {
+		// If the name does not contain a prefix, check for the
+		// existence of this namespace via the URI
+		if ns = xmlSearchNsByHref(doc, doc.DocumentElement(), nsuri); ns != nil {
+			// Well, you can safely inherit the prefix and stuff
+			return doc.CreateElement(xmlCharToString(ns.prefix) + ":" + name)
+		}
+
+		log.Printf("Create new namespace for %s", nsuri)
+		// ns doesn't exist, got to create it here
+		ns = C.xmlNewNs(nil, stringToXmlChar(nsuri), nil)
+		// ... and my localname shall be == name
+		localname = name
+	}
+
+	newNode := C.xmlNewDocNode(doc.ptr, ns, stringToXmlChar(localname), nil)
+	newNode.nsDef = ns
+
+	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
+}
+
+func documentElement(doc *Document) *C.xmlNode {
+	if doc.ptr == nil {
+		return nil
+	}
+
+	return C.xmlDocGetRootElement(doc.ptr)
+}
+
+func xmlFreeDoc(d *Document) {
+	C.xmlFreeDoc(d.ptr)
+	d.ptr = nil
+}
+
+func documentString(d *Document) *C.xmlChar {
+	var xc *C.xmlChar
+	i := C.int(0)
+	C.xmlDocDumpMemory(d.ptr, &xc, &i)
+	return xc
+}
+
+func xmlNodeSetBase(d *Document, s string) {
+	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(d.ptr)), stringToXmlChar(s))
+}
+
+func setDocumentElement(d *Document, n Node) {
+	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.Pointer()))
+}
+
+func setDocumentEncoding(d *Document, e string) {
+	if d.ptr.encoding != nil {
+		C.MY_xmlFree(unsafe.Pointer(d.ptr.encoding))
+	}
+
+	d.ptr.encoding = C.xmlStrdup(stringToXmlChar(e))
+}
+
+func setDocumentStandalone(d *Document, v int) {
+	d.ptr.standalone = C.int(v)
+}
+
+func setDocumentVersion(d *Document, v string) {
+	if d.ptr.version != nil {
+		C.MY_xmlFree(unsafe.Pointer(d.ptr.version))
+	}
+
+	d.ptr.version = C.xmlStrdup(stringToXmlChar(v))
+}
+
+func xmlSetProp(n Node, name, value string) error {
+	C.xmlSetProp((*C.xmlNode)(n.Pointer()), stringToXmlChar(name), stringToXmlChar(value))
+	return nil
+}
+
+func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
+	// if this is "xmlns", look for the first namespace without
+	// the prefix
+	if name == "xmlns" {
+		for nsdef := n.ptr.nsDef; nsdef != nil; nsdef = nsdef.next {
+			if nsdef.prefix != nil {
+				continue
+			}
+			log.Printf("nsdef.href -> %s", xmlCharToString(nsdef.href))
+		}
+	}
+
+	log.Printf("n = %s", n.String())
+	log.Printf("getAttributeNode(%s)", name)
+	prop := C.xmlHasNsProp(n.ptr, stringToXmlChar(name), nil)
+	log.Printf("prop = %v", prop)
+	if prop == nil {
+		prefix, local := splitPrefixLocal(name)
+		log.Printf("prefix = %s, local = %s", prefix, local)
+		if local != "" {
+			if ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix)); ns != nil {
+				prop = C.xmlHasNsProp(n.ptr, stringToXmlChar(local), ns.href)
+			}
+
+		}
+	}
+
+	if prop == nil || XmlNodeType(prop._type) != AttributeNode {
+		return nil, errors.New("attribute not found")
+	}
+
+	return prop, nil
+}
+
+func xmlUnlinkNode(prop *C.xmlAttr) {
+	C.xmlUnlinkNode((*C.xmlNode)(unsafe.Pointer(prop)))
+}
+
+func xmlFreeProp(prop *C.xmlAttr) {
+	C.xmlFreeProp(prop)
+}
+
+func xmlCopyNamespace(ns *C.xmlNs) *C.xmlNs {
+	return C.xmlCopyNamespace(ns)
 }
 

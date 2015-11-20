@@ -44,14 +44,17 @@ var (
 	ErrInvalidNodeName = errors.New("invalid node name")
 )
 
-// Node defines the basic DOM interface
-type Node interface {
+type ptr interface {
 	// Pointer() returns the underlying C pointer. This is an exported
 	// method to allow various internal go-libxml2 packages to interoperate
 	// on each other. End users are STRONGLY advised not to touch this
 	// method or its return values
 	Pointer() unsafe.Pointer
+}
 
+// Node defines the basic DOM interface
+type Node interface {
+	ptr
 	AddChild(Node)
 	AppendChild(Node) error
 	ChildNodes() NodeList
@@ -108,7 +111,6 @@ type Element struct {
 
 type Document struct {
 	ptr  *C.xmlDoc
-	root *C.xmlNode
 }
 
 type Text struct {
