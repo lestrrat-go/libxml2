@@ -124,9 +124,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"unsafe"
+
+	"github.com/lestrrat/go-libxml2/internal/debug"
 )
 
 var _XmlNodeType_index = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116, 132, 144, 160, 167, 178, 191, 201, 214, 227, 238, 254}
@@ -248,7 +249,7 @@ func xmlNewNs(n Node, nsuri, prefix string) *Namespace {
 }
 
 func xmlSetNs(n Node, ns *Namespace) {
-	log.Printf("Setting namespace for %s to %s", n.NodeName(), ns.Prefix())
+	debug.Printf("Setting namespace for %s to %s", n.NodeName(), ns.Prefix())
 	C.xmlSetNs(
 		(*C.xmlNode)(n.Pointer()),
 		(*C.xmlNs)(unsafe.Pointer(ns.ptr)),
@@ -708,7 +709,7 @@ func createElementNS(doc *Document, nsuri, name string) (*Element, error) {
 			return doc.CreateElement(xmlCharToString(ns.prefix) + ":" + name)
 		}
 
-		log.Printf("Create new namespace for %s", nsuri)
+		debug.Printf("Create new namespace for %s", nsuri)
 		// ns doesn't exist, got to create it here
 		ns = C.xmlNewNs(nil, stringToXmlChar(nsuri), nil)
 		// ... and my localname shall be == name
@@ -796,17 +797,17 @@ func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
 			if nsdef.prefix != nil {
 				continue
 			}
-			log.Printf("nsdef.href -> %s", xmlCharToString(nsdef.href))
+			debug.Printf("nsdef.href -> %s", xmlCharToString(nsdef.href))
 		}
 	}
 
-	log.Printf("n = %s", n.String())
-	log.Printf("getAttributeNode(%s)", name)
+	debug.Printf("n = %s", n.String())
+	debug.Printf("getAttributeNode(%s)", name)
 	prop := C.xmlHasNsProp(n.ptr, stringToXmlChar(name), nil)
-	log.Printf("prop = %v", prop)
+	debug.Printf("prop = %v", prop)
 	if prop == nil {
 		prefix, local := splitPrefixLocal(name)
-		log.Printf("prefix = %s, local = %s", prefix, local)
+		debug.Printf("prefix = %s, local = %s", prefix, local)
 		if local != "" {
 			if ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix)); ns != nil {
 				prop = C.xmlHasNsProp(n.ptr, stringToXmlChar(local), ns.href)
@@ -867,4 +868,3 @@ func xmlUnsetNsProp(n Node, ns *Namespace, name string) error {
 	}
 	return nil
 }
-
