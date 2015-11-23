@@ -133,7 +133,7 @@ func TestDOM(t *testing.T) {
 	}
 
 	// Temporary test
-	expected := `<?xml version="1.0"?>
+	expected := `<?xml version="1.0" encoding="utf-8"?>
 <root><child1>text1</child1><child2>text2</child2><child3>text3</child3></root>
 `
 	if doc.String() != expected {
@@ -171,6 +171,18 @@ func TestNode_StandaloneWithNamespaces(t *testing.T) {
 	}()
 
 	if !assert.Len(t, nslist, 1, "GetNamespaces returns 1 namespace") {
+		return
+	}
+}
+
+func TestAttribute(t *testing.T) {
+	doc := CreateDocument()
+	attr, err := doc.CreateAttribute("foo", "bar")
+	if !assert.NoError(t, err, "attribute created") {
+		return
+	}
+
+	if !assert.NotPanics(t, func() { attr.Free() }, "free should not panic") {
 		return
 	}
 }

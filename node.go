@@ -603,6 +603,10 @@ func (n *XmlNode) Walk(fn func(Node) error) {
 	walk(n, fn)
 }
 
+func (n *xmlNode) Free() {
+	C.xmlFreeNode(n.ptr)
+}
+
 func walk(n Node, fn func(Node) error) {
 	if err := fn(n); err != nil {
 		return
@@ -626,14 +630,6 @@ func splitPrefixLocal(s string) (string, string) {
 		return "", s
 	}
 	return s[:i], s[i+1:]
-}
-
-func (n *Attribute) HasChildNodes() bool {
-	return false
-}
-
-func (n *Attribute) Value() string {
-	return nodeValue(n)
 }
 
 func (n *Namespace) URI() string {
@@ -830,10 +826,45 @@ func xmlUnlinkNode(prop *C.xmlAttr) {
 	C.xmlUnlinkNode((*C.xmlNode)(unsafe.Pointer(prop)))
 }
 
-func xmlFreeProp(prop *C.xmlAttr) {
-	C.xmlFreeProp(prop)
+func xmlFreeProp(attr *Attribute) {
+	C.xmlFreeProp((*C.xmlAttr)(unsafe.Pointer(attr.ptr)))
+}
+
+func xmlFreeNode(n Node) {
+	C.xmlFreeNode((*C.xmlNode)(unsafe.Pointer(n.Pointer())))
 }
 
 func xmlCopyNamespace(ns *C.xmlNs) *C.xmlNs {
 	return C.xmlCopyNamespace(ns)
 }
+
+func xmlUnsetProp(n Node, name string) error {
+	nptr := (*C.xmlNode)(unsafe.Pointer(n.Pointer()))
+	if nptr == nil {
+		return errors.New("invalid node")
+	}
+
+	i := C.xmlUnsetProp(nptr, stringToXmlChar(name))
+	if i == C.int(0) {
+		return errors.New("failed to unset prop")
+	}
+	return nil
+}
+
+func xmlUnsetNsProp(n Node, ns *Namespace, name string) error {
+	nptr := (*C.xmlNode)(unsafe.Pointer(n.Pointer()))
+	if nptr == nil {
+		return errors.New("invalid node")
+	}
+
+	i := C.xmlUnsetNsProp(
+		nptr,
+		(*C.xmlNs)(unsafe.Pointer(ns.ptr)),
+		stringToXmlChar(name),
+	)
+	if i == C.int(0) {
+		return errors.New("failed to unset prop")
+	}
+	return nil
+}
+

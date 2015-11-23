@@ -61,6 +61,7 @@ type Node interface {
 	OwnerDocument() *Document
 	FindNodes(string) (NodeList, error)
 	FirstChild() Node
+	Free()
 	HasChildNodes() bool
 	IsSameNode(Node) bool
 	LastChild() Node

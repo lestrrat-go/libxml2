@@ -3,6 +3,7 @@ package libxml2
 import (
 	"bytes"
 	"errors"
+	"strings"
 )
 
 func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
@@ -68,15 +69,18 @@ func (n *Element) Attributes() ([]*Attribute, error) {
 }
 
 func (n *Element) RemoveAttribute(name string) error {
-	prop, err := n.getAttributeNode(name)
-	if err != nil {
-		return err
+	i := strings.IndexByte(name, ':')
+	if i == -1 {
+		return xmlUnsetProp(n, name)
 	}
 
-	xmlUnlinkNode(prop)
-	xmlFreeProp(prop)
+	// look for the prefix
+	ns := xmlSearchNs(n.OwnerDocument(), n, name[:i])
+	if ns == nil {
+		return errors.New("prefix was not found")
+	}
 
-	return nil
+	return xmlUnsetNsProp(n, ns, name)
 }
 
 // GetNamespaces returns Namespace objects associated with this
