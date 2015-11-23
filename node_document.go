@@ -59,7 +59,7 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 		return nil, err
 	}
 	attr := wrapAttribute(newAttr)
-	xmlSetNs(attr, wrapNamespace(ns))
+	xmlSetNs(attr, ns)
 
 	return wrapAttribute(newAttr), nil
 }
@@ -127,8 +127,11 @@ func (d *Document) Free() {
 }
 
 func (d *Document) String() string {
-	xc := documentString(d)
-	return xmlCharToString(xc)
+	return documentString(d, d.Encoding(), false)
+}
+
+func (d *Document) Dump(format bool) string {
+	return documentString(d, d.Encoding(), format)
 }
 
 func (d *Document) NodeType() XmlNodeType {

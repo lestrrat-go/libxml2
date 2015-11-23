@@ -133,7 +133,6 @@ var _XmlNodeType_index = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116,
 
 const _XmlNodeType_name = `ElementNodeAttributeNodeTextNodeCDataSectionNodeEntityRefNodeEntityNodePiNodeCommentNodeDocumentNodeDocumentTypeNodeDocumentFragNodeNotationNodeHTMLDocumentNodeDTDNodeElementDeclAttributeDeclEntityDeclNamespaceDeclXIncludeStartXIncludeEndDocbDocumentNode`
 
-
 func xmlNewDoc(version string) *C.xmlDoc {
 	return C.xmlNewDoc(stringToXmlChar(version))
 }
@@ -187,29 +186,37 @@ func xmlNewDocProp(doc *Document, k, v string) (*C.xmlAttr, error) {
 	return attr, nil
 }
 
-func xmlSearchNsByHref(doc *Document, n Node, uri string) *C.xmlNs {
+func xmlSearchNsByHref(doc *Document, n Node, uri string) *Namespace {
 	var xcuri *C.xmlChar
 	if len(uri) > 0 {
 		xcuri = stringToXmlChar(uri)
 	}
 
-	return C.xmlSearchNsByHref(
+	ns := C.xmlSearchNsByHref(
 		doc.ptr,
 		(*C.xmlNode)(n.Pointer()),
 		xcuri,
 	)
+	if ns == nil {
+		return nil
+	}
+	return wrapNamespace(ns)
 }
 
-func xmlSearchNs(doc *Document, n Node, prefix string) *C.xmlNs {
+func xmlSearchNs(doc *Document, n Node, prefix string) *Namespace {
 	var nptr *C.xmlNode
 	if n != nil {
 		nptr = (*C.xmlNode)(n.Pointer())
 	}
-	return C.xmlSearchNs(
+	ns := C.xmlSearchNs(
 		doc.ptr,
 		nptr,
 		stringToXmlChar(prefix),
 	)
+	if ns == nil {
+		return nil
+	}
+	return wrapNamespace(ns)
 }
 
 func xmlNewDocNode(doc *Document, ns *Namespace, localname, content string) *C.xmlNode {
@@ -225,20 +232,23 @@ func xmlNewDocNode(doc *Document, ns *Namespace, localname, content string) *C.x
 	)
 }
 
-func xmlNewNs(n Node, nsuri, prefix string) *C.xmlNs {
+func xmlNewNs(n Node, nsuri, prefix string) *Namespace {
 	var nptr *C.xmlNode
 	if n != nil {
 		nptr = (*C.xmlNode)(n.Pointer())
 	}
 
-	return C.xmlNewNs(
-		nptr,
-		stringToXmlChar(nsuri),
-		stringToXmlChar(prefix),
+	return wrapNamespace(
+		C.xmlNewNs(
+			nptr,
+			stringToXmlChar(nsuri),
+			stringToXmlChar(prefix),
+		),
 	)
 }
 
 func xmlSetNs(n Node, ns *Namespace) {
+	log.Printf("Setting namespace for %s to %s", n.NodeName(), ns.Prefix())
 	C.xmlSetNs(
 		(*C.xmlNode)(n.Pointer()),
 		(*C.xmlNs)(unsafe.Pointer(ns.ptr)),
@@ -655,19 +665,29 @@ func createElementNS(doc *Document, nsuri, name string) (*Element, error) {
 		return doc.CreateElement(name)
 	}
 
+	var rootptr *C.xmlNode
+	if root := doc.DocumentElement(); root != nil {
+		rootptr = (*C.xmlNode)(root.Pointer())
+	}
+
 	var localname string
 	var ns *C.xmlNs
 
 	if i := strings.IndexByte(name, ':'); i > 0 {
 		// split it into prefix and localname
-		prefix := name[:i]
+		prefix := stringToXmlChar(name[:i])
+		xmlnsuri := stringToXmlChar(nsuri)
 
 		// Is this namespace prefix registered already?
-		ns = xmlSearchNs(doc, doc.DocumentElement(), prefix)
+		ns = C.xmlSearchNs(
+			doc.ptr,
+			rootptr,
+			prefix,
+		)
 		if ns == nil {
 			// nope, create a new one.
 			localname = name[i+1:]
-			ns = xmlNewNs(nil, nsuri, prefix)
+			ns = C.xmlNewNs(nil, xmlnsuri, prefix)
 		} else {
 			// prefix is registered. do they have matching URI?
 			if xmlCharToString(ns.prefix) != name[:i] {
@@ -681,7 +701,13 @@ func createElementNS(doc *Document, nsuri, name string) (*Element, error) {
 	} else {
 		// If the name does not contain a prefix, check for the
 		// existence of this namespace via the URI
-		if ns = xmlSearchNsByHref(doc, doc.DocumentElement(), nsuri); ns != nil {
+		xmlnsuri := stringToXmlChar(nsuri)
+		ns = C.xmlSearchNsByHref(
+			doc.ptr,
+			rootptr,
+			xmlnsuri,
+		)
+		if ns != nil {
 			// Well, you can safely inherit the prefix and stuff
 			return doc.CreateElement(xmlCharToString(ns.prefix) + ":" + name)
 		}
@@ -712,11 +738,25 @@ func xmlFreeDoc(d *Document) {
 	d.ptr = nil
 }
 
-func documentString(d *Document) *C.xmlChar {
+func documentString(d *Document, encoding string, format bool) string {
 	var xc *C.xmlChar
+	var intformat C.int
+	if format {
+		intformat = C.int(1)
+	} else {
+		intformat = C.int(0)
+	}
+
+	// Ideally this shouldn't happen, but you never know.
+	if encoding == "" {
+		encoding = "utf-8"
+	}
+
 	i := C.int(0)
-	C.xmlDocDumpMemory(d.ptr, &xc, &i)
-	return xc
+	C.xmlDocDumpFormatMemoryEnc(d.ptr, &xc, &i, C.CString(encoding), intformat)
+
+	s := xmlCharToString(xc)
+	return s
 }
 
 func xmlNodeSetBase(d *Document, s string) {
@@ -797,4 +837,3 @@ func xmlFreeProp(prop *C.xmlAttr) {
 func xmlCopyNamespace(ns *C.xmlNs) *C.xmlNs {
 	return C.xmlCopyNamespace(ns)
 }
-

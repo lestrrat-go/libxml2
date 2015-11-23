@@ -2,7 +2,7 @@ package libxml2
 
 import (
 	"bytes"
-	"log"
+	"errors"
 )
 
 func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
@@ -17,16 +17,22 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		// Empty namespace
 
 		ns := xmlSearchNs(n.OwnerDocument(), n, "")
-		if ns != nil && ns.href != nil {
-			log.Printf("ns = %s\n", ns)
-		}
-		if activateflag {
-			xmlSetNs(n, nil)
+		if ns != nil && ns.URI() != "" {
+			if activateflag {
+				xmlSetNs(n, nil)
+			}
 		}
 		return nil
 	}
 
-	ns := wrapNamespace(xmlNewNs(n, uri, prefix))
+	if uri == "" {
+		return errors.New("missing uri for SetNamespace")
+	}
+	if prefix == "" {
+		return errors.New("missing prefix for SetNamespace")
+	}
+
+	ns := xmlNewNs(n, uri, prefix)
 	if activateflag {
 		xmlSetNs(n, ns)
 	}
@@ -54,12 +60,11 @@ func (n *Element) GetAttribute(name string) (*Attribute, error) {
 }
 
 func (n *Element) Attributes() ([]*Attribute, error) {
-	log.Printf("n.ptr.properties = %v", n.ptr.properties)
-	for attr := n.ptr.properties; attr != nil; {
-		log.Printf("type -> %s\n", attr._type)
-		attr = attr.next
+	attrs := []*Attribute{}
+	for attr := n.ptr.properties; attr != nil; attr = attr.next {
+		attrs = append(attrs, wrapAttribute(attr))
 	}
-	return nil, nil
+	return attrs, nil
 }
 
 func (n *Element) RemoveAttribute(name string) error {
@@ -85,6 +90,7 @@ func (n *Element) GetNamespaces() []*Namespace {
 		if ns.prefix == nil && ns.href == nil {
 			continue
 		}
+		// ALERT! Allocating new C struct here
 		newns := xmlCopyNamespace(ns)
 		if newns == nil { // XXX this is an error, no?
 			continue
