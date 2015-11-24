@@ -12,6 +12,23 @@ import (
 	"io"
 )
 
+// Parse parses the given buffer and returns a Document.
+func Parse(buf []byte, o ...ParseOption) (*Document, error) {
+	p := NewParser(o...)
+	return p.Parse(buf)
+}
+
+// ParseString parses the given string and returns a Document.
+func ParseString(s string, o ...ParseOption) (*Document, error) {
+	p := NewParser(o...)
+	return p.ParseString(s)
+}
+
+func ParseReader(rdr io.Reader, o ...ParseOption) (*Document, error) {
+	p := NewParser(o...)
+	return p.ParseReader(rdr)
+}
+
 const _ParseOption_name = "RecoverNoEntDTDLoadDTDAttrDTDValidNoErrorNoWarningPedanticNoBlanksSAX1XIncludeNoNetNoDictNscleanNoCDATANoXIncNodeCompactOld10NoBaseFixHugeOldSAXIgnoreEncBigLines"
 
 var _ParseOption_map = map[int]string{
