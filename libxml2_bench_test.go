@@ -5,6 +5,8 @@
 package libxml2
 
 import (
+	"bytes"
+	"encoding/xml"
 	"log"
 	"net/http"
 	"testing"
@@ -12,7 +14,7 @@ import (
 	"github.com/go-xmlpath/xmlpath"
 )
 
-func BenchmarkXmlpath(b *testing.B) {
+func BenchmarkXmlpath_Xmlpath(b *testing.B) {
 	res, err := http.Get("http://mattn.kaoriya.net/index.xml")
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +37,7 @@ func BenchmarkXmlpath(b *testing.B) {
 	}
 }
 
-func BenchmarkLibxml2(b *testing.B) {
+func BenchmarkXmlpath_Libxml2(b *testing.B) {
 	res, err := http.Get("http://mattn.kaoriya.net/index.xml")
 	if err != nil {
 		log.Fatal(err)
@@ -52,5 +54,49 @@ func BenchmarkLibxml2(b *testing.B) {
 		for _, n := range nodes {
 			_ = n
 		}
+	}
+}
+
+type Foo struct {
+	XMLName xml.Name `xml:"https://github.com/lestrrat/go-libxml2/foo foo:foo"`
+	Field1  string
+}
+
+func BenchmarkDOM_EncodingXml(b *testing.B) {
+	var buf bytes.Buffer
+	f := Foo{
+		Field1: "Hello, World!",
+	}
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		enc := xml.NewEncoder(&buf)
+		enc.Encode(f)
+	}
+}
+
+func BenchmarkDOM_Libxml2(b *testing.B) {
+	var buf bytes.Buffer
+	f := Foo{
+		Field1: "Hello, World!",
+	}
+	for i := 0; i < b.N; i++ {
+		d := CreateDocument()
+		defer d.Free()
+
+		root, err := d.CreateElementNS("https://github.com/lestrrat/go-libxml2/foo", "foo:foo")
+		if err != nil {
+			panic(err)
+		}
+		d.SetDocumentElement(root)
+
+		f1xml, err := d.CreateElement("Field1")
+		if err != nil {
+			panic(err)
+		}
+		root.AppendChild(f1xml)
+
+		f1xml.AppendText(f.Field1)
+		buf.Reset()
+		buf.WriteString(d.Dump(false))
 	}
 }
