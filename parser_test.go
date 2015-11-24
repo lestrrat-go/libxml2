@@ -70,8 +70,8 @@ func parseShouldSucceed(t *testing.T, opts ParseOption, inputs []string) {
 	t.Logf("Test parsing with parser %v", opts)
 	for _, s := range inputs {
 		d, err := ParseString(s, opts)
-		if err != nil {
-			t.Errorf("Failed to parse '%s': %s", s, err)
+		if !assert.NoError(t, err, "Parse should succeed") {
+			return
 		}
 		d.Free()
 	}

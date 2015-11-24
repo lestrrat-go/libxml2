@@ -177,6 +177,63 @@ func ReportErrors(b bool) {
 	}
 }
 
+func xmlCreateMemoryParserCtxt(s string, o ParseOption) (*ParserCtxt, error) {
+	ctx := C.xmlCreateMemoryParserCtxt(C.CString(s), C.int(len(s)))
+	if ctx == nil {
+		return nil, errors.New("error creating parser")
+	}
+	C.xmlCtxtUseOptions(ctx, C.int(o))
+
+	return &ParserCtxt{
+		ptr: ctx,
+	}, nil
+}
+
+func (ctx ParserCtxt) Parse() error {
+	ptr := ctx.ptr
+	if ptr == nil {
+		return ErrInvalidParser
+	}
+
+	if C.xmlParseDocument(ptr) != C.int(0) {
+		return errors.New("parse failed")
+	}
+	return nil
+}
+
+func (ctx *ParserCtxt) Free() error {
+	ptr := ctx.ptr
+	if ptr == nil {
+		return ErrInvalidParser
+	}
+	C.xmlFreeParserCtxt(ptr)
+	ctx.ptr = nil
+
+	return nil
+}
+
+func (ctx ParserCtxt) WellFormed() bool {
+	ptr := ctx.ptr
+	if ptr == nil {
+		return false
+	}
+
+	return ptr.wellFormed == C.int(0)
+}
+
+func (ctx ParserCtxt) Document() (*Document, error) {
+	ptr := ctx.ptr
+	if ptr == nil {
+		return nil, ErrInvalidParser
+	}
+
+	doc := ptr.myDoc
+	if doc != nil {
+		return wrapDocument(doc), nil
+	}
+	return nil, errors.New("no document available")
+}
+
 func xmlNewDoc(version string) *C.xmlDoc {
 	return C.xmlNewDoc(stringToXmlChar(version))
 }

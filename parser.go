@@ -1,11 +1,5 @@
 package libxml2
 
-/*
-#cgo pkg-config: libxml-2.0
-#include "libxml/parser.h"
-#include "libxml/parserInternals.h"
-*/
-import "C"
 import (
 	"bytes"
 	"errors"
@@ -107,24 +101,25 @@ func (p *Parser) Parse(buf []byte) (*Document, error) {
 }
 
 func (p *Parser) ParseString(s string) (*Document, error) {
-	ctx := C.xmlCreateMemoryParserCtxt(C.CString(s), C.int(len(s)))
-	if ctx == nil {
-		return nil, errors.New("error creating parser")
+	ctx, err := xmlCreateMemoryParserCtxt(s, p.Options)
+	if err != nil {
+		return nil, err
 	}
-	defer C.xmlFreeParserCtxt(ctx)
+	defer ctx.Free()
 
-	C.xmlCtxtUseOptions(ctx, C.int(p.Options))
-	C.xmlParseDocument(ctx)
+	if err := ctx.Parse(); err != nil {
+		return nil, err
+	}
 
-	if ctx.wellFormed == C.int(0) {
+	if ctx.WellFormed() {
 		return nil, errors.New("malformed XML")
 	}
 
-	doc := ctx.myDoc
-	if doc == nil {
-		return nil, errors.New("parse failed")
+	doc, err := ctx.Document()
+	if err != nil {
+		return nil, err
 	}
-	return wrapDocument(doc), nil
+	return doc, nil
 }
 
 func (p *Parser) ParseReader(in io.Reader) (*Document, error) {

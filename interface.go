@@ -41,6 +41,7 @@ const (
 var (
 	ErrNodeNotFound    = errors.New("node not found")
 	ErrInvalidArgument = errors.New("invalid argument")
+	ErrInvalidParser   = errors.New("invalid parser")
 	ErrInvalidNode     = errors.New("invalid node")
 	ErrInvalidNodeName = errors.New("invalid node name")
 )
@@ -177,6 +178,10 @@ const (
 	XmlParseMax
 	XmlParseEmptyOption ParseOption = 0
 )
+
+type ParserCtxt struct {
+	ptr *C.xmlParserCtxt
+}
 
 type Parser struct {
 	Options ParseOption
