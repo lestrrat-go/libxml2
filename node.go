@@ -860,19 +860,22 @@ func xmlUnsetNsProp(n Node, ns *Namespace, name string) error {
 	return nil
 }
 
-func xmlC14NDocDumpMemory(d *Document, exclusive bool) (string, error) {
+func xmlC14NDocDumpMemory(d *Document, mode C14NMode, withComments bool) (string, error) {
 	var result *C.xmlChar
-	var exclInt C.int
-	if exclusive {
-		exclInt = 1
+
+	var withCommentsInt C.int
+	if withComments {
+		withCommentsInt = 1
 	}
+
+	modeInt := C.int(mode)
 
 	ret := C.xmlC14NDocDumpMemory(
 		d.ptr,
 		nil,
-		exclInt,
+		modeInt,
 		nil,
-		0,
+		withCommentsInt,
 		&result,
 	)
 	if ret == 0 {

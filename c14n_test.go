@@ -9,8 +9,10 @@ import (
 func TestC14N(t *testing.T) {
 	expected := `<?xml-stylesheet href="doc.xsl"
    type="text/xsl"   ?>
-<doc>Hello, world!</doc>
-<?pi-without-data?>`
+<doc>Hello, world!<!-- Comment 1 --></doc>
+<?pi-without-data?>
+<!-- Comment 2 -->
+<!-- Comment 3 -->`
 
 	doc, err := ParseString(`<?xml version="1.0"?>
 <?xml-stylesheet   href="doc.xsl"
@@ -31,7 +33,7 @@ func TestC14N(t *testing.T) {
 		return
 	}
 
-	s, err := doc.C14N(true)
+	s, err := C14NSerialize{Mode: C14NExclusive1_0, WithComments: true}.Serialize(doc)
 	if !assert.NoError(t, err, "C14N should succeed") {
 		return
 	}
@@ -55,7 +57,7 @@ func TestC14NNonExclusive(t *testing.T) {
 		return
 	}
 
-	s, err := doc.C14N(false)
+	s, err := C14NSerialize{}.Serialize(doc)
 	if err != nil {
 		t.Errorf("Failed to format in C14N: %s", err)
 		return

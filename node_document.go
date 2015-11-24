@@ -178,8 +178,3 @@ func (d *Document) Walk(fn func(Node) error) error {
 	return nil
 }
 
-func (d *Document) C14N(exclusive bool) (string, error) {
-	return xmlC14NDocDumpMemory(d, exclusive)
-}
-
-
