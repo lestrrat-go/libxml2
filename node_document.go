@@ -23,11 +23,19 @@ func (d *Document) Pointer() unsafe.Pointer {
 }
 
 func (d *Document) NamespaceByHref(n Node, uri string) (*Namespace, error) {
-	return xmlSearchNsByHref(d, n, uri), nil
+	ns := xmlSearchNsByHref(d, n, uri)
+	if ns == nil {
+		return nil, errors.New("not found")
+	}
+	return ns, nil
 }
 
 func (d *Document) NamespaceByPrefix(n Node, prefix string) (*Namespace, error) {
-	return xmlSearchNs(d, n, prefix), nil
+	ns := xmlSearchNs(d, n, prefix)
+	if ns == nil {
+		return nil, errors.New("not found")
+	}
+	return ns, nil
 }
 
 func (d *Document) CreateAttribute(k, v string) (*Attribute, error) {
