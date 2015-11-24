@@ -23,15 +23,15 @@ package libxml2
 /*
 #cgo pkg-config: libxml-2.0
 #include <stdbool.h>
-#include "libxml/HTMLparser.h"
-#include "libxml/HTMLtree.h"
-#include "libxml/globals.h"
-#include "libxml/parser.h"
-#include "libxml/parserInternals.h"
-#include "libxml/tree.h"
-#include "libxml/xmlerror.h"
-#include "libxml/xpath.h"
-#include "libxml/c14n.h"
+#include <libxml/HTMLparser.h>
+#include <libxml/HTMLtree.h>
+#include <libxml/globals.h>
+#include <libxml/parser.h>
+#include <libxml/parserInternals.h>
+#include <libxml/tree.h>
+#include <libxml/xmlerror.h>
+#include <libxml/xpath.h>
+#include <libxml/c14n.h>
 
 
 static inline void MY_nilErrorHandler(void *ctx, const char *msg, ...) {}
@@ -700,6 +700,29 @@ func (n *XmlNode) NodeType() XmlNodeType {
 func (n *XmlNode) Walk(fn func(Node) error) error {
 	walk(n, fn)
 	return nil
+}
+
+// AutoFree allows you to free the underlying C resources. It is
+// meant to be called from defer. If you don't call `MakeMortal()` or
+// do call `MakePersistent()`, AutoFree is a no-op.
+func (n *XmlNode) AutoFree() {
+	if !n.mortal {
+		return
+	}
+	n.Free()
+}
+
+// MakeMortal flags the node so that `AutoFree` calls Free()
+// to release the underlying C resources.
+func (n *XmlNode) MakeMortal() {
+	n.mortal = true
+}
+
+// MakePersistent flags the node so that `AutoFree` becomes a no-op.
+// Make sure to call this if you used `MakeMortal` and `AutoFree`, 
+// but you then decided to keep the node around.
+func (n *XmlNode) MakePersistent() {
+	n.mortal = false
 }
 
 func (n *XmlNode) Free() {

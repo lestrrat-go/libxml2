@@ -89,6 +89,7 @@ type NodeList []Node
 
 type XmlNode struct {
 	ptr *C.xmlNode
+	mortal bool
 }
 
 type Attribute struct {
