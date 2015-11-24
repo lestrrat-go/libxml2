@@ -1,7 +1,6 @@
 package libxml2
 
 import (
-	"bytes"
 	"errors"
 	"unsafe"
 )
@@ -39,8 +38,8 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 		return nil, err
 	}
 
-	root := d.DocumentElement()
-	if root == nil {
+	root, err := d.DocumentElement()
+	if err != nil {
 		return nil, errors.New("attribute with namespaces require a root node")
 	}
 
@@ -102,18 +101,18 @@ func (d *Document) CreateTextNode(txt string) (*Text, error) {
 	return wrapText(t), nil
 }
 
-func (d *Document) DocumentElement() Node {
+func (d *Document) DocumentElement() (Node, error) {
 	n := documentElement(d)
 	if n == nil {
-		return nil
+		return nil, ErrNodeNotFound
 	}
 	return wrapToNode(n)
 }
 
 func (d *Document) FindNodes(xpath string) (NodeList, error) {
-	root := d.DocumentElement()
-	if root == nil {
-		return nil, ErrNodeNotFound
+	root, err := d.DocumentElement()
+	if err != nil {
+		return nil, err
 	}
 	return root.FindNodes(xpath)
 }
@@ -162,20 +161,12 @@ func (d *Document) Standalone() int {
 	return int(d.ptr.standalone)
 }
 
-func (d *Document) ToString(skipXmlDecl bool) string {
-	buf := &bytes.Buffer{}
-	for _, n := range childNodes(d) {
-		if n.NodeType() == DTDNode {
-			continue
-		}
-		buf.WriteString(n.String())
-	}
-
-	return buf.String()
-}
-
 func (d *Document) ToStringC14N(exclusive bool) (string, error) {
-	return d.DocumentElement().ToStringC14N(exclusive)
+	root, err := d.DocumentElement()
+	if err != nil {
+		return "", err
+	}
+	return root.ToStringC14N(exclusive)
 }
 
 func (d *Document) URI() string {
@@ -186,7 +177,11 @@ func (d *Document) Version() string {
 	return xmlCharToString(d.ptr.version)
 }
 
-func (d *Document) Walk(fn func(Node) error) {
-	walk(d.DocumentElement(), fn)
-
+func (d *Document) Walk(fn func(Node) error) error {
+	root, err := d.DocumentElement()
+	if err != nil {
+		return err
+	}
+	walk(root, fn)
+	return nil
 }

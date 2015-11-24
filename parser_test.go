@@ -1,6 +1,11 @@
 package libxml2
 
-import "testing"
+import (
+	"regexp"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 const stdXmlDecl = `<?xml version="1.0"?>` + "\n"
 
@@ -184,7 +189,7 @@ func TestParseOptionStringer(t *testing.T) {
 	}
 
 	for _, d := range values {
-		if d.v.String() != "[" + d.e + "]"{
+		if d.v.String() != "["+d.e+"]" {
 			t.Errorf("e '%s', got '%s'", d.e, d.v.String())
 		}
 	}
@@ -238,8 +243,7 @@ func TestRoundtripNoBlanks(t *testing.T) {
 		return
 	}
 
-	expected := `<a><b/></a>`
-	if doc.ToString(true) != expected {
-		t.Errorf("expected '%s', got '%s'", expected, doc.String())
+	if !assert.Regexp(t, regexp.MustCompile(`<a><b/></a>`), doc.Dump(false), "stringified xml should have no blanks") {
+		return
 	}
 }

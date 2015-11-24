@@ -284,12 +284,16 @@ func (n NodeList) String() string {
 	return buf.String()
 }
 
-func (n NodeList) Literal() string {
+func (n NodeList) Literal() (string, error) {
 	buf := bytes.Buffer{}
 	for _, x := range n {
-		buf.WriteString(x.Literal())
+		l, err := x.Literal()
+		if err != nil {
+			return "", err
+		}
+		buf.WriteString(l)
 	}
-	return buf.String()
+	return buf.String(), nil
 }
 
 func wrapNamespace(n *C.xmlNs) *Namespace {
@@ -314,9 +318,7 @@ func wrapElement(n *C.xmlElement) *Element {
 
 func wrapXmlNode(n *C.xmlNode) *XmlNode {
 	return &XmlNode{
-		&xmlNode{
-			ptr: (*C.xmlNode)(unsafe.Pointer(n)),
-		},
+		ptr: (*C.xmlNode)(unsafe.Pointer(n)),
 	}
 }
 
@@ -324,14 +326,14 @@ func wrapText(n *C.xmlNode) *Text {
 	return &Text{wrapXmlNode(n)}
 }
 
-func wrapToNode(n *C.xmlNode) Node {
+func wrapToNode(n *C.xmlNode) (Node, error) {
 	switch XmlNodeType(n._type) {
 	case ElementNode:
-		return wrapElement((*C.xmlElement)(unsafe.Pointer(n)))
+		return wrapElement((*C.xmlElement)(unsafe.Pointer(n))), nil
 	case TextNode:
-		return &Text{&XmlNode{&xmlNode{ptr: n}}}
+		return wrapText(n), nil
 	default:
-		return &XmlNode{&xmlNode{ptr: n}}
+		return nil, errors.New("unknown node")
 	}
 }
 
@@ -380,15 +382,15 @@ func nodeValue(n Node) string {
 	return ""
 }
 
-func (n *xmlNode) Pointer() unsafe.Pointer {
+func (n *XmlNode) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(n.ptr)
 }
 
-func (n *xmlNode) AddChild(child Node) {
+func (n *XmlNode) AddChild(child Node) {
 	C.xmlAddChild(n.ptr, (*C.xmlNode)(child.Pointer()))
 }
 
-func (n *xmlNode) AppendChild(child Node) error {
+func (n *XmlNode) AppendChild(child Node) error {
 	// XXX There must be lots more checks here because AddChild does things
 	// under the table like merging text nodes, freeing some nodes implicitly,
 	// et al
@@ -396,7 +398,7 @@ func (n *xmlNode) AppendChild(child Node) error {
 	return nil
 }
 
-func (n *xmlNode) ChildNodes() NodeList {
+func (n *XmlNode) ChildNodes() (NodeList, error) {
 	return childNodes(n)
 }
 
@@ -404,11 +406,11 @@ func wrapDocument(n *C.xmlDoc) *Document {
 	return &Document{ptr: n}
 }
 
-func (n *xmlNode) OwnerDocument() *Document {
+func (n *XmlNode) OwnerDocument() *Document {
 	return wrapDocument(n.ptr.doc)
 }
 
-func (n *xmlNode) FindNodes(xpath string) (NodeList, error) {
+func (n *XmlNode) FindNodes(xpath string) (NodeList, error) {
 	ctx, err := NewXPathContext(n)
 	if err != nil {
 		return nil, err
@@ -418,7 +420,7 @@ func (n *xmlNode) FindNodes(xpath string) (NodeList, error) {
 	return ctx.FindNodes(xpath)
 }
 
-func (n *xmlNode) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
+func (n *XmlNode) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
 	ctx, err := NewXPathContext(n)
 	if err != nil {
 		return nil, err
@@ -428,31 +430,31 @@ func (n *xmlNode) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
 	return ctx.FindNodesExpr(expr)
 }
 
-func (n *xmlNode) FirstChild() Node {
+func (n *XmlNode) FirstChild() (Node, error) {
 	if !n.HasChildNodes() {
-		return nil
+		return nil, errors.New("no children")
 	}
 
 	return wrapToNode(((*C.xmlNode)(n.Pointer())).children)
 }
 
-func (n *xmlNode) HasChildNodes() bool {
+func (n *XmlNode) HasChildNodes() bool {
 	return n.ptr.children != nil
 }
 
-func (n *xmlNode) IsSameNode(other Node) bool {
+func (n *XmlNode) IsSameNode(other Node) bool {
 	return n.Pointer() == other.Pointer()
 }
 
-func (n *xmlNode) LastChild() Node {
+func (n *XmlNode) LastChild() (Node, error) {
 	return wrapToNode(n.ptr.last)
 }
 
-func (n xmlNode) Literal() string {
-	return n.String()
+func (n XmlNode) Literal() (string, error) {
+	return n.String(), nil
 }
 
-func (n *xmlNode) LocalName() string {
+func (n *XmlNode) LocalName() string {
 	switch n.NodeType() {
 	case ElementNode, AttributeNode, ElementDecl, AttributeDecl:
 		return xmlCharToString(n.ptr.name)
@@ -460,7 +462,7 @@ func (n *xmlNode) LocalName() string {
 	return ""
 }
 
-func (n *xmlNode) NamespaceURI() string {
+func (n *XmlNode) NamespaceURI() string {
 	switch n.NodeType() {
 	case ElementNode, AttributeNode, PiNode:
 		if ns := n.ptr.ns; ns != nil && ns.href != nil {
@@ -470,23 +472,23 @@ func (n *xmlNode) NamespaceURI() string {
 	return ""
 }
 
-func (n *xmlNode) NodeName() string {
+func (n *XmlNode) NodeName() string {
 	return nodeName(n)
 }
 
-func (n *xmlNode) NodeValue() string {
+func (n *XmlNode) NodeValue() string {
 	return nodeValue(n)
 }
 
-func (n *xmlNode) NextSibling() Node {
+func (n *XmlNode) NextSibling() (Node, error) {
 	return wrapToNode(n.ptr.next)
 }
 
-func (n *xmlNode) ParetNode() Node {
+func (n *XmlNode) ParetNode() (Node, error) {
 	return wrapToNode(n.ptr.parent)
 }
 
-func (n *xmlNode) Prefix() string {
+func (n *XmlNode) Prefix() string {
 	switch n.NodeType() {
 	case ElementNode, AttributeNode, PiNode:
 		if ns := n.ptr.ns; ns != nil && ns.prefix != nil {
@@ -496,15 +498,15 @@ func (n *xmlNode) Prefix() string {
 	return ""
 }
 
-func (n *xmlNode) PreviousSibling() Node {
+func (n *XmlNode) PreviousSibling() (Node, error) {
 	return wrapToNode(n.ptr.prev)
 }
 
-func (n *xmlNode) SetNodeName(name string) {
+func (n *XmlNode) SetNodeName(name string) {
 	C.xmlNodeSetName(n.ptr, stringToXmlChar(name))
 }
 
-func (n *xmlNode) SetNodeValue(value string) {
+func (n *XmlNode) SetNodeValue(value string) {
 	// TODO: Implement this in C
 	if n.NodeType() != AttributeNode {
 		C.xmlNodeSetContent(n.ptr, stringToXmlChar(value))
@@ -523,15 +525,15 @@ func (n *xmlNode) SetNodeValue(value string) {
 	ptr.last = ptr.children
 }
 
-func (n *xmlNode) String() string {
+func (n *XmlNode) String() string {
 	return n.ToString(0, false)
 }
 
-func (n *xmlNode) TextContent() string {
+func (n *XmlNode) TextContent() string {
 	return xmlCharToString(C.xmlXPathCastNodeToString(n.ptr))
 }
 
-func (n *xmlNode) ToString(format int, docencoding bool) string {
+func (n *XmlNode) ToString(format int, docencoding bool) string {
 	// TODO: Implement htis in C
 	buffer := C.xmlBufferCreate()
 	defer C.xmlBufferFree(buffer)
@@ -545,7 +547,7 @@ func (n *xmlNode) ToString(format int, docencoding bool) string {
 	return xmlCharToString(C.xmlBufferContent(buffer))
 }
 
-func (n *xmlNode) ToStringC14N(exclusive bool) (string, error) {
+func (n *XmlNode) ToStringC14N(exclusive bool) (string, error) {
 	var result *C.xmlChar
 	var exclInt C.int
 	if exclusive {
@@ -567,7 +569,8 @@ func (n *xmlNode) ToStringC14N(exclusive bool) (string, error) {
 }
 
 var ErrNamespaceNotFound = errors.New("namespace not found")
-func (n *xmlNode) LookupNamespacePrefix(href string) (string, error) {
+
+func (n *XmlNode) LookupNamespacePrefix(href string) (string, error) {
 	if href == "" {
 		return "", ErrNamespaceNotFound
 	}
@@ -580,7 +583,7 @@ func (n *xmlNode) LookupNamespacePrefix(href string) (string, error) {
 	return xmlCharToString(ns.prefix), nil
 }
 
-func (n *xmlNode) LookupNamespaceURI(prefix string) (string, error) {
+func (n *XmlNode) LookupNamespaceURI(prefix string) (string, error) {
 	if prefix == "" {
 		return "", ErrNamespaceNotFound
 	}
@@ -593,37 +596,45 @@ func (n *xmlNode) LookupNamespaceURI(prefix string) (string, error) {
 	return xmlCharToString(ns.href), nil
 }
 
-func (n *xmlNode) NodeType() XmlNodeType {
+func (n *XmlNode) NodeType() XmlNodeType {
 	return XmlNodeType(n.ptr._type)
 }
 
-func (n *xmlNode) Walk(fn func(Node) error) {
-	panic("should not call walk on internal struct")
-}
-
-func (n *XmlNode) Walk(fn func(Node) error) {
+func (n *XmlNode) Walk(fn func(Node) error) error {
 	walk(n, fn)
+	return nil
 }
 
-func (n *xmlNode) Free() {
+func (n *XmlNode) Free() {
 	C.xmlFreeNode(n.ptr)
 }
 
-func walk(n Node, fn func(Node) error) {
+func walk(n Node, fn func(Node) error) error {
 	if err := fn(n); err != nil {
-		return
+		return err
 	}
-	for _, c := range n.ChildNodes() {
-		walk(c, fn)
+	children, err := n.ChildNodes()
+	if err != nil {
+		return err
 	}
+	for _, c := range children {
+		if err := walk(c, fn); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func childNodes(n ptr) NodeList {
+func childNodes(n ptr) (NodeList, error) {
 	ret := NodeList(nil)
 	for chld := ((*C.xmlNode)(n.Pointer())).children; chld != nil; chld = chld.next {
-		ret = append(ret, wrapToNode(chld))
+		nchld, err := wrapToNode(chld)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, nchld)
 	}
-	return ret
+	return ret, nil
 }
 
 func splitPrefixLocal(s string) (string, string) {
@@ -664,7 +675,7 @@ func createElementNS(doc *Document, nsuri, name string) (*Element, error) {
 	}
 
 	var rootptr *C.xmlNode
-	if root := doc.DocumentElement(); root != nil {
+	if root, err := doc.DocumentElement(); err == nil {
 		rootptr = (*C.xmlNode)(root.Pointer())
 	}
 

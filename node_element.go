@@ -105,10 +105,18 @@ func (n *Element) GetNamespaces() []*Namespace {
 	return ret
 }
 
-func (n Element) Literal() string {
+func (n Element) Literal() (string, error) {
 	buf := bytes.Buffer{}
-	for _, c := range n.ChildNodes() {
-		buf.WriteString(c.Literal())
+	children, err := n.ChildNodes()
+	if err != nil {
+		return "", err
 	}
-	return buf.String()
+	for _, c := range children {
+		l, err := c.Literal()
+		if err != nil {
+			return "", err
+		}
+		buf.WriteString(l)
+	}
+	return buf.String(), nil
 }

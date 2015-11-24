@@ -52,33 +52,41 @@ func (x XPathObject) BoolValue() bool {
 	return C.int(x.ptr.boolval) == 1
 }
 
-func (x XPathObject) NodeList() NodeList {
+func (x XPathObject) NodeList() (NodeList, error) {
 	nodeset := x.ptr.nodesetval
 	if nodeset == nil {
-		return NodeList(nil)
+		return nil, ErrInvalidNode
 	}
 
 	if nodeset.nodeNr == 0 {
-		return NodeList(nil)
+		return nil, ErrInvalidNode
 	}
 
 	ret := make(NodeList, nodeset.nodeNr)
 	for i := 0; i < int(nodeset.nodeNr); i++ {
-		ret[i] = wrapToNode(C.MY_xmlNodeSetTabAt(nodeset.nodeTab, C.int(i)))
+		v, err := wrapToNode(C.MY_xmlNodeSetTabAt(nodeset.nodeTab, C.int(i)))
+		if err != nil {
+			return nil, err
+		}
+		ret[i] = v
 	}
 
-	return ret
+	return ret, nil
 }
 
-func (x XPathObject) StringValue() string {
+func (x XPathObject) StringValue() (string, error) {
 	switch x.Type() {
 	case XPathNodeSet:
-		if x.ForceLiteral {
-			return x.NodeList().Literal()
+		nl, err := x.NodeList()
+		if err != nil {
+			return "", err
 		}
-		return x.NodeList().String()
+		if x.ForceLiteral {
+			return nl.Literal()
+		}
+		return nl.String(), nil
 	default:
-		return fmt.Sprintf("%v", x)
+		return fmt.Sprintf("%v", x), nil
 	}
 }
 
@@ -192,7 +200,7 @@ func (x *XPathContext) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
 	}
 	defer res.Free()
 
-	return res.NodeList(), nil
+	return res.NodeList()
 }
 
 func (x *XPathContext) FindValue(s string) (*XPathObject, error) {

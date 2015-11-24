@@ -1,6 +1,10 @@
 package libxml2
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestXPathContext(t *testing.T) {
 	doc, err := ParseString(`<foo><bar a="b"></bar></foo>`)
@@ -9,9 +13,8 @@ func TestXPathContext(t *testing.T) {
 	}
 	defer doc.Free()
 
-	root := doc.DocumentElement()
-	if root == nil {
-		t.Errorf("Failed to get root element")
+	root, err := doc.DocumentElement()
+	if !assert.NoError(t, err, "DocumentElement should succeed") {
 		return
 	}
 
@@ -112,9 +115,8 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 	}
 	defer doc.Free()
 
-	root := doc.DocumentElement()
-	if root == nil {
-		t.Errorf("Failed to get root element")
+	root, err := doc.DocumentElement()
+	if !assert.NoError(t, err, "DocumentElement should succeed") {
 		return
 	}
 
@@ -134,8 +136,12 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 
 	switch res.Type() {
 	case XPathNodeSet:
-		if res.StringValue() != "baz" {
-			t.Errorf("Expected result to be baz, got %s", res.StringValue())
+		s, err := res.StringValue()
+		if !assert.NoError(t, err, "StringValue() should succeed") {
+			return
+		}
+		if !assert.Equal(t, "baz", s, "results match") {
+			return
 		}
 	default:
 		t.Errorf("Expected type to be XPathObjectNodeSet, got %s", res.Type())
@@ -149,9 +155,8 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 	}
 	defer doc.Free()
 
-	root := doc.DocumentElement()
-	if root == nil {
-		t.Errorf("Failed to get root element")
+	root, err := doc.DocumentElement()
+	if !assert.NoError(t, err, "DocumentElement() should succeed") {
 		return
 	}
 

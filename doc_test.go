@@ -1,6 +1,10 @@
 package libxml2
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // Tests for DOM Level 3
 
@@ -224,9 +228,8 @@ func TestDocumentCreateAttribute(t *testing.T) {
 		}
 
 		// Attribute nodes claim to not have any child nodes, but they do?!
-		content := node.FirstChild()
-		if content == nil {
-			t.Errorf("Expected FirstChild to return a node")
+		content, err := node.FirstChild()
+		if !assert.NoError(t, err, "Expected FirstChild to return a node") {
 			return
 		}
 
@@ -296,7 +299,7 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 	})
 
 	withDocument(func(d *Document) {
-		attr, err := d.CreateAttributeNS("http://kungfoo", "kung:foo","bar");
+		attr, err := d.CreateAttributeNS("http://kungfoo", "kung:foo", "bar")
 		if err == nil {
 			t.Errorf("Creating Attribute node w/o root node should have failed")
 			return
@@ -309,7 +312,7 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 		}
 		d.SetDocumentElement(elem)
 
-		attr, err = d.CreateAttributeNS("http://kungfoo", "kung:foo","bar");
+		attr, err = d.CreateAttributeNS("http://kungfoo", "kung:foo", "bar")
 		if err != nil {
 			t.Errorf("Failed to create Attribute node: %s", err)
 			return

@@ -27,7 +27,13 @@ func ExmapleXML() {
 		return nil
 	})
 
-	ctx, err := libxml2.NewXPathContext(doc.DocumentElement())
+	root, err := doc.DocumentElement()
+	if err != nil {
+		log.Printf("Failed to fetch document element: %s", err)
+		return
+	}
+
+	ctx, err := libxml2.NewXPathContext(root)
 	if err != nil {
 		log.Printf("Failed to create xpath context: %s", err)
 		return

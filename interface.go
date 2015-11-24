@@ -41,6 +41,7 @@ const (
 var (
 	ErrNodeNotFound    = errors.New("node not found")
 	ErrInvalidArgument = errors.New("invalid argument")
+	ErrInvalidNode     = errors.New("invalid node")
 	ErrInvalidNodeName = errors.New("invalid node name")
 )
 
@@ -57,41 +58,37 @@ type Node interface {
 	ptr
 	AddChild(Node)
 	AppendChild(Node) error
-	ChildNodes() NodeList
+	ChildNodes() (NodeList, error)
 	OwnerDocument() *Document
 	FindNodes(string) (NodeList, error)
-	FirstChild() Node
+	FirstChild() (Node, error)
 	Free()
 	HasChildNodes() bool
 	IsSameNode(Node) bool
-	LastChild() Node
+	LastChild() (Node, error)
 	// Literal is almost the same as String(), except for things like Element
 	// and Attribute nodes. String() will return the XML stringification of
 	// these, but Literal() will return the "value" associated with them.
-	Literal() string
-	NextSibling() Node
+	Literal() (string, error)
+	NextSibling() (Node, error)
 	NodeName() string
 	NodeType() XmlNodeType
 	NodeValue() string
-	ParetNode() Node
-	PreviousSibling() Node
+	ParetNode() (Node, error)
+	PreviousSibling() (Node, error)
 	SetNodeName(string)
 	SetNodeValue(string)
 	String() string
 	TextContent() string
 	ToString(int, bool) string
 	ToStringC14N(bool) (string, error)
-	Walk(func(Node) error)
+	Walk(func(Node) error) error
 }
 
 type NodeList []Node
 
-type xmlNode struct {
-	ptr *C.xmlNode
-}
-
 type XmlNode struct {
-	*xmlNode
+	ptr *C.xmlNode
 }
 
 type Attribute struct {
@@ -111,7 +108,7 @@ type Element struct {
 }
 
 type Document struct {
-	ptr  *C.xmlDoc
+	ptr *C.xmlDoc
 }
 
 type Text struct {
@@ -155,29 +152,29 @@ type XPathExpression struct {
 type ParseOption int
 
 const (
-	XmlParseRecover     ParseOption = 1 << iota /* recover on errors */
-	XmlParseNoEnt                               /* substitute entities */
-	XmlParseDTDLoad                             /* load the external subset */
-	XmlParseDTDAttr                             /* default DTD attributes */
-	XmlParseDTDValid                            /* validate with the DTD */
-	XmlParseNoError                             /* suppress error reports */
-	XmlParseNoWarning                           /* suppress warning reports */
-	XmlParsePedantic                            /* pedantic error reporting */
-	XmlParseNoBlanks                            /* remove blank nodes */
-	XmlParseSAX1                                /* use the SAX1 interface internally */
-	XmlParseXInclude                            /* Implement XInclude substitition  */
-	XmlParseNoNet                               /* Forbid network access */
-	XmlParseNoDict                              /* Do not reuse the context dictionnary */
-	XmlParseNsclean                             /* remove redundant namespaces declarations */
-	XmlParseNoCDATA                             /* merge CDATA as text nodes */
-	XmlParseNoXIncNode                          /* do not generate XINCLUDE START/END nodes */
-	XmlParseCompact                             /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
-	XmlParseOld10                               /* parse using XML-1.0 before update 5 */
-	XmlParseNoBaseFix                           /* do not fixup XINCLUDE xml:base uris */
-	XmlParseHuge                                /* relax any hardcoded limit from the parser */
-	XmlParseOldSAX                              /* parse using SAX2 interface before 2.7.0 */
-	XmlParseIgnoreEnc                           /* ignore internal document encoding hint */
-	XmlParseBigLines                            /* Store big lines numbers in text PSVI field */
+	XmlParseRecover    ParseOption = 1 << iota /* recover on errors */
+	XmlParseNoEnt                              /* substitute entities */
+	XmlParseDTDLoad                            /* load the external subset */
+	XmlParseDTDAttr                            /* default DTD attributes */
+	XmlParseDTDValid                           /* validate with the DTD */
+	XmlParseNoError                            /* suppress error reports */
+	XmlParseNoWarning                          /* suppress warning reports */
+	XmlParsePedantic                           /* pedantic error reporting */
+	XmlParseNoBlanks                           /* remove blank nodes */
+	XmlParseSAX1                               /* use the SAX1 interface internally */
+	XmlParseXInclude                           /* Implement XInclude substitition  */
+	XmlParseNoNet                              /* Forbid network access */
+	XmlParseNoDict                             /* Do not reuse the context dictionnary */
+	XmlParseNsclean                            /* remove redundant namespaces declarations */
+	XmlParseNoCDATA                            /* merge CDATA as text nodes */
+	XmlParseNoXIncNode                         /* do not generate XINCLUDE START/END nodes */
+	XmlParseCompact                            /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
+	XmlParseOld10                              /* parse using XML-1.0 before update 5 */
+	XmlParseNoBaseFix                          /* do not fixup XINCLUDE xml:base uris */
+	XmlParseHuge                               /* relax any hardcoded limit from the parser */
+	XmlParseOldSAX                             /* parse using SAX2 interface before 2.7.0 */
+	XmlParseIgnoreEnc                          /* ignore internal document encoding hint */
+	XmlParseBigLines                           /* Store big lines numbers in text PSVI field */
 	XmlParseMax
 	XmlParseEmptyOption ParseOption = 0
 )

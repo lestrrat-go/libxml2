@@ -1,6 +1,10 @@
 package libxml2
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestParseHTML(t *testing.T) {
 	doc, err := ParseHTMLString(`<html><body><h1>Hello, World!</h1><p>Lorem Ipsum</p></body></html>`)
@@ -10,9 +14,11 @@ func TestParseHTML(t *testing.T) {
 	}
 	defer doc.Free()
 
-	root := doc.DocumentElement()
-	if ! root.IsSameNode(root) {
-		t.Errorf("IsSameNode fails...")
+	root, err := doc.DocumentElement()
+	if !assert.NoError(t, err, "DocumentElement() should succeed") {
+		return
+	}
+	if !assert.True(t, root.IsSameNode(root), "root == root") {
 		return
 	}
 
