@@ -22,22 +22,6 @@ func (d *Document) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(d.ptr)
 }
 
-func (d *Document) NamespaceByHref(n Node, uri string) (*Namespace, error) {
-	ns := xmlSearchNsByHref(d, n, uri)
-	if ns == nil {
-		return nil, errors.New("not found")
-	}
-	return ns, nil
-}
-
-func (d *Document) NamespaceByPrefix(n Node, prefix string) (*Namespace, error) {
-	ns := xmlSearchNs(d, n, prefix)
-	if ns == nil {
-		return nil, errors.New("not found")
-	}
-	return ns, nil
-}
-
 func (d *Document) CreateAttribute(k, v string) (*Attribute, error) {
 	attr, err := xmlNewDocProp(d, k, v)
 	if err != nil {

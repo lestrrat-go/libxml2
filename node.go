@@ -566,30 +566,31 @@ func (n *xmlNode) ToStringC14N(exclusive bool) (string, error) {
 	return xmlCharToString(result), nil
 }
 
-func (n *xmlNode) LookupNamespacePrefix(href string) string {
+var ErrNamespaceNotFound = errors.New("namespace not found")
+func (n *xmlNode) LookupNamespacePrefix(href string) (string, error) {
 	if href == "" {
-		return ""
+		return "", ErrNamespaceNotFound
 	}
 
 	ns := C.xmlSearchNsByHref(n.ptr.doc, n.ptr, stringToXmlChar(href))
 	if ns == nil {
-		return ""
+		return "", ErrNamespaceNotFound
 	}
 
-	return xmlCharToString(ns.prefix)
+	return xmlCharToString(ns.prefix), nil
 }
 
-func (n *xmlNode) LookupNamespaceURI(prefix string) string {
+func (n *xmlNode) LookupNamespaceURI(prefix string) (string, error) {
 	if prefix == "" {
-		return ""
+		return "", ErrNamespaceNotFound
 	}
 
 	ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix))
 	if ns == nil {
-		return ""
+		return "", ErrNamespaceNotFound
 	}
 
-	return xmlCharToString(ns.href)
+	return xmlCharToString(ns.href), nil
 }
 
 func (n *xmlNode) NodeType() XmlNodeType {

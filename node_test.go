@@ -155,11 +155,19 @@ func TestNode_StandaloneWithNamespaces(t *testing.T) {
 		return
 	}
 
-	if !assert.Equal(t, uri, elem.LookupNamespaceURI(prefix), "LookupNamespaceURI succeeds") {
+	lookedup, err := elem.LookupNamespaceURI(prefix)
+	if !assert.NoError(t, err, "LookupNamespaceURI should succeed") {
+		return
+	}
+	if !assert.Equal(t, uri, lookedup, "LookupNamespaceURI succeeds") {
 		return
 	}
 
-	if !assert.Equal(t, prefix, elem.LookupNamespacePrefix(uri), "LookupNamespacePrefix succeeds") {
+	lookedup, err = elem.LookupNamespacePrefix(uri)
+	if !assert.NoError(t, err, "LookupNamespacePrefix should succeed") {
+		return
+	}
+	if !assert.Equal(t, prefix, lookedup, "LookupNamespacePrefix succeeds") {
 		return
 	}
 
