@@ -23,6 +23,8 @@ package libxml2
 /*
 #cgo pkg-config: libxml-2.0
 #include <stdbool.h>
+#include "libxml/HTMLparser.h"
+#include "libxml/HTMLtree.h"
 #include "libxml/globals.h"
 #include "libxml/parser.h"
 #include "libxml/parserInternals.h"
@@ -232,6 +234,22 @@ func (ctx ParserCtxt) Document() (*Document, error) {
 		return wrapDocument(doc), nil
 	}
 	return nil, errors.New("no document available")
+}
+
+func htmlReadDoc(content, url, encoding string, opts int) (*Document, error) {
+	// TODO: use htmlCtxReadDoc later, so we can get the error
+	doc := C.htmlReadDoc(
+		C.xmlCharStrdup(C.CString(content)),
+		C.CString(url),
+		C.CString(encoding),
+		C.int(opts),
+	)
+
+	if doc == nil {
+		return nil, errors.New("failed to parse document")
+	}
+
+	return wrapDocument(doc), nil
 }
 
 func xmlNewDoc(version string) *C.xmlDoc {
