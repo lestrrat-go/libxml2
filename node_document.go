@@ -161,14 +161,6 @@ func (d *Document) Standalone() int {
 	return int(d.ptr.standalone)
 }
 
-func (d *Document) ToStringC14N(exclusive bool) (string, error) {
-	root, err := d.DocumentElement()
-	if err != nil {
-		return "", err
-	}
-	return root.ToStringC14N(exclusive)
-}
-
 func (d *Document) URI() string {
 	return xmlCharToString(d.ptr.URL)
 }
@@ -185,3 +177,9 @@ func (d *Document) Walk(fn func(Node) error) error {
 	walk(root, fn)
 	return nil
 }
+
+func (d *Document) C14N(exclusive bool) (string, error) {
+	return xmlC14NDocDumpMemory(d, exclusive)
+}
+
+

@@ -81,7 +81,6 @@ type Node interface {
 	String() string
 	TextContent() string
 	ToString(int, bool) string
-	ToStringC14N(bool) (string, error)
 	Walk(func(Node) error) error
 }
 

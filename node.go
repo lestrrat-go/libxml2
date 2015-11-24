@@ -547,27 +547,6 @@ func (n *XmlNode) ToString(format int, docencoding bool) string {
 	return xmlCharToString(C.xmlBufferContent(buffer))
 }
 
-func (n *XmlNode) ToStringC14N(exclusive bool) (string, error) {
-	var result *C.xmlChar
-	var exclInt C.int
-	if exclusive {
-		exclInt = 1
-	}
-
-	ret := C.xmlC14NDocDumpMemory(
-		n.ptr.doc,
-		nil,
-		exclInt,
-		nil,
-		0,
-		&result,
-	)
-	if ret == 0 {
-		return "", errors.New("Boo")
-	}
-	return xmlCharToString(result), nil
-}
-
 var ErrNamespaceNotFound = errors.New("namespace not found")
 
 func (n *XmlNode) LookupNamespacePrefix(href string) (string, error) {
@@ -879,4 +858,25 @@ func xmlUnsetNsProp(n Node, ns *Namespace, name string) error {
 		return errors.New("failed to unset prop")
 	}
 	return nil
+}
+
+func xmlC14NDocDumpMemory(d *Document, exclusive bool) (string, error) {
+	var result *C.xmlChar
+	var exclInt C.int
+	if exclusive {
+		exclInt = 1
+	}
+
+	ret := C.xmlC14NDocDumpMemory(
+		d.ptr,
+		nil,
+		exclInt,
+		nil,
+		0,
+		&result,
+	)
+	if ret == 0 {
+		return "", errors.New("c14n dump failed")
+	}
+	return xmlCharToString(result), nil
 }

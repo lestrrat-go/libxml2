@@ -92,7 +92,7 @@ func (p *Parser) Parse(buf []byte) (*Document, error) {
 func (p *Parser) ParseString(s string) (*Document, error) {
 	ctx := C.xmlCreateMemoryParserCtxt(C.CString(s), C.int(len(s)))
 	if ctx == nil {
-		return nil, errors.New("error createing parser")
+		return nil, errors.New("error creating parser")
 	}
 	defer C.xmlFreeParserCtxt(ctx)
 
