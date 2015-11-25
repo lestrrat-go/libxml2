@@ -34,6 +34,14 @@ package libxml2
 #include <libxml/c14n.h>
 
 
+static inline xmlChar* MY_toxmlcharptr(const char *s) {
+	return (xmlChar *) s;
+}
+
+static inline char * MY_tocharptr(const xmlChar *s) {
+	return (char *) s;
+}
+
 static inline void MY_nilErrorHandler(void *ctx, const char *msg, ...) {}
 
 static inline void MY_xmlSilenceParseErrors() {
@@ -184,6 +192,14 @@ func ReportErrors(b bool) {
 	} else {
 		C.MY_xmlSilenceParseErrors()
 	}
+}
+
+func xmlCharToString(s *C.xmlChar) string {
+	return C.GoString(C.MY_tocharptr(s))
+}
+
+func stringToXmlChar(s string) *C.xmlChar {
+	return C.MY_toxmlcharptr(C.CString(s))
 }
 
 func xmlCreateMemoryParserCtxt(s string, o ParseOption) (*ParserCtxt, error) {
