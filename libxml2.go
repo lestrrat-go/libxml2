@@ -46,9 +46,16 @@ static inline void MY_xmlDefaultParseErrors() {
 	xmlSetGenericErrorFunc(NULL, NULL);
 }
 
-// Macro wrapper function
+// Macro wrapper function. cgo cannot detect function-like macros,
+// so this is how we avoid it
 static inline void MY_xmlFree(void *p) {
 	xmlFree(p);
+}
+
+// Macro wrapper function. cgo cannot detect function-like macros,
+// so this is how we avoid it
+static inline xmlError* MY_xmlLastError() {
+	return xmlGetLastError();
 }
 
 // Change xmlIndentTreeOutput global, return old value, so caller can
@@ -1025,8 +1032,9 @@ func xmlC14NDocDumpMemory(d *Document, mode C14NMode, withComments bool) (string
 		withCommentsInt,
 		&result,
 	)
-	if ret == 0 {
-		return "", errors.New("c14n dump failed")
+	if ret < 0 {
+		e := C.MY_xmlLastError()
+		return "", errors.New("c14n dump failed: " + C.GoString(e.message))
 	}
 	return xmlCharToString(result), nil
 }
