@@ -27,7 +27,7 @@ import "errors"
  *
  * In go-libxml2, this translates to:
  *
- *    options = ParseDtdLoad | ParseDtdAttrs | ParseNoEnt
+ *    options = XmlParseDTDLoad | XmlParseDTDAttr | XmlParseNoEnt
  *
  */
 func (s C14NSerialize) Serialize(n interface{}) (string, error) {
