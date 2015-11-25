@@ -1024,7 +1024,7 @@ func xmlC14NDocDumpMemory(d *Document, mode C14NMode, withComments bool) (string
 
 	modeInt := C.int(mode)
 
-	ret := C.xmlC14NDocDumpMemory(
+	written := C.xmlC14NDocDumpMemory(
 		d.ptr,
 		nil,
 		modeInt,
@@ -1032,7 +1032,7 @@ func xmlC14NDocDumpMemory(d *Document, mode C14NMode, withComments bool) (string
 		withCommentsInt,
 		&result,
 	)
-	if ret < 0 {
+	if written < 0 {
 		e := C.MY_xmlLastError()
 		return "", errors.New("c14n dump failed: " + C.GoString(e.message))
 	}
