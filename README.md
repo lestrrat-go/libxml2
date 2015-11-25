@@ -155,3 +155,7 @@ BenchmarkXmlpath      100000         88764 ns/op
 BenchmarkLibxml2      300000         22509 ns/op
 ok      github.com/lestrrat/go-libxml2  24.926s
 ```
+
+## Credits
+
+* Work on this library was generously sponsored by HDE Inc (https://www.hde.co.jp)
