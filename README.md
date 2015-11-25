@@ -8,9 +8,9 @@ Interface to libxml2, with DOM interface
 
 This library is still in very early stages of development. API may still change
 
-# Examples
+## Examples
 
-## Basic XML Example
+### Basic XML Example
 
 ```go
 import (
@@ -57,7 +57,7 @@ func ExmapleXML() {
 }
 ```
 
-## Basic HTML Example
+### Basic HTML Example
 
 ```go
 func ExampleHTML() {
@@ -88,7 +88,7 @@ func ExampleHTML() {
 }
 ```
 
-## XSD Validation
+### XSD Validation
 
 ```go
 import (
@@ -140,9 +140,9 @@ func ExampleXSD() {
 }
 ```
 
-# Caveats
+## Caveats
 
-## Other libraries
+### Other libraries
 
 There exists many similar libraries. I want speed, I want DOM, and I want XPath.When all of these are met, I'd be happy to switch to another library.
 
@@ -155,6 +155,10 @@ BenchmarkXmlpath      100000         88764 ns/op
 BenchmarkLibxml2      300000         22509 ns/op
 ok      github.com/lestrrat/go-libxml2  24.926s
 ```
+
+## See Also
+
+* https://github.com/lestrrat/go-xmlsec
 
 ## Credits
 
