@@ -7,16 +7,6 @@ package libxml2
 #include "libxml/xpath.h"
 #include <libxml/xpathInternals.h>
 
-// Macro wrapper function
-static inline void MY_xmlFree(void *p) {
-	xmlFree(p);
-}
-
-// Macro wrapper function
-static inline bool MY_xmlXPathNodeSetIsEmpty(xmlNodeSetPtr ptr) {
-	return xmlXPathNodeSetIsEmpty(ptr);
-}
-
 // Because Go can't do pointer airthmetics...
 static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 	return nodes[i];
@@ -24,10 +14,7 @@ static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 
 */
 import "C"
-import (
-	"errors"
-	"fmt"
-)
+import "fmt"
 
 const _XPathObjectType_name = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberXPathStringXPathPointXPathRangeXPathLocationSetXPathUSersXPathXsltTree"
 
@@ -100,7 +87,7 @@ func (x *XPathObject) Free() {
 func NewXPathExpression(s string) (*XPathExpression, error) {
 	p := C.xmlXPathCompile(stringToXmlChar(s))
 	if p == nil {
-		return nil, errors.New("xpath compilation failed")
+		return nil, ErrXPathCompileFailure
 	}
 
 	return &XPathExpression{ptr: p, expr: s}, nil
@@ -169,7 +156,7 @@ func (x *XPathContext) FindNodes(s string) (NodeList, error) {
 
 func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
 	if expr == nil {
-		return nil, errors.New("empty XPathExpression")
+		return nil, ErrInvalidXPathExpression
 	}
 
 	// If there is no document associated with this context,
@@ -187,7 +174,7 @@ func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
 
 	res := C.xmlXPathCompiledEval(expr.ptr, ctx)
 	if res == nil {
-		return nil, errors.New("empty result")
+		return nil, ErrXPathEmptyResult
 	}
 
 	return &XPathObject{ptr: res}, nil
@@ -228,7 +215,7 @@ func (x *XPathContext) FindValueExpr(expr *XPathExpression) (*XPathObject, error
 func (x *XPathContext) LookupNamespaceURI(name string) (string, error) {
 	s := C.xmlXPathNsLookup(x.ptr, stringToXmlChar(name))
 	if s == nil {
-		return "", errors.New("not found")
+		return "", ErrNamespaceNotFound
 	}
 	return xmlCharToString(s), nil
 }
@@ -236,7 +223,7 @@ func (x *XPathContext) LookupNamespaceURI(name string) (string, error) {
 func (x *XPathContext) RegisterNs(name, nsuri string) error {
 	res := C.xmlXPathRegisterNs(x.ptr, stringToXmlChar(name), stringToXmlChar(nsuri))
 	if res == -1 {
-		return errors.New("cannot register namespace")
+		return ErrXPathNamespaceRegisterFailure
 	}
 	return nil
 }

@@ -39,11 +39,19 @@ const (
 )
 
 var (
-	ErrNodeNotFound    = errors.New("node not found")
-	ErrInvalidArgument = errors.New("invalid argument")
-	ErrInvalidParser   = errors.New("invalid parser")
-	ErrInvalidNode     = errors.New("invalid node")
-	ErrInvalidNodeName = errors.New("invalid node name")
+	ErrAttributeNotFound             = errors.New("attribute not found")
+	ErrInvalidArgument               = errors.New("invalid argument")
+	ErrInvalidParser                 = errors.New("invalid parser")
+	ErrInvalidNode                   = errors.New("invalid node")
+	ErrInvalidNodeName               = errors.New("invalid node name")
+	ErrInvalidNodeType               = errors.New("invalid node type")
+	ErrInvalidXPathExpression        = errors.New("empty xpath expression")
+	ErrMalformedXML                  = errors.New("malformed XML")
+	ErrNamespaceNotFound             = errors.New("namespace not found")
+	ErrNodeNotFound                  = errors.New("node not found")
+	ErrXPathEmptyResult              = errors.New("empty xpath result")
+	ErrXPathCompileFailure           = errors.New("xpath compilation failed")
+	ErrXPathNamespaceRegisterFailure = errors.New("cannot register namespace")
 )
 
 type ptr interface {

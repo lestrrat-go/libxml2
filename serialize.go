@@ -1,7 +1,5 @@
 package libxml2
 
-import "errors"
-
 /* Serialize produces serialization of the document, canonicalized.
  * Below document is taken from libxml2 directly. Pay special attention
  * to the required settings when parsing the document to be canonicalized.
@@ -34,7 +32,7 @@ func (s C14NSerialize) Serialize(n interface{}) (string, error) {
 	switch n.(type) {
 	case *Document:
 	default:
-		return "", errors.New("invalid node type: *Document is required")
+		return "", ErrInvalidNodeType
 	}
 
 	return xmlC14NDocDumpMemory(n.(*Document), s.Mode, s.WithComments)

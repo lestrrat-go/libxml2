@@ -694,8 +694,6 @@ func (n *XmlNode) ToString(format int, docencoding bool) string {
 	return xmlCharToString(C.xmlBufferContent(buffer))
 }
 
-var ErrNamespaceNotFound = errors.New("namespace not found")
-
 func (n *XmlNode) LookupNamespacePrefix(href string) (string, error) {
 	if href == "" {
 		return "", ErrNamespaceNotFound

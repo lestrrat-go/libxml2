@@ -2,7 +2,6 @@ package libxml2
 
 import (
 	"bytes"
-	"errors"
 	"io"
 )
 
@@ -112,7 +111,7 @@ func (p *Parser) ParseString(s string) (*Document, error) {
 	}
 
 	if ctx.WellFormed() {
-		return nil, errors.New("malformed XML")
+		return nil, ErrMalformedXML
 	}
 
 	doc, err := ctx.Document()

@@ -73,7 +73,7 @@ func (n *Element) RemoveAttribute(name string) error {
 	// look for the prefix
 	ns := xmlSearchNs(n.OwnerDocument(), n, name[:i])
 	if ns == nil {
-		return errors.New("prefix was not found")
+		return ErrAttributeNotFound
 	}
 
 	return xmlUnsetNsProp(n, ns, name)
