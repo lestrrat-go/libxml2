@@ -88,7 +88,7 @@ type Node interface {
 type NodeList []Node
 
 type XmlNode struct {
-	ptr *C.xmlNode
+	ptr    *C.xmlNode
 	mortal bool
 }
 

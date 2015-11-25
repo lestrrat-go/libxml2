@@ -158,4 +158,3 @@ func (d *Document) Walk(fn func(Node) error) error {
 	walk(root, fn)
 	return nil
 }
-

@@ -1,5 +1,9 @@
 package libxml2
 
 func (n Text) Data() string {
-	return xmlCharToString(n.ptr.content)
+	ptr := n.ptr
+	if ptr == nil {
+		return ""
+	}
+	return xmlCharToString(ptr.content)
 }

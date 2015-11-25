@@ -534,7 +534,11 @@ func wrapDocument(n *C.xmlDoc) *Document {
 }
 
 func (n *XmlNode) OwnerDocument() *Document {
-	return wrapDocument(n.ptr.doc)
+	ptr := n.ptr
+	if ptr == nil {
+		return nil
+	}
+	return wrapDocument(ptr.doc)
 }
 
 func (n *XmlNode) FindNodes(xpath string) (NodeList, error) {
@@ -728,7 +732,7 @@ func (n *XmlNode) MakeMortal() {
 }
 
 // MakePersistent flags the node so that `AutoFree` becomes a no-op.
-// Make sure to call this if you used `MakeMortal` and `AutoFree`, 
+// Make sure to call this if you used `MakeMortal` and `AutoFree`,
 // but you then decided to keep the node around.
 func (n *XmlNode) MakePersistent() {
 	n.mortal = false

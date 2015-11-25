@@ -96,13 +96,13 @@ func TestNamespacedReconciliation(t *testing.T) {
 
 	// XXX This still fails
 	/*
-	attr, err = child.GetAttribute("xmlns")
-	if !assert.NoError(t, err, "GetAttribute should succeed") {
-		return
-	}
-	if !assert.Equal(t, "http://other", attr.Value(), "attribute matches") {
-		return
-	}
+		attr, err = child.GetAttribute("xmlns")
+		if !assert.NoError(t, err, "GetAttribute should succeed") {
+			return
+		}
+		if !assert.Equal(t, "http://other", attr.Value(), "attribute matches") {
+			return
+		}
 	*/
 
 	t.Logf("%s", d.String())

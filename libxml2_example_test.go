@@ -49,7 +49,6 @@ func ExmapleXML() {
 	log.Printf("feed title = %s", title)
 }
 
-
 func ExampleHTML() {
 	res, err := http.Get("http://golang.org")
 	if err != nil {

@@ -17,7 +17,6 @@ const (
 
 const DefaultHtmlParseFlags = HtmlParseCompact | HtmlParseNoBlanks | HtmlParseNoError | HtmlParseNoWarning
 
-
 func ParseHTML(content []byte) (*Document, error) {
 	return ParseHTMLString(string(content))
 }
@@ -34,4 +33,3 @@ func ParseHTMLReader(in io.Reader) (*Document, error) {
 
 	return ParseHTMLString(buf.String())
 }
-

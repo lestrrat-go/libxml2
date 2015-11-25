@@ -113,4 +113,3 @@ func Benchmark_xmlCharToString(b *testing.B) {
 		_ = xmlCharToString(xmlchar)
 	}
 }
-

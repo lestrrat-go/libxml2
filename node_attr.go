@@ -11,5 +11,3 @@ func (n *Attribute) HasChildNodes() bool {
 func (n *Attribute) Value() string {
 	return nodeValue(n)
 }
-
-
