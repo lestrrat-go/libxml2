@@ -252,12 +252,12 @@ func htmlReadDoc(content, url, encoding string, opts int) (*Document, error) {
 	return wrapDocument(doc), nil
 }
 
-func xmlNewDoc(version string) *C.xmlDoc {
-	return C.xmlNewDoc(stringToXmlChar(version))
-}
-
-func xmlStrdup(s string) *C.xmlChar {
-	return C.xmlStrdup(stringToXmlChar(s))
+func createDocument(version, encoding string) *Document {
+	doc := C.xmlNewDoc(stringToXmlChar(version))
+	if encoding != "" {
+		doc.encoding = C.xmlStrdup(stringToXmlChar(encoding))
+	}
+	return wrapDocument(doc)
 }
 
 func xmlEncodeEntitiesReentrant(doc *Document, s string) *C.xmlChar {
@@ -504,16 +504,18 @@ func (n *XmlNode) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(n.ptr)
 }
 
-func (n *XmlNode) AddChild(child Node) {
-	C.xmlAddChild(n.ptr, (*C.xmlNode)(child.Pointer()))
+func (n *XmlNode) AddChild(child Node) error {
+	if C.xmlAddChild(n.ptr, (*C.xmlNode)(child.Pointer())) == nil {
+		return errors.New("failed to add child")
+	}
+	return nil
 }
 
 func (n *XmlNode) AppendChild(child Node) error {
 	// XXX There must be lots more checks here because AddChild does things
 	// under the table like merging text nodes, freeing some nodes implicitly,
 	// et al
-	n.AddChild(child)
-	return nil
+	return n.AddChild(child)
 }
 
 func (n *XmlNode) ChildNodes() (NodeList, error) {
@@ -785,67 +787,71 @@ func (n *Namespace) Free() {
 	}
 }
 
+func createElement(d *Document, name string) (*Element, error) {
+	if err := myTestNodeName(name); err != nil {
+		return nil, err
+	}
+
+	newNode := C.xmlNewNode(nil, stringToXmlChar(name))
+	if newNode == nil {
+		return nil, errors.New("element creation failed")
+	}
+	// XXX hmmm...
+	newNode.doc = d.ptr
+	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
+}
+
 func createElementNS(doc *Document, nsuri, name string) (*Element, error) {
 	if err := myTestNodeName(name); err != nil {
 		return nil, err
 	}
 
 	if nsuri == "" {
-		return doc.CreateElement(name)
+		return createElement(doc, name)
 	}
 
-	var rootptr *C.xmlNode
-	if root, err := doc.DocumentElement(); err == nil {
-		rootptr = (*C.xmlNode)(root.Pointer())
-	}
+	rootptr := C.xmlDocGetRootElement(doc.ptr)
 
-	var localname string
+	var prefix, localname string
 	var ns *C.xmlNs
 
 	if i := strings.IndexByte(name, ':'); i > 0 {
-		// split it into prefix and localname
-		prefix := stringToXmlChar(name[:i])
-		xmlnsuri := stringToXmlChar(nsuri)
+		prefix = name[:i]
+		localname = name[i+1:]
+	} else {
+		localname = name
+	}
 
-		// Is this namespace prefix registered already?
-		ns = C.xmlSearchNs(
-			doc.ptr,
-			rootptr,
-			prefix,
-		)
-		if ns == nil {
-			// nope, create a new one.
-			localname = name[i+1:]
-			ns = C.xmlNewNs(nil, xmlnsuri, prefix)
-		} else {
-			// prefix is registered. do they have matching URI?
-			if xmlCharToString(ns.prefix) != name[:i] {
-				return nil, errors.New("prefix registered to the wrong URI")
+	xmlnsuri := stringToXmlChar(nsuri)
+	xmlprefix := stringToXmlChar(prefix)
+
+	// Optimization: if rootptr is nil, then you can just
+	// create the namespace
+	if rootptr == nil {
+		ns = C.xmlNewNs(nil, xmlnsuri, xmlprefix)
+	} else if prefix != "" {
+		// prefix exists, see if this is declared
+		ns = C.xmlSearchNs(doc.ptr, rootptr, xmlprefix)
+		if ns == nil { // not declared. create a new one
+			ns = C.xmlNewNs(nil, xmlnsuri, xmlprefix)
+		} else { // declared. does uri match?
+			if C.xmlStrcmp(ns.href, xmlnsuri) != C.int(0) {
+				return nil, errors.New("prefix already registered to different uri")
 			}
+			// Namespace is already registered, we don't need to provide a
+			// namespace element to xmlNewDocNode
+			ns = nil
 
-			// Okay, so we can register this, but we won't be
-			// needing to register the namespace
-			return doc.CreateElement(name)
+			// but the localname should be prefix:localname
+			localname = name
 		}
 	} else {
 		// If the name does not contain a prefix, check for the
 		// existence of this namespace via the URI
-		xmlnsuri := stringToXmlChar(nsuri)
-		ns = C.xmlSearchNsByHref(
-			doc.ptr,
-			rootptr,
-			xmlnsuri,
-		)
-		if ns != nil {
-			// Well, you can safely inherit the prefix and stuff
-			return doc.CreateElement(xmlCharToString(ns.prefix) + ":" + name)
+		ns = C.xmlSearchNsByHref(doc.ptr, rootptr, xmlnsuri)
+		if ns == nil {
+			ns = C.xmlNewNs(nil, xmlnsuri, nil)
 		}
-
-		debug.Printf("Create new namespace for %s", nsuri)
-		// ns doesn't exist, got to create it here
-		ns = C.xmlNewNs(nil, stringToXmlChar(nsuri), nil)
-		// ... and my localname shall be == name
-		localname = name
 	}
 
 	newNode := C.xmlNewDocNode(doc.ptr, ns, stringToXmlChar(localname), nil)
@@ -1023,4 +1029,16 @@ func xmlC14NDocDumpMemory(d *Document, mode C14NMode, withComments bool) (string
 		return "", errors.New("c14n dump failed")
 	}
 	return xmlCharToString(result), nil
+}
+
+func appendText(n Node, s string) error {
+	txt := C.xmlNewText(stringToXmlChar(s))
+	if txt == nil {
+		return errors.New("failed to create text node")
+	}
+
+	if C.xmlAddChild((*C.xmlNode)(n.Pointer()), (*C.xmlNode)(txt)) == nil {
+		return errors.New("failed to create text node")
+	}
+	return nil
 }

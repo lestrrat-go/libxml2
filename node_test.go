@@ -194,3 +194,31 @@ func TestAttribute(t *testing.T) {
 		return
 	}
 }
+
+func TestCreateElementNS(t *testing.T) {
+	doc := CreateDocument()
+	root, err := doc.CreateElementNS("http://foo.bar.baz", "foo:root")
+	if !assert.NoError(t, err, "CreateElementNS should succeed") {
+		return
+	}
+	doc.SetDocumentElement(root)
+
+	n1, err := doc.CreateElementNS("http://foo.bar.baz", "foo:n1")
+	if !assert.NoError(t, err, "CreateElementNS should succeed") {
+		return
+	}
+	root.AppendChild(n1)
+
+	n2, err := doc.CreateElementNS("http://foo.bar.baz", "bar:n2")
+	if !assert.NoError(t, err, "CreateElementNS should succeed") {
+		return
+	}
+	root.AppendChild(n2)
+
+	_, err = doc.CreateElementNS("http://foo.bar.baz.quux", "foo:n3")
+	if !assert.Error(t, err, "CreateElementNS should fail") {
+		return
+	}
+
+	t.Logf("%s", doc.Dump(false))
+}

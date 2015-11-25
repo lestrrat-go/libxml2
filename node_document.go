@@ -10,11 +10,7 @@ func CreateDocument() *Document {
 }
 
 func NewDocument(version, encoding string) *Document {
-	doc := xmlNewDoc(version)
-	if encoding != "" {
-		doc.encoding = xmlStrdup(encoding)
-	}
-	return wrapDocument(doc)
+	return createDocument(version, encoding)
 }
 
 func (d *Document) Pointer() unsafe.Pointer {
@@ -74,26 +70,11 @@ func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
 }
 
 func (d *Document) CreateElement(name string) (*Element, error) {
-	if err := myTestNodeName(name); err != nil {
-		return nil, err
-	}
-
-	newNode := xmlNewNode(nil, name)
-
-	if newNode == nil {
-		return nil, errors.New("element creation failed")
-	}
-	// XXX hmmm...
-	newNode.doc = d.ptr
-	return wrapElement(newNode), nil
+	return createElement(d, name)
 }
 
 func (d *Document) CreateElementNS(nsuri, name string) (*Element, error) {
-	e, err := createElementNS(d, nsuri, name)
-	if err != nil {
-		return nil, err
-	}
-	return e, nil
+	return createElementNS(d, nsuri, name)
 }
 
 func (d *Document) CreateTextNode(txt string) (*Text, error) {

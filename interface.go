@@ -57,7 +57,7 @@ type ptr interface {
 // Node defines the basic DOM interface
 type Node interface {
 	ptr
-	AddChild(Node)
+	AddChild(Node) error
 	AppendChild(Node) error
 	ChildNodes() (NodeList, error)
 	OwnerDocument() *Document

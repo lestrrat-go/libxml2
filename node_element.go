@@ -41,11 +41,7 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 }
 
 func (n *Element) AppendText(s string) error {
-	txt, err := n.OwnerDocument().CreateTextNode(s)
-	if err != nil {
-		return err
-	}
-	return n.AppendChild(txt)
+	return appendText(n, s)
 }
 
 func (n *Element) SetAttribute(name, value string) error {

@@ -75,7 +75,6 @@ func BenchmarkDOM_EncodingXml(b *testing.B) {
 }
 
 func BenchmarkDOM_Libxml2(b *testing.B) {
-	var buf bytes.Buffer
 	f := Foo{
 		Field1: "Hello, World!",
 	}
@@ -83,7 +82,7 @@ func BenchmarkDOM_Libxml2(b *testing.B) {
 		d := CreateDocument()
 		defer d.Free()
 
-		root, err := d.CreateElementNS("https://github.com/lestrrat/go-libxml2/foo", "foo:foo")
+		root, err := d.CreateElementNS(nsuri, "foo:foo")
 		if err != nil {
 			panic(err)
 		}
@@ -100,3 +99,18 @@ func BenchmarkDOM_Libxml2(b *testing.B) {
 		buf.WriteString(d.Dump(false))
 	}
 }
+
+func Benchmark_stringToXmlChar(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		xmlchar := stringToXmlChar("Hello, World")
+		_ = xmlchar
+	}
+}
+
+func Benchmark_xmlCharToString(b *testing.B) {
+	xmlchar := stringToXmlChar("Hello, World")
+	for i := 0; i < b.N; i++ {
+		_ = xmlCharToString(xmlchar)
+	}
+}
+
