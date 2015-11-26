@@ -41,6 +41,7 @@ const (
 var (
 	ErrAttributeNotFound             = errors.New("attribute not found")
 	ErrInvalidArgument               = errors.New("invalid argument")
+	ErrInvalidDocument               = errors.New("invalid document")
 	ErrInvalidParser                 = errors.New("invalid parser")
 	ErrInvalidNode                   = errors.New("invalid node")
 	ErrInvalidNodeName               = errors.New("invalid node name")
@@ -54,21 +55,22 @@ var (
 	ErrXPathNamespaceRegisterFailure = errors.New("cannot register namespace")
 )
 
-type ptr interface {
+type Libxml2Node interface {
 	// Pointer() returns the underlying C pointer. This is an exported
 	// method to allow various internal go-libxml2 packages to interoperate
 	// on each other. End users are STRONGLY advised not to touch this
 	// method or its return values
 	Pointer() unsafe.Pointer
+	ParseInContext(string, ParseOption) (Node, error)
 }
 
 // Node defines the basic DOM interface
 type Node interface {
-	ptr
+	Libxml2Node
 	AddChild(Node) error
-	AppendChild(Node) error
 	ChildNodes() (NodeList, error)
-	OwnerDocument() *Document
+	Copy() (Node, error)
+	OwnerDocument() (*Document, error)
 	FindNodes(string) (NodeList, error)
 	FirstChild() (Node, error)
 	Free()
@@ -85,6 +87,7 @@ type Node interface {
 	NodeValue() string
 	ParetNode() (Node, error)
 	PreviousSibling() (Node, error)
+	SetDocument(d *Document) error
 	SetNodeName(string)
 	SetNodeValue(string)
 	String() string

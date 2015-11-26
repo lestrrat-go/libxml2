@@ -92,7 +92,7 @@ func BenchmarkDOM_Libxml2(b *testing.B) {
 		if err != nil {
 			panic(err)
 		}
-		root.AppendChild(f1xml)
+		root.AddChild(f1xml)
 
 		f1xml.AppendText(f.Field1)
 		buf.Reset()

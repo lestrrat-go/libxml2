@@ -16,8 +16,11 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 
 	if uri == "" && prefix == "" {
 		// Empty namespace
-
-		ns := xmlSearchNs(n.OwnerDocument(), n, "")
+		doc, err := n.OwnerDocument()
+		if err != nil {
+			return err
+		}
+		ns := xmlSearchNs(doc, n, "")
 		if ns != nil && ns.URI() != "" {
 			if activateflag {
 				xmlSetNs(n, nil)
@@ -71,7 +74,11 @@ func (n *Element) RemoveAttribute(name string) error {
 	}
 
 	// look for the prefix
-	ns := xmlSearchNs(n.OwnerDocument(), n, name[:i])
+	doc, err := n.OwnerDocument()
+	if err != nil {
+		return err
+	}
+	ns := xmlSearchNs(doc, n, name[:i])
 	if ns == nil {
 		return ErrAttributeNotFound
 	}

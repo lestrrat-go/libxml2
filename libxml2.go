@@ -11,10 +11,6 @@ can get to DOM Layer 3, but some methods will, for the time being, be punted
 and aliases for simpler methods that don't necessarily check for the DOM's
 correctness will be used.
 
-For example, `AppendChild()` must perform a lot of checks before returning
-successfully, but as of this writing it's just an alias for `xmlAddChild()`
-which does lots of... interesting things if you're not careful.
-
 Also, the return values are still shaky -- I'm still debating how to handle error cases gracefully.
 
 */
@@ -534,13 +530,6 @@ func (n *XmlNode) AddChild(child Node) error {
 	return nil
 }
 
-func (n *XmlNode) AppendChild(child Node) error {
-	// XXX There must be lots more checks here because AddChild does things
-	// under the table like merging text nodes, freeing some nodes implicitly,
-	// et al
-	return n.AddChild(child)
-}
-
 func (n *XmlNode) ChildNodes() (NodeList, error) {
 	return childNodes(n)
 }
@@ -549,12 +538,16 @@ func wrapDocument(n *C.xmlDoc) *Document {
 	return &Document{ptr: n}
 }
 
-func (n *XmlNode) OwnerDocument() *Document {
+func (n *XmlNode) OwnerDocument() (*Document, error) {
 	ptr := n.ptr
 	if ptr == nil {
-		return nil
+		return nil, ErrInvalidNode
 	}
-	return wrapDocument(ptr.doc)
+
+	if ptr.doc == nil {
+		return nil, ErrInvalidDocument
+	}
+	return wrapDocument(ptr.doc), nil
 }
 
 func (n *XmlNode) FindNodes(xpath string) (NodeList, error) {
@@ -772,7 +765,7 @@ func walk(n Node, fn func(Node) error) error {
 	return nil
 }
 
-func childNodes(n ptr) (NodeList, error) {
+func childNodes(n Node) (NodeList, error) {
 	ret := NodeList(nil)
 	for chld := ((*C.xmlNode)(n.Pointer())).children; chld != nil; chld = chld.next {
 		nchld, err := wrapToNode(chld)
@@ -894,6 +887,9 @@ func documentElement(doc *Document) *C.xmlNode {
 }
 
 func xmlFreeDoc(d *Document) {
+	if d.ptr == nil {
+		return
+	}
 	C.xmlFreeDoc(d.ptr)
 	d.ptr = nil
 }
@@ -1067,4 +1063,50 @@ func appendText(n Node, s string) error {
 		return errors.New("failed to create text node")
 	}
 	return nil
+}
+
+func xmlDocCopyNode(n Node, d *Document, extended int) (Node, error) {
+	nptr := (*C.xmlNode)(n.Pointer())
+	if nptr == nil {
+		return nil, ErrInvalidNode
+	}
+
+	if d.ptr == nil {
+		return nil, ErrInvalidDocument
+	}
+
+	ret := C.xmlDocCopyNode(nptr, d.ptr, C.int(extended))
+	if ret == nil {
+		return nil, errors.New("copy node failed")
+	}
+
+	return wrapToNode(ret)
+}
+
+func xmlSetTreeDoc(n Node, d *Document) error {
+	nptr := (*C.xmlNode)(n.Pointer())
+	if nptr == nil {
+		return ErrInvalidNode
+	}
+
+	if d.ptr == nil {
+		return ErrInvalidDocument
+	}
+
+	C.xmlSetTreeDoc(nptr, d.ptr)
+	return nil
+}
+
+func xmlParseInNodeContext(n Node, data string, o ParseOption) (Node, error) {
+	nptr := (*C.xmlNode)(n.Pointer())
+	if nptr == nil {
+		return nil, ErrInvalidNode
+	}
+
+	var ret C.xmlNodePtr
+	if C.xmlParseInNodeContext(nptr, C.CString(data), C.int(len(data)), C.int(o), &ret) != 0 {
+		return nil, errors.New("XXX PLACE HOLDER XXX")
+	}
+
+	return wrapToNode((*C.xmlNode)(unsafe.Pointer(ret)))
 }

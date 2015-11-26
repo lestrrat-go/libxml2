@@ -51,7 +51,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 	if !assert.NoError(t, err, "CreateElementNS should succeed") {
 		return
 	}
-	root.AppendChild(n)
+	root.AddChild(n)
 
 	_, err = n.GetAttribute("xmlns")
 	if !assert.Error(t, err, "GetAttribute should fail with not found") ||
@@ -68,7 +68,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 		if name == "c" {
 			c = child
 		}
-		n.AppendChild(child)
+		n.AddChild(child)
 		_, err = n.GetAttribute("xmlns:child")
 		if !assert.Error(t, err, "GetAttribute should fail with not found") ||
 			!assert.Equal(t, "attribute not found", err.Error(), "error matches") {
@@ -92,7 +92,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 	if !assert.NoError(t, err, "creating element with default namespace") {
 		return
 	}
-	n.AppendChild(child)
+	n.AddChild(child)
 
 	// XXX This still fails
 	/*

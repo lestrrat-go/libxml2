@@ -129,7 +129,7 @@ func TestDOM(t *testing.T) {
 			return
 		}
 		child.AppendText(fmt.Sprintf("text%d", i))
-		root.AppendChild(child)
+		root.AddChild(child)
 	}
 
 	// Temporary test
@@ -207,13 +207,13 @@ func TestCreateElementNS(t *testing.T) {
 	if !assert.NoError(t, err, "CreateElementNS should succeed") {
 		return
 	}
-	root.AppendChild(n1)
+	root.AddChild(n1)
 
 	n2, err := doc.CreateElementNS("http://foo.bar.baz", "bar:n2")
 	if !assert.NoError(t, err, "CreateElementNS should succeed") {
 		return
 	}
-	root.AppendChild(n2)
+	root.AddChild(n2)
 
 	_, err = doc.CreateElementNS("http://foo.bar.baz.quux", "foo:n3")
 	if !assert.Error(t, err, "CreateElementNS should fail") {
