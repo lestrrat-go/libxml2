@@ -325,6 +325,7 @@ func xmlNewDocProp(doc *Document, k, v string) (*C.xmlAttr, error) {
 }
 
 func xmlSearchNsByHref(doc *Document, n Node, uri string) *Namespace {
+	nptr, _ := validNodePtr(n)
 	var xcuri *C.xmlChar
 	if len(uri) > 0 {
 		xcuri = stringToXmlChar(uri)
@@ -332,7 +333,7 @@ func xmlSearchNsByHref(doc *Document, n Node, uri string) *Namespace {
 
 	ns := C.xmlSearchNsByHref(
 		doc.ptr,
-		(*C.xmlNode)(n.Pointer()),
+		nptr,
 		xcuri,
 	)
 	if ns == nil {
@@ -520,6 +521,9 @@ func nodeValue(n Node) string {
 }
 
 func (n *XmlNode) Pointer() unsafe.Pointer {
+	if n == nil {
+		return nil
+	}
 	return unsafe.Pointer(n.ptr)
 }
 
@@ -689,12 +693,12 @@ func (n *XmlNode) ToString(format int, docencoding bool) string {
 
 func (n *XmlNode) LookupNamespacePrefix(href string) (string, error) {
 	if href == "" {
-		return "", ErrNamespaceNotFound
+		return "", ErrNamespaceNotFound{Target: href}
 	}
 
 	ns := C.xmlSearchNsByHref(n.ptr.doc, n.ptr, stringToXmlChar(href))
 	if ns == nil {
-		return "", ErrNamespaceNotFound
+		return "", ErrNamespaceNotFound{Target: href}
 	}
 
 	return xmlCharToString(ns.prefix), nil
@@ -702,12 +706,12 @@ func (n *XmlNode) LookupNamespacePrefix(href string) (string, error) {
 
 func (n *XmlNode) LookupNamespaceURI(prefix string) (string, error) {
 	if prefix == "" {
-		return "", ErrNamespaceNotFound
+		return "", ErrNamespaceNotFound{Target: prefix}
 	}
 
 	ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXmlChar(prefix))
 	if ns == nil {
-		return "", ErrNamespaceNotFound
+		return "", ErrNamespaceNotFound{Target :prefix}
 	}
 
 	return xmlCharToString(ns.href), nil
@@ -919,8 +923,32 @@ func xmlNodeSetBase(d *Document, s string) {
 	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(d.ptr)), stringToXmlChar(s))
 }
 
-func setDocumentElement(d *Document, n Node) {
-	C.xmlDocSetRootElement(d.ptr, (*C.xmlNode)(n.Pointer()))
+func validNodePtr(n Node) (*C.xmlNode, error) {
+	if n == nil {
+		return nil, ErrInvalidNode
+	}
+
+	nptr := (*C.xmlNode)(n.Pointer())
+	if nptr == nil {
+		return nil, ErrInvalidNode
+	}
+
+	return nptr, nil
+}
+
+func setDocumentElement(d *Document, n Node) error {
+	dptr := d.ptr
+	if dptr == nil {
+		return ErrInvalidDocument
+	}
+
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return err
+	}
+
+	C.xmlDocSetRootElement(dptr, nptr)
+	return nil
 }
 
 func setDocumentEncoding(d *Document, e string) {
@@ -1066,9 +1094,9 @@ func appendText(n Node, s string) error {
 }
 
 func xmlDocCopyNode(n Node, d *Document, extended int) (Node, error) {
-	nptr := (*C.xmlNode)(n.Pointer())
-	if nptr == nil {
-		return nil, ErrInvalidNode
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return nil, err
 	}
 
 	if d.ptr == nil {
@@ -1084,9 +1112,9 @@ func xmlDocCopyNode(n Node, d *Document, extended int) (Node, error) {
 }
 
 func xmlSetTreeDoc(n Node, d *Document) error {
-	nptr := (*C.xmlNode)(n.Pointer())
-	if nptr == nil {
-		return ErrInvalidNode
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return err
 	}
 
 	if d.ptr == nil {
@@ -1098,9 +1126,9 @@ func xmlSetTreeDoc(n Node, d *Document) error {
 }
 
 func xmlParseInNodeContext(n Node, data string, o ParseOption) (Node, error) {
-	nptr := (*C.xmlNode)(n.Pointer())
-	if nptr == nil {
-		return nil, ErrInvalidNode
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return nil, err
 	}
 
 	var ret C.xmlNodePtr

@@ -48,12 +48,18 @@ var (
 	ErrInvalidNodeType               = errors.New("invalid node type")
 	ErrInvalidXPathExpression        = errors.New("empty xpath expression")
 	ErrMalformedXML                  = errors.New("malformed XML")
-	ErrNamespaceNotFound             = errors.New("namespace not found")
 	ErrNodeNotFound                  = errors.New("node not found")
 	ErrXPathEmptyResult              = errors.New("empty xpath result")
 	ErrXPathCompileFailure           = errors.New("xpath compilation failed")
 	ErrXPathNamespaceRegisterFailure = errors.New("cannot register namespace")
 )
+
+type ErrNamespaceNotFound struct {
+	Target string
+}
+func (e ErrNamespaceNotFound) Error() string {
+	return "namespace not found: " + e.Target
+}
 
 type Libxml2Node interface {
 	// Pointer() returns the underlying C pointer. This is an exported

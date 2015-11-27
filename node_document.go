@@ -122,8 +122,8 @@ func (d *Document) SetBaseURI(s string) {
 	xmlNodeSetBase(d, s)
 }
 
-func (d *Document) SetDocumentElement(n Node) {
-	setDocumentElement(d, n)
+func (d *Document) SetDocumentElement(n Node) error {
+	return setDocumentElement(d, n)
 }
 
 func (d *Document) SetEncoding(e string) {

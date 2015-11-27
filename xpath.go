@@ -215,7 +215,7 @@ func (x *XPathContext) FindValueExpr(expr *XPathExpression) (*XPathObject, error
 func (x *XPathContext) LookupNamespaceURI(name string) (string, error) {
 	s := C.xmlXPathNsLookup(x.ptr, stringToXmlChar(name))
 	if s == nil {
-		return "", ErrNamespaceNotFound
+		return "", ErrNamespaceNotFound{Target: name}
 	}
 	return xmlCharToString(s), nil
 }
