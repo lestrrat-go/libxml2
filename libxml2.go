@@ -27,6 +27,7 @@ package libxml2
 #include <libxml/tree.h>
 #include <libxml/xmlerror.h>
 #include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 #include <libxml/c14n.h>
 
 
@@ -165,6 +166,12 @@ MY_test_node_name( xmlChar * name )
 
 	return(1);
 }
+
+// Because Go can't do pointer airthmetics...
+static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
+	return nodes[i];
+}
+
 */
 import "C"
 import (
@@ -1150,4 +1157,195 @@ func xmlParseInNodeContext(n Node, data string, o ParseOption) (Node, error) {
 	}
 
 	return wrapToNode((*C.xmlNode)(unsafe.Pointer(ret)))
+}
+
+func validXPathContextPtr(x *XPathContext) (*C.xmlXPathContext, error) {
+	if xptr := x.ptr; xptr != nil {
+		return xptr, nil
+	}
+	return nil, ErrInvalidXPathContext
+}
+
+func validXPathExpressionPtr(x *XPathExpression) (*C.xmlXPathCompExpr, error) {
+	if xptr := x.ptr; xptr != nil {
+		return xptr, nil
+	}
+	return nil, ErrInvalidXPathExpression
+}
+
+func validXPathObjectPtr(x *XPathObject) (*C.xmlXPathObject, error) {
+	if xptr := x.ptr; xptr != nil {
+		return xptr, nil
+	}
+	return nil, ErrInvalidXPathObject
+}
+
+func xmlXPathNewContext(n ...Node) (*XPathContext, error) {
+	ctx := C.xmlXPathNewContext(nil)
+	ctx.namespaces = nil
+
+	if len(n) > 0 {
+		ctx.node = (*C.xmlNode)(n[0].Pointer())
+	}
+
+	return &XPathContext{ptr: ctx}, nil
+}
+
+func xmlXPathContextSetContextNode(x *XPathContext, n Node) error {
+	xptr, err := validXPathContextPtr(x)
+	if err != nil {
+		return err
+	}
+
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return err
+	}
+
+	xptr.node = nptr
+	return nil
+}
+
+func xmlXPathCompile(s string) (*XPathExpression, error) {
+	if p := C.xmlXPathCompile(stringToXMLChar(s)); p != nil {
+		return &XPathExpression{ptr: p, expr: s}, nil
+	}
+	return nil, ErrXPathCompileFailure
+}
+
+func xmlXPathFreeCompExpr(x *XPathExpression) error {
+	xptr, err := validXPathExpressionPtr(x)
+	if err != nil {
+		return err
+	}
+	C.xmlXPathFreeCompExpr(xptr)
+	return nil
+}
+
+func xmlXPathFreeContext(x *XPathContext) error {
+	xptr, err := validXPathContextPtr(x)
+	if err != nil {
+		return err
+	}
+	C.xmlXPathFreeContext(xptr)
+	return nil
+}
+
+func xmlXPathNSLookup(x *XPathContext, prefix string) (string, error) {
+	xptr, err := validXPathContextPtr(x)
+	if err != nil {
+		return "", err
+	}
+
+	if s := C.xmlXPathNsLookup(xptr, stringToXMLChar(prefix)); s != nil {
+		return xmlCharToString(s), nil
+	}
+
+	return "", ErrNamespaceNotFound{Target: prefix}
+}
+
+func xmlXPathRegisterNS(x *XPathContext, prefix, nsuri string) error {
+	xptr, err := validXPathContextPtr(x)
+	if err != nil {
+		return err
+	}
+
+	if res := C.xmlXPathRegisterNs(xptr, stringToXMLChar(prefix), stringToXMLChar(nsuri)); res == -1 {
+		return ErrXPathNamespaceRegisterFailure
+	}
+	return nil
+}
+
+func evalXPath(x *XPathContext, expr *XPathExpression) (*XPathObject, error) {
+	xptr, err := validXPathContextPtr(x)
+	if err != nil {
+		return nil, err
+	}
+
+	exprptr, err := validXPathExpressionPtr(expr)
+	if err != nil {
+		return nil, err
+	}
+
+	// If there is no document associated with this context,
+	// then xmlXPathCompiledEval() just fails to match
+	if xptr.node != nil && xptr.node.doc != nil {
+		xptr.doc = xptr.node.doc
+	}
+
+	if xptr.doc == nil {
+		xptr.doc = C.xmlNewDoc(stringToXMLChar("1.0"))
+		defer C.xmlFreeDoc(xptr.doc)
+	}
+
+	res := C.xmlXPathCompiledEval(exprptr, xptr)
+	if res == nil {
+		return nil, ErrXPathEmptyResult
+	}
+
+	return &XPathObject{ptr: res}, nil
+}
+
+func xmlXPathFreeObject(x *XPathObject) {
+  xptr, err := validXPathObjectPtr(x)
+	if err != nil {
+		return
+	}
+	C.xmlXPathFreeObject(xptr)
+	//	if xptr.nodesetval != nil {
+	//		C.xmlXPathFreeNodeSet(xptr.nodesetval)
+	//	}
+}
+
+func xmlXPathObjectType(x *XPathObject) XPathObjectType {
+	xptr, err := validXPathObjectPtr(x)
+	if err != nil {
+		return XPathUndefined
+	}
+	return XPathObjectType(xptr._type)
+}
+
+func xmlXPathObjectFloat64Value(x *XPathObject) float64 {
+	xptr, err := validXPathObjectPtr(x)
+	if err != nil {
+		return float64(0)
+	}
+
+	return float64(xptr.floatval)
+}
+
+func xmlXPathObjectBoolValue(x *XPathObject) bool {
+	xptr, err := validXPathObjectPtr(x)
+	if err != nil {
+		return false
+	}
+
+	return C.int(xptr.boolval) == 1
+}
+
+func xmlXPathObjectNodeList(x *XPathObject) (NodeList, error) {
+	xptr, err := validXPathObjectPtr(x)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeset := xptr.nodesetval
+	if nodeset == nil {
+		return nil, ErrInvalidNode
+	}
+
+	if nodeset.nodeNr == 0 {
+		return nil, ErrInvalidNode
+	}
+
+	ret := make(NodeList, nodeset.nodeNr)
+	for i := 0; i < int(nodeset.nodeNr); i++ {
+		v, err := wrapToNode(C.MY_xmlNodeSetTabAt(nodeset.nodeTab, C.int(i)))
+		if err != nil {
+			return nil, err
+		}
+		ret[i] = v
+	}
+
+	return ret, nil
 }

@@ -40,7 +40,7 @@ func ExmapleXML() {
 	}
 	defer ctx.Free()
 
-	ctx.RegisterNs("atom", "http://www.w3.org/2005/Atom")
+	ctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
 	title, err := ctx.FindValue("/atom:feed/atom:title/text()")
 	if err != nil {
 		log.Printf("Failed to run FindValue: %s", err)

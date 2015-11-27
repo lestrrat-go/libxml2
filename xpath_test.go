@@ -169,7 +169,7 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 
 	prefix := `xxx`
 	nsuri := `http://example.com/foobar`
-	if err := ctx.RegisterNs(prefix, nsuri); err != nil {
+	if err := ctx.RegisterNS(prefix, nsuri); err != nil {
 		t.Errorf("Failed to register namespace: %s", err)
 		return
 	}
