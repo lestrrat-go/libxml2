@@ -18,25 +18,25 @@ type HTMLParseOption int
 
 const (
 	// HTMLParseRecover enables relaxed parsing
-	HTMLParseRecover   HTMLParseOption = 1 << 0
+	HTMLParseRecover HTMLParseOption = 1 << 0
 	// HTMLParseNoDefDTD disables using a default doctype when absent
-	HTMLParseNoDefDTD                  = 1 << 2
+	HTMLParseNoDefDTD = 1 << 2
 	// HTMLParseNoError suppresses error reports
-	HTMLParseNoError                   = 1 << 5
+	HTMLParseNoError = 1 << 5
 	// HTMLParseNoWarning suppresses warning reports
-	HTMLParseNoWarning                 = 1 << 6
+	HTMLParseNoWarning = 1 << 6
 	// HTMLParsePedantic enables pedantic error reporting
-	HTMLParsePedantic                  = 1 << 7
+	HTMLParsePedantic = 1 << 7
 	// HTMLParseNoBlanks removes blank nodes
-	HTMLParseNoBlanks                  = 1 << 8
+	HTMLParseNoBlanks = 1 << 8
 	// HTMLParseNoNet forbids network access during parsing
-	HTMLParseNoNet                     = 1 << 11
+	HTMLParseNoNet = 1 << 11
 	// HTMLParseNoImplied disables implied html/body elements
-	HTMLParseNoImplied                 = 1 << 13
+	HTMLParseNoImplied = 1 << 13
 	// HTMLParseCompact enables compaction of small text nodes
-	HTMLParseCompact                   = 1 << 16
+	HTMLParseCompact = 1 << 16
 	// HTMLParseIgnoreEnc ignores internal document encoding hints
-	HTMLParseIgnoreEnc                 = 1 << 21
+	HTMLParseIgnoreEnc = 1 << 21
 )
 
 // DefaultHTMLParseOptions represents the default set of options
@@ -74,6 +74,7 @@ var (
 	ErrInvalidArgument               = errors.New("invalid argument")
 	ErrInvalidDocument               = errors.New("invalid document")
 	ErrInvalidParser                 = errors.New("invalid parser")
+	ErrInvalidNamespace              = errors.New("invalid namespace")
 	ErrInvalidNode                   = errors.New("invalid node")
 	ErrInvalidNodeName               = errors.New("invalid node name")
 	ErrInvalidNodeType               = errors.New("invalid node type")
