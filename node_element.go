@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+// SetNamespace sets up a new namespace on the given node.
+// An XML namespace declaration is explicitly created only if
+// the activate flag is enabled, and the namespace is not
+// declared in a previous tree hierarchy.
 func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 	activateflag := false
 	if len(activate) < 1 {
@@ -43,14 +47,17 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 	return nil
 }
 
+// AppendText adds a new text node
 func (n *Element) AppendText(s string) error {
 	return appendText(n, s)
 }
 
+// SetAttribute sets an attribute
 func (n *Element) SetAttribute(name, value string) error {
 	return xmlSetProp(n, name, value)
 }
 
+// GetAttribute retrieves the value of an attribute
 func (n *Element) GetAttribute(name string) (*Attribute, error) {
 	attrNode, err := n.getAttributeNode(name)
 	if err != nil {
@@ -59,6 +66,7 @@ func (n *Element) GetAttribute(name string) (*Attribute, error) {
 	return wrapAttribute(attrNode), nil
 }
 
+// Attributes returns a list of attributes on a node
 func (n *Element) Attributes() ([]*Attribute, error) {
 	attrs := []*Attribute{}
 	for attr := n.ptr.properties; attr != nil; attr = attr.next {
@@ -67,6 +75,7 @@ func (n *Element) Attributes() ([]*Attribute, error) {
 	return attrs, nil
 }
 
+// RemoveAttribute completely removes an attribute from the node
 func (n *Element) RemoveAttribute(name string) error {
 	i := strings.IndexByte(name, ':')
 	if i == -1 {
@@ -108,6 +117,8 @@ func (n *Element) GetNamespaces() []*Namespace {
 	return ret
 }
 
+// Literal returns a stringified version of this node and its
+// children, inclusive.
 func (n Element) Literal() (string, error) {
 	buf := bytes.Buffer{}
 	children, err := n.ChildNodes()
