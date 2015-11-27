@@ -917,6 +917,30 @@ func documentEncoding(doc *Document) string {
 	return xmlCharToString(dptr.encoding)
 }
 
+func documentStandalone(doc *Document) int {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return 0
+	}
+	return int(dptr.standalone)
+}
+
+func documentURI(doc *Document) string {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return ""
+	}
+	return xmlCharToString(dptr.URL)
+}
+
+func documentVersion(doc *Document) string {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return ""
+	}
+	return xmlCharToString(dptr.version)
+}
+
 func documentElement(doc *Document) *C.xmlNode {
 	dptr, err := validDocumentPtr(doc)
 	if err != nil {

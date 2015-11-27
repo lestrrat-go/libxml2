@@ -121,50 +121,62 @@ func (d *Document) Free() {
 	xmlFreeDoc(d)
 }
 
+// String formats the document, always without formatting.
 func (d *Document) String() string {
 	return documentString(d, d.Encoding(), false)
 }
 
+// Dump formats the document with or withour formatting.
 func (d *Document) Dump(format bool) string {
 	return documentString(d, d.Encoding(), format)
 }
 
+// NodeType returns the XMLNodeType
 func (d *Document) NodeType() XMLNodeType {
-	return XMLNodeType(d.ptr._type)
+	return DocumentNode
 }
 
+// SetBaseURI sets the base URI
 func (d *Document) SetBaseURI(s string) {
 	xmlNodeSetBase(d, s)
 }
 
+// SetDocumentElement sets the document element
 func (d *Document) SetDocumentElement(n Node) error {
 	return setDocumentElement(d, n)
 }
 
+// SetEncoding sets the encoding of the document
 func (d *Document) SetEncoding(e string) {
 	setDocumentEncoding(d, e)
 }
 
+// SetStandalone sets the standalone flag
 func (d *Document) SetStandalone(v int) {
 	setDocumentStandalone(d, v)
 }
 
+// SetVersion sets the version of the document
 func (d *Document) SetVersion(v string) {
 	setDocumentVersion(d, v)
 }
 
+// Standalone returns the value of the standalone flag
 func (d *Document) Standalone() int {
-	return int(d.ptr.standalone)
+	return documentStandalone(d)
 }
 
+// URI returns the document URI
 func (d *Document) URI() string {
-	return xmlCharToString(d.ptr.URL)
+	return documentURI(d)
 }
 
+// Version returns the version of the document
 func (d *Document) Version() string {
-	return xmlCharToString(d.ptr.version)
+	return documentVersion(d)
 }
 
+// Walk traverses the nodes in the document
 func (d *Document) Walk(fn func(Node) error) error {
 	root, err := d.DocumentElement()
 	if err != nil {
