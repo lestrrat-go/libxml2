@@ -32,10 +32,10 @@ const (
 	// HTMLParseNoNet forbids network access during parsing
 	HTMLParseNoNet                     = 1 << 11
 	// HTMLParseNoImplied disables implied html/body elements
-	HtmlParseNoImplied                 = 1 << 13
+	HTMLParseNoImplied                 = 1 << 13
 	// HTMLParseCompact enables compaction of small text nodes
 	HTMLParseCompact                   = 1 << 16
-	// HTMLParseIgnoreenc ignores internal document encoding hints
+	// HTMLParseIgnoreEnc ignores internal document encoding hints
 	HTMLParseIgnoreEnc                 = 1 << 21
 )
 
