@@ -126,7 +126,7 @@ type Node interface {
 	NodeName() string
 	NodeType() XMLNodeType
 	NodeValue() string
-	ParetNode() (Node, error)
+	ParentNode() (Node, error)
 	PreviousSibling() (Node, error)
 	SetDocument(d *Document) error
 	SetNodeName(string)
