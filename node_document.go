@@ -70,7 +70,7 @@ func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
 	return wrapCDataSection(cdata), nil
 }
 
-// CreatesCommentNode creates a new comment node
+// CreateCommentNode creates a new comment node
 func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
 	comment := xmlNewComment(txt)
 	return wrapComment(comment), nil
