@@ -415,10 +415,10 @@ func xmlNewText(txt string) *C.xmlNode {
 
 func (i XMLNodeType) String() string {
 	x := i - 1
-	if x < 0 || x+1 >= XMLNodeType(len(_XMLNodeType_index)) {
+	if x < 0 || x+1 >= XMLNodeType(len(_XMLNodeTypeIndex)) {
 		return fmt.Sprintf("XMLNodeType(%d)", x+1)
 	}
-	return _XMLNodeType_name[_XMLNodeType_index[x]:_XMLNodeType_index[x+1]]
+	return _XMLNodeTypeName[_XMLNodeTypeIndex[x]:_XMLNodeTypeIndex[x+1]]
 }
 
 func (n NodeList) String() string {
