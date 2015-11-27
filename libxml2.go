@@ -464,6 +464,19 @@ func wrapText(n *C.xmlNode) *Text {
 	return &Text{wrapXmlNode(n)}
 }
 
+// WrapToNodeUnsafe is a function created with the sole purpose
+// of allowing go-libxml2 consumers that can generate an xmlNodePtr
+// type to create libxml2.Node types.
+//
+// The unsafe.Pointer variable is cast into a C.xmlNodePtr, and
+// wrapped into a go-libxml2 node type. You shouldn't be using
+// this function unless you know EXACTLY what you are doing
+// including knowing how to allocate/free libxml2 resources
+func WrapToNodeUnsafe(n unsafe.Pointer) (Node, error) {
+	ptr := (*C.xmlNode)(n)
+	return wrapToNode(ptr)
+}
+
 func wrapToNode(n *C.xmlNode) (Node, error) {
 	switch XmlNodeType(n._type) {
 	case ElementNode:
