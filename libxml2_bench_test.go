@@ -100,15 +100,15 @@ func BenchmarkDOM_Libxml2(b *testing.B) {
 	}
 }
 
-func Benchmark_stringToXmlChar(b *testing.B) {
+func Benchmark_stringToXMLChar(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		xmlchar := stringToXmlChar("Hello, World")
+		xmlchar := stringToXMLChar("Hello, World")
 		_ = xmlchar
 	}
 }
 
 func Benchmark_xmlCharToString(b *testing.B) {
-	xmlchar := stringToXmlChar("Hello, World")
+	xmlchar := stringToXMLChar("Hello, World")
 	for i := 0; i < b.N; i++ {
 		_ = xmlCharToString(xmlchar)
 	}

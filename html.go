@@ -6,23 +6,23 @@ import (
 )
 
 const (
-	HtmlParseRecover = 1 << 0
-	HtmlParseNoError = 1<<iota + 5
-	HtmlParseNoWarning
-	HtmlParsePedantic
-	HtmlParseNoBlanks
-	HtmlParseNoNet
-	HtmlParseCompact
+	HTMLParserRecover = 1 << 0
+	HTMLParserNoError = 1<<iota + 5
+	HTMLParserNoWarning
+	HTMLParserPedantic
+	HTMLParserNoBlanks
+	HTMLParserNoNet
+	HTMLParserCompact
 )
 
-const DefaultHtmlParseFlags = HtmlParseCompact | HtmlParseNoBlanks | HtmlParseNoError | HtmlParseNoWarning
+const DefaultHTMLParserFlags = HTMLParserCompact | HTMLParserNoBlanks | HTMLParserNoError | HTMLParserNoWarning
 
 func ParseHTML(content []byte) (*Document, error) {
 	return ParseHTMLString(string(content))
 }
 
 func ParseHTMLString(content string) (*Document, error) {
-	return htmlReadDoc(content, "", "", DefaultHtmlParseFlags)
+	return htmlReadDoc(content, "", "", DefaultHTMLParserFlags)
 }
 
 func ParseHTMLReader(in io.Reader) (*Document, error) {

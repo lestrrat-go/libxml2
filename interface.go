@@ -12,10 +12,10 @@ import (
 	"unsafe"
 )
 
-type XmlNodeType int
+type XMLNodeType int
 
 const (
-	ElementNode XmlNodeType = iota + 1
+	ElementNode XMLNodeType = iota + 1
 	AttributeNode
 	TextNode
 	CDataSectionNode
@@ -89,7 +89,7 @@ type Node interface {
 	Literal() (string, error)
 	NextSibling() (Node, error)
 	NodeName() string
-	NodeType() XmlNodeType
+	NodeType() XMLNodeType
 	NodeValue() string
 	ParetNode() (Node, error)
 	PreviousSibling() (Node, error)
@@ -104,25 +104,25 @@ type Node interface {
 
 type NodeList []Node
 
-type XmlNode struct {
+type XMLNode struct {
 	ptr    *C.xmlNode
 	mortal bool
 }
 
 type Attribute struct {
-	*XmlNode
+	*XMLNode
 }
 
 type CDataSection struct {
-	*XmlNode
+	*XMLNode
 }
 
 type Comment struct {
-	*XmlNode
+	*XMLNode
 }
 
 type Element struct {
-	*XmlNode
+	*XMLNode
 }
 
 type Document struct {
@@ -130,7 +130,7 @@ type Document struct {
 }
 
 type Text struct {
-	*XmlNode
+	*XMLNode
 }
 
 type XPathObjectType int
@@ -170,31 +170,31 @@ type XPathExpression struct {
 type ParseOption int
 
 const (
-	XmlParseRecover    ParseOption = 1 << iota /* recover on errors */
-	XmlParseNoEnt                              /* substitute entities */
-	XmlParseDTDLoad                            /* load the external subset */
-	XmlParseDTDAttr                            /* default DTD attributes */
-	XmlParseDTDValid                           /* validate with the DTD */
-	XmlParseNoError                            /* suppress error reports */
-	XmlParseNoWarning                          /* suppress warning reports */
-	XmlParsePedantic                           /* pedantic error reporting */
-	XmlParseNoBlanks                           /* remove blank nodes */
-	XmlParseSAX1                               /* use the SAX1 interface internally */
-	XmlParseXInclude                           /* Implement XInclude substitition  */
-	XmlParseNoNet                              /* Forbid network access */
-	XmlParseNoDict                             /* Do not reuse the context dictionnary */
-	XmlParseNsclean                            /* remove redundant namespaces declarations */
-	XmlParseNoCDATA                            /* merge CDATA as text nodes */
-	XmlParseNoXIncNode                         /* do not generate XINCLUDE START/END nodes */
-	XmlParseCompact                            /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
-	XmlParseOld10                              /* parse using XML-1.0 before update 5 */
-	XmlParseNoBaseFix                          /* do not fixup XINCLUDE xml:base uris */
-	XmlParseHuge                               /* relax any hardcoded limit from the parser */
-	XmlParseOldSAX                             /* parse using SAX2 interface before 2.7.0 */
-	XmlParseIgnoreEnc                          /* ignore internal document encoding hint */
-	XmlParseBigLines                           /* Store big lines numbers in text PSVI field */
-	XmlParseMax
-	XmlParseEmptyOption ParseOption = 0
+	XMLParserRecover    ParseOption = 1 << iota /* recover on errors */
+	XMLParserNoEnt                              /* substitute entities */
+	XMLParserDTDLoad                            /* load the external subset */
+	XMLParserDTDAttr                            /* default DTD attributes */
+	XMLParserDTDValid                           /* validate with the DTD */
+	XMLParserNoError                            /* suppress error reports */
+	XMLParserNoWarning                          /* suppress warning reports */
+	XMLParserPedantic                           /* pedantic error reporting */
+	XMLParserNoBlanks                           /* remove blank nodes */
+	XMLParserSAX1                               /* use the SAX1 interface internally */
+	XMLParserXInclude                           /* Implement XInclude substitition  */
+	XMLParserNoNet                              /* Forbid network access */
+	XMLParserNoDict                             /* Do not reuse the context dictionnary */
+	XMLParserNsclean                            /* remove redundant namespaces declarations */
+	XMLParserNoCDATA                            /* merge CDATA as text nodes */
+	XMLParserNoXIncNode                         /* do not generate XINCLUDE START/END nodes */
+	XMLParserCompact                            /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
+	XMLParserOld10                              /* parse using XML-1.0 before update 5 */
+	XMLParserNoBaseFix                          /* do not fixup XINCLUDE xml:base uris */
+	XMLParserHuge                               /* relax any hardcoded limit from the parser */
+	XMLParserOldSAX                             /* parse using SAX2 interface before 2.7.0 */
+	XMLParserIgnoreEnc                          /* ignore internal document encoding hint */
+	XMLParserBigLines                           /* Store big lines numbers in text PSVI field */
+	XMLParserMax
+	XMLParserEmptyOption ParseOption = 0
 )
 
 type ParserCtxt struct {
@@ -206,7 +206,7 @@ type Parser struct {
 }
 
 type Namespace struct {
-	*XmlNode
+	*XMLNode
 }
 
 type Serializer interface {

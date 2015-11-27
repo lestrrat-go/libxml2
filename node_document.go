@@ -114,8 +114,8 @@ func (d *Document) Dump(format bool) string {
 	return documentString(d, d.Encoding(), format)
 }
 
-func (d *Document) NodeType() XmlNodeType {
-	return XmlNodeType(d.ptr._type)
+func (d *Document) NodeType() XMLNodeType {
+	return XMLNodeType(d.ptr._type)
 }
 
 func (d *Document) SetBaseURI(s string) {

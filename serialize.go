@@ -25,7 +25,7 @@ package libxml2
  *
  * In go-libxml2, this translates to:
  *
- *    options = XmlParseDTDLoad | XmlParseDTDAttr | XmlParseNoEnt
+ *    options = XMLParserDTDLoad | XMLParserDTDAttr | XMLParserNoEnt
  *
  */
 func (s C14NSerialize) Serialize(n interface{}) (string, error) {

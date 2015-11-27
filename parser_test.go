@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const stdXmlDecl = `<?xml version="1.0"?>` + "\n"
+const stdXMLDecl = `<?xml version="1.0"?>` + "\n"
 
 var (
 	goodWFNSStrings = []string{
-		stdXmlDecl + `<foobar xmlns:bar="xml://foo" bar:foo="bar"/>` + "\n",
-		stdXmlDecl + `<foobar xmlns="xml://foo" foo="bar"><foo/></foobar>` + "\n",
-		stdXmlDecl + `<bar:foobar xmlns:bar="xml://foo" foo="bar"><foo/></bar:foobar>` + "\n",
-		stdXmlDecl + `<bar:foobar xmlns:bar="xml://foo" foo="bar"><bar:foo/></bar:foobar>` + "\n",
-		stdXmlDecl + `<bar:foobar xmlns:bar="xml://foo" bar:foo="bar"><bar:foo/></bar:foobar>` + "\n",
+		stdXMLDecl + `<foobar xmlns:bar="xml://foo" bar:foo="bar"/>` + "\n",
+		stdXMLDecl + `<foobar xmlns="xml://foo" foo="bar"><foo/></foobar>` + "\n",
+		stdXMLDecl + `<bar:foobar xmlns:bar="xml://foo" foo="bar"><foo/></bar:foobar>` + "\n",
+		stdXMLDecl + `<bar:foobar xmlns:bar="xml://foo" foo="bar"><bar:foo/></bar:foobar>` + "\n",
+		stdXMLDecl + `<bar:foobar xmlns:bar="xml://foo" bar:foo="bar"><bar:foo/></bar:foobar>` + "\n",
 	}
 	goodWFStrings = []string{
 		`<foobar/>`,
@@ -23,30 +23,30 @@ var (
 		`<foobar></foobar>`,
 		`<?xml version="1.0" encoding="UTF-8"?>` + "\n" + `<foobar></foobar>`,
 		`<?xml version="1.0" encoding="ISO-8859-1"?>` + "\n" + `<foobar></foobar>`,
-		stdXmlDecl + `<foobar> </foobar>` + "\n",
-		stdXmlDecl + `<foobar><foo/></foobar> `,
-		stdXmlDecl + `<foobar> <foo/> </foobar> `,
-		stdXmlDecl + `<foobar><![CDATA[<>&"\` + "`" + `]]></foobar>`,
-		stdXmlDecl + `<foobar>&lt;&gt;&amp;&quot;&apos;</foobar>`,
-		stdXmlDecl + `<foobar>&#x20;&#160;</foobar>`,
-		stdXmlDecl + `<!--comment--><foobar>foo</foobar>`,
-		stdXmlDecl + `<foobar>foo</foobar><!--comment-->`,
-		stdXmlDecl + `<foobar>foo<!----></foobar>`,
-		stdXmlDecl + `<foobar foo="bar"/>`,
-		stdXmlDecl + `<foobar foo="\` + "`" + `bar>"/>`,
+		stdXMLDecl + `<foobar> </foobar>` + "\n",
+		stdXMLDecl + `<foobar><foo/></foobar> `,
+		stdXMLDecl + `<foobar> <foo/> </foobar> `,
+		stdXMLDecl + `<foobar><![CDATA[<>&"\` + "`" + `]]></foobar>`,
+		stdXMLDecl + `<foobar>&lt;&gt;&amp;&quot;&apos;</foobar>`,
+		stdXMLDecl + `<foobar>&#x20;&#160;</foobar>`,
+		stdXMLDecl + `<!--comment--><foobar>foo</foobar>`,
+		stdXMLDecl + `<foobar>foo</foobar><!--comment-->`,
+		stdXMLDecl + `<foobar>foo<!----></foobar>`,
+		stdXMLDecl + `<foobar foo="bar"/>`,
+		stdXMLDecl + `<foobar foo="\` + "`" + `bar>"/>`,
 	}
 	goodWFDTDStrings = []string{
-		stdXmlDecl + `<!DOCTYPE foobar [` + "\n" + `<!ENTITY foo " test ">` + "\n" + `]>` + "\n" + `<foobar>&foo;</foobar>`,
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar>&foo;</foobar>`,
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar>&foo;&gt;</foobar>`,
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar=&quot;foo&quot;">]><foobar>&foo;&gt;</foobar>`,
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar>&foo;&gt;</foobar>`,
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar foo="&foo;"/>`,
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar foo="&gt;&foo;"/>`,
+		stdXMLDecl + `<!DOCTYPE foobar [` + "\n" + `<!ENTITY foo " test ">` + "\n" + `]>` + "\n" + `<foobar>&foo;</foobar>`,
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar>&foo;</foobar>`,
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar>&foo;&gt;</foobar>`,
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar=&quot;foo&quot;">]><foobar>&foo;&gt;</foobar>`,
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar>&foo;&gt;</foobar>`,
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar foo="&foo;"/>`,
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar foo="&gt;&foo;"/>`,
 	}
 	badWFStrings = []string{
 		"",                                      // totally empty document
-		stdXmlDecl,                              // only XML Declaration
+		stdXMLDecl,                              // only XML Declaration
 		"<!--ouch-->",                           // comment only is like an empty document
 		`<!DOCTYPE ouch [<!ENTITY foo "bar">]>`, // no good either ...
 		"<ouch>",                // single tag (tag mismatch)
@@ -59,8 +59,8 @@ var (
 		"<foob<e4>r/>",          // bad encoding
 		"<ouch>&foo;</ouch>",    // undefind entity
 		"<ouch>&gt</ouch>",      // unterminated entity
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar &foo;="ouch"/>`,          // bad placed entity
-		stdXmlDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar=&quot;foo&quot;">]><foobar &foo;/>`, // even worse
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar &foo;="ouch"/>`,          // bad placed entity
+		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar=&quot;foo&quot;">]><foobar &foo;/>`, // even worse
 		"<ouch><!---></ouch>",   // bad comment
 		"<ouch><!-----></ouch>", // bad either... (is this conform with the spec????)
 	}
@@ -95,95 +95,95 @@ type ParseOptionToString struct {
 func TestParseOptionStringer(t *testing.T) {
 	values := []ParseOptionToString{
 		ParseOptionToString{
-			v: XmlParseRecover,
+			v: XMLParserRecover,
 			e: "Recover",
 		},
 		ParseOptionToString{
-			v: XmlParseNoEnt,
+			v: XMLParserNoEnt,
 			e: "NoEnt",
 		},
 		ParseOptionToString{
-			v: XmlParseDTDLoad,
+			v: XMLParserDTDLoad,
 			e: "DTDLoad",
 		},
 		ParseOptionToString{
-			v: XmlParseDTDAttr,
+			v: XMLParserDTDAttr,
 			e: "DTDAttr",
 		},
 		ParseOptionToString{
-			v: XmlParseDTDValid,
+			v: XMLParserDTDValid,
 			e: "DTDValid",
 		},
 		ParseOptionToString{
-			v: XmlParseNoError,
+			v: XMLParserNoError,
 			e: "NoError",
 		},
 		ParseOptionToString{
-			v: XmlParseNoWarning,
+			v: XMLParserNoWarning,
 			e: "NoWarning",
 		},
 		ParseOptionToString{
-			v: XmlParsePedantic,
+			v: XMLParserPedantic,
 			e: "Pedantic",
 		},
 		ParseOptionToString{
-			v: XmlParseNoBlanks,
+			v: XMLParserNoBlanks,
 			e: "NoBlanks",
 		},
 		ParseOptionToString{
-			v: XmlParseSAX1,
+			v: XMLParserSAX1,
 			e: "SAX1",
 		},
 		ParseOptionToString{
-			v: XmlParseXInclude,
+			v: XMLParserXInclude,
 			e: "XInclude",
 		},
 		ParseOptionToString{
-			v: XmlParseNoNet,
+			v: XMLParserNoNet,
 			e: "NoNet",
 		},
 		ParseOptionToString{
-			v: XmlParseNoDict,
+			v: XMLParserNoDict,
 			e: "NoDict",
 		},
 		ParseOptionToString{
-			v: XmlParseNsclean,
+			v: XMLParserNsclean,
 			e: "Nsclean",
 		},
 		ParseOptionToString{
-			v: XmlParseNoCDATA,
+			v: XMLParserNoCDATA,
 			e: "NoCDATA",
 		},
 		ParseOptionToString{
-			v: XmlParseNoXIncNode,
+			v: XMLParserNoXIncNode,
 			e: "NoXIncNode",
 		},
 		ParseOptionToString{
-			v: XmlParseCompact,
+			v: XMLParserCompact,
 			e: "Compact",
 		},
 		ParseOptionToString{
-			v: XmlParseOld10,
+			v: XMLParserOld10,
 			e: "Old10",
 		},
 		ParseOptionToString{
-			v: XmlParseNoBaseFix,
+			v: XMLParserNoBaseFix,
 			e: "NoBaseFix",
 		},
 		ParseOptionToString{
-			v: XmlParseHuge,
+			v: XMLParserHuge,
 			e: "Huge",
 		},
 		ParseOptionToString{
-			v: XmlParseOldSAX,
+			v: XMLParserOldSAX,
 			e: "OldSAX",
 		},
 		ParseOptionToString{
-			v: XmlParseIgnoreEnc,
+			v: XMLParserIgnoreEnc,
 			e: "IgnoreEnc",
 		},
 		ParseOptionToString{
-			v: XmlParseBigLines,
+			v: XMLParserBigLines,
 			e: "BigLines",
 		},
 	}
@@ -232,12 +232,12 @@ func TestParseNoBlanks(t *testing.T) {
 		goodWFDTDStrings,
 	}
 	for _, input := range inputs {
-		parseShouldSucceed(t, XmlParseNoBlanks, input)
+		parseShouldSucceed(t, XMLParserNoBlanks, input)
 	}
 }
 
 func TestRoundtripNoBlanks(t *testing.T) {
-	doc, err := ParseString(`<a>    <b/> </a>`, XmlParseNoBlanks)
+	doc, err := ParseString(`<a>    <b/> </a>`, XMLParserNoBlanks)
 	if err != nil {
 		t.Errorf("failed to parse string: %s", err)
 		return

@@ -59,14 +59,14 @@ func (i *ParseOption) Set(options ...ParseOption) {
 }
 
 func (opts ParseOption) String() string {
-	if opts == XmlParseEmptyOption {
+	if opts == XMLParserEmptyOption {
 		return "[]"
 	}
 
 	i := int(opts)
 	b := bytes.Buffer{}
 	b.Write([]byte{'['})
-	for x := 1; x < int(XmlParseMax); x = x << 1 {
+	for x := 1; x < int(XMLParserMax); x = x << 1 {
 		if (i & x) == x {
 			v, ok := _ParseOption_map[x]
 			if !ok {

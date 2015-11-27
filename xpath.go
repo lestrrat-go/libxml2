@@ -85,7 +85,7 @@ func (x *XPathObject) Free() {
 }
 
 func NewXPathExpression(s string) (*XPathExpression, error) {
-	p := C.xmlXPathCompile(stringToXmlChar(s))
+	p := C.xmlXPathCompile(stringToXMLChar(s))
 	if p == nil {
 		return nil, ErrXPathCompileFailure
 	}
@@ -168,7 +168,7 @@ func (x *XPathContext) evalXPath(expr *XPathExpression) (*XPathObject, error) {
 	}
 
 	if ctx.doc == nil {
-		ctx.doc = C.xmlNewDoc(stringToXmlChar("1.0"))
+		ctx.doc = C.xmlNewDoc(stringToXMLChar("1.0"))
 		defer C.xmlFreeDoc(ctx.doc)
 	}
 
@@ -213,7 +213,7 @@ func (x *XPathContext) FindValueExpr(expr *XPathExpression) (*XPathObject, error
 }
 
 func (x *XPathContext) LookupNamespaceURI(name string) (string, error) {
-	s := C.xmlXPathNsLookup(x.ptr, stringToXmlChar(name))
+	s := C.xmlXPathNsLookup(x.ptr, stringToXMLChar(name))
 	if s == nil {
 		return "", ErrNamespaceNotFound{Target: name}
 	}
@@ -221,7 +221,7 @@ func (x *XPathContext) LookupNamespaceURI(name string) (string, error) {
 }
 
 func (x *XPathContext) RegisterNs(name, nsuri string) error {
-	res := C.xmlXPathRegisterNs(x.ptr, stringToXmlChar(name), stringToXmlChar(nsuri))
+	res := C.xmlXPathRegisterNs(x.ptr, stringToXMLChar(name), stringToXMLChar(nsuri))
 	if res == -1 {
 		return ErrXPathNamespaceRegisterFailure
 	}
