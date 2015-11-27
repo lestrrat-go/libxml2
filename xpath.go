@@ -60,24 +60,33 @@ func (x *XPathObject) Free() {
 	xmlXPathFreeObject(x)
 }
 
+// NewXPathExpression compiles the given XPath expression string
 func NewXPathExpression(s string) (*XPathExpression, error) {
 	return xmlXPathCompile(s)
 }
 
+// Free releases the underlying C structs in the XPathExpression
 func (x *XPathExpression) Free() {
 	xmlXPathFreeCompExpr(x)
 }
 
+// NewXPathContext creates a new XPathContext, optionally providing
+// with a context node.
+//
 // Note that although we are specifying `n... Node` for the argument,
 // only the first, node is considered for the context node
 func NewXPathContext(n ...Node) (*XPathContext, error) {
 	return xmlXPathNewContext(n...)
 }
 
+// SetContextNode sets or resets the context node which
+// XPath expressions will be evaluated against.
 func (x *XPathContext) SetContextNode(n Node) error {
 	return xmlXPathContextSetContextNode(x, n)
 }
 
+// Exists compiles and evaluates the xpath expression, and returns
+// true if a corresponding node exists
 func (x *XPathContext) Exists(xpath string) bool {
 	res, err := x.FindValue(xpath)
 	if err != nil {
@@ -94,10 +103,12 @@ func (x *XPathContext) Exists(xpath string) bool {
 	return false
 }
 
+// Free releases the underlying C structs in the XPathContext
 func (x *XPathContext) Free() {
 	xmlXPathFreeContext(x)
 }
 
+// FindNodes compiles a XPathExpression in string form, and then evaluates.
 func (x *XPathContext) FindNodes(s string) (NodeList, error) {
 	expr, err := NewXPathExpression(s)
 	if err != nil {
@@ -108,6 +119,7 @@ func (x *XPathContext) FindNodes(s string) (NodeList, error) {
 	return x.FindNodesExpr(expr)
 }
 
+// FindNodesExpr evaluates a compiled XPathExpression.
 func (x *XPathContext) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
 	res, err := evalXPath(x, expr)
 	if err != nil {
