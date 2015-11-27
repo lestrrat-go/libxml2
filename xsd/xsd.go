@@ -108,10 +108,14 @@ import (
 	"github.com/lestrrat/go-libxml2"
 )
 
+// Schema represents an XML schema.
 type Schema struct {
 	ptr C.xmlSchemaPtr
 }
 
+// Parse is used to parse an XML Schema Document to produce a
+// Schema instance. Make sure to call Free() on the instance
+// when you are done with it.
 func Parse(buf []byte) (*Schema, error) {
 	parserCtx := C.xmlSchemaNewMemParserCtxt(
 		(*C.char)(unsafe.Pointer(&buf[0])),
@@ -130,24 +134,33 @@ func Parse(buf []byte) (*Schema, error) {
 	return &Schema{ptr: s}, nil
 }
 
+// Free frees the underlying C struct
 func (s *Schema) Free() {
 	if ptr := s.ptr; ptr != nil {
 		C.xmlSchemaFree(ptr)
 	}
 }
 
+// SchemaValidationError is returned when the Validate() function
+// finds errors. When there are multiple errors, you may access
+// them using the Errors() method
 type SchemaValidationError struct {
 	errors []error
 }
 
+// Error method fulfils the error interface
 func (sve SchemaValidationError) Error() string {
 	return "schema validation failed"
 }
 
+// Errors returns the list of errors found
 func (sve SchemaValidationError) Errors() []error {
 	return sve.errors
 }
 
+// Validate takes in a XML document and validates it against
+// the schema. If there are any problems, and error is
+// returned.
 func (s *Schema) Validate(d *libxml2.Document) error {
 	ctx := C.xmlSchemaNewValidCtxt(s.ptr)
 	if ctx == nil {
