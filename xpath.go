@@ -16,15 +16,15 @@ static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 import "C"
 import "fmt"
 
-const _XPathObjectType_name = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberXPathStringXPathPointXPathRangeXPathLocationSetXPathUSersXPathXsltTree"
+const _XPathObjectTypeName = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberXPathStringXPathPointXPathRangeXPathLocationSetXPathUSersXPathXsltTree"
 
-var _XPathObjectType_index = [...]uint8{0, 14, 26, 38, 49, 60, 70, 80, 96, 106, 119}
+var _XPathObjectTypeIndex = [...]uint8{0, 14, 26, 38, 49, 60, 70, 80, 96, 106, 119}
 
 func (i XPathObjectType) String() string {
-	if i < 0 || i+1 >= XPathObjectType(len(_XPathObjectType_index)) {
+	if i < 0 || i+1 >= XPathObjectType(len(_XPathObjectTypeIndex)) {
 		return fmt.Sprintf("XPathObjectType(%d)", i)
 	}
-	return _XPathObjectType_name[_XPathObjectType_index[i]:_XPathObjectType_index[i+1]]
+	return _XPathObjectTypeName[_XPathObjectTypeIndex[i]:_XPathObjectTypeIndex[i+1]]
 }
 
 func (x XPathObject) Type() XPathObjectType {
