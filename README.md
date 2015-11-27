@@ -4,9 +4,15 @@
 
 [![GoDoc](https://godoc.org/github.com/lestrrat/go-libxml2?status.svg)](https://godoc.org/github.com/lestrrat/go-libxml2)
 
-Interface to libxml2, with DOM interface
+Interface to libxml2, with DOM interface.
 
-This library is still in very early stages of development. API may still change
+## Status
+
+* This library should be considered alpha grade. API may still change.
+* Much of commonly used functionalities from libxml2 that *I* use are there already, and are known to be functional
+
+Having said the above, AFAIK this is the most complete Go wrapper for libxml2 as of this writing
+(Nov, 2015).
 
 ## Examples
 
