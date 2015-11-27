@@ -23,32 +23,32 @@ func ParseReader(rdr io.Reader, o ...ParseOption) (*Document, error) {
 	return p.ParseReader(rdr)
 }
 
-const _ParseOption_name = "RecoverNoEntDTDLoadDTDAttrDTDValidNoErrorNoWarningPedanticNoBlanksSAX1XIncludeNoNetNoDictNscleanNoCDATANoXIncNodeCompactOld10NoBaseFixHugeOldSAXIgnoreEncBigLines"
+const _ParseOptionName = "RecoverNoEntDTDLoadDTDAttrDTDValidNoErrorNoWarningPedanticNoBlanksSAX1XIncludeNoNetNoDictNscleanNoCDATANoXIncNodeCompactOld10NoBaseFixHugeOldSAXIgnoreEncBigLines"
 
-var _ParseOption_map = map[int]string{
-	1:       _ParseOption_name[0:7],
-	2:       _ParseOption_name[7:12],
-	4:       _ParseOption_name[12:19],
-	8:       _ParseOption_name[19:26],
-	16:      _ParseOption_name[26:34],
-	32:      _ParseOption_name[34:41],
-	64:      _ParseOption_name[41:50],
-	128:     _ParseOption_name[50:58],
-	256:     _ParseOption_name[58:66],
-	512:     _ParseOption_name[66:70],
-	1024:    _ParseOption_name[70:78],
-	2048:    _ParseOption_name[78:83],
-	4096:    _ParseOption_name[83:89],
-	8192:    _ParseOption_name[89:96],
-	16384:   _ParseOption_name[96:103],
-	32768:   _ParseOption_name[103:113],
-	65536:   _ParseOption_name[113:120],
-	131072:  _ParseOption_name[120:125],
-	262144:  _ParseOption_name[125:134],
-	524288:  _ParseOption_name[134:138],
-	1048576: _ParseOption_name[138:144],
-	2097152: _ParseOption_name[144:153],
-	4194304: _ParseOption_name[153:161],
+var _ParseOptionMap = map[int]string{
+	1:       _ParseOptionName[0:7],
+	2:       _ParseOptionName[7:12],
+	4:       _ParseOptionName[12:19],
+	8:       _ParseOptionName[19:26],
+	16:      _ParseOptionName[26:34],
+	32:      _ParseOptionName[34:41],
+	64:      _ParseOptionName[41:50],
+	128:     _ParseOptionName[50:58],
+	256:     _ParseOptionName[58:66],
+	512:     _ParseOptionName[66:70],
+	1024:    _ParseOptionName[70:78],
+	2048:    _ParseOptionName[78:83],
+	4096:    _ParseOptionName[83:89],
+	8192:    _ParseOptionName[89:96],
+	16384:   _ParseOptionName[96:103],
+	32768:   _ParseOptionName[103:113],
+	65536:   _ParseOptionName[113:120],
+	131072:  _ParseOptionName[120:125],
+	262144:  _ParseOptionName[125:134],
+	524288:  _ParseOptionName[134:138],
+	1048576: _ParseOptionName[138:144],
+	2097152: _ParseOptionName[144:153],
+	4194304: _ParseOptionName[153:161],
 }
 
 // Set flips the option bit in the given ParseOption
@@ -71,7 +71,7 @@ func (o ParseOption) String() string {
 	b.Write([]byte{'['})
 	for x := 1; x < int(XMLParseMax); x = x << 1 {
 		if (i & x) == x {
-			v, ok := _ParseOption_map[x]
+			v, ok := _ParseOptionMap[x]
 			if !ok {
 				v = "ParseOption(Unknown)"
 			}
