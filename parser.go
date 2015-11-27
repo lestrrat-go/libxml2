@@ -17,6 +17,7 @@ func ParseString(s string, o ...ParseOption) (*Document, error) {
 	return p.ParseString(s)
 }
 
+// ParseReader parses XML from the given io.Reader and returns a Document.
 func ParseReader(rdr io.Reader, o ...ParseOption) (*Document, error) {
 	p := NewParser(o...)
 	return p.ParseReader(rdr)
@@ -50,20 +51,22 @@ var _ParseOption_map = map[int]string{
 	4194304: _ParseOption_name[153:161],
 }
 
-func (i *ParseOption) Set(options ...ParseOption) {
-	v := int(*i) // current value
-	for _, o := range options {
-		v = v | int(o)
+// Set flips the option bit in the given ParseOption
+func (o *ParseOption) Set(options ...ParseOption) {
+	v := int(*o) // current value
+	for _, i := range options {
+		v = v | int(i)
 	}
-	*i = ParseOption(v)
+	*o = ParseOption(v)
 }
 
-func (opts ParseOption) String() string {
-	if opts == XMLParseEmptyOption {
+// String creates a string representation of the ParseOption
+func (o ParseOption) String() string {
+	if o == XMLParseEmptyOption {
 		return "[]"
 	}
 
-	i := int(opts)
+	i := int(o)
 	b := bytes.Buffer{}
 	b.Write([]byte{'['})
 	for x := 1; x < int(XMLParseMax); x = x << 1 {
@@ -85,6 +88,7 @@ func (opts ParseOption) String() string {
 	return string(x)
 }
 
+// NewParser creates a new Parser with the given options.
 func NewParser(opts ...ParseOption) *Parser {
 	var o ParseOption
 	if len(opts) > 0 {
@@ -95,10 +99,12 @@ func NewParser(opts ...ParseOption) *Parser {
 	}
 }
 
+// Parse parses XML from the given byte buffer
 func (p *Parser) Parse(buf []byte) (*Document, error) {
 	return p.ParseString(string(buf))
 }
 
+// ParseString parses XML from the given string
 func (p *Parser) ParseString(s string) (*Document, error) {
 	ctx, err := xmlCreateMemoryParserCtxt(s, p.Options)
 	if err != nil {
@@ -121,6 +127,7 @@ func (p *Parser) ParseString(s string) (*Document, error) {
 	return doc, nil
 }
 
+// ParseReader parses XML from the given io.Reader
 func (p *Parser) ParseReader(in io.Reader) (*Document, error) {
 	buf := &bytes.Buffer{}
 	if _, err := buf.ReadFrom(in); err != nil {
