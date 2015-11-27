@@ -12,6 +12,37 @@ import (
 	"unsafe"
 )
 
+// HTMLParseOption represents the HTML parser options that
+// can be used when parsing HTML
+type HTMLParseOption int
+
+const (
+	// HTMLParseRecover enables relaxed parsing
+	HTMLParseRecover   HTMLParseOption = 1 << 0
+	// HTMLParseNoDefDTD disables using a default doctype when absent
+	HTMLParseNoDefDTD                  = 1 << 2
+	// HTMLParseNoError suppresses error reports
+	HTMLParseNoError                   = 1 << 5
+	// HTMLParseNoWarning suppresses warning reports
+	HTMLParseNoWarning                 = 1 << 6
+	// HTMLParsePedantic enables pedantic error reporting
+	HTMLParsePedantic                  = 1 << 7
+	// HTMLParseNoBlanks removes blank nodes
+	HTMLParseNoBlanks                  = 1 << 8
+	// HTMLParseNoNet forbids network access during parsing
+	HTMLParseNoNet                     = 1 << 11
+	// HTMLParseNoImplied disables implied html/body elements
+	HtmlParseNoImplied                 = 1 << 13
+	// HTMLParseCompact enables compaction of small text nodes
+	HTMLParseCompact                   = 1 << 16
+	// HTMLParseIgnoreenc ignores internal document encoding hints
+	HTMLParseIgnoreEnc                 = 1 << 21
+)
+
+// DefaultHTMLParseOptions represents the default set of options
+// used in the ParseHTML* functions
+const DefaultHTMLParseOptions = HTMLParseCompact | HTMLParseNoBlanks | HTMLParseNoError | HTMLParseNoWarning
+
 type XMLNodeType int
 
 const (
@@ -57,6 +88,7 @@ var (
 type ErrNamespaceNotFound struct {
 	Target string
 }
+
 func (e ErrNamespaceNotFound) Error() string {
 	return "namespace not found: " + e.Target
 }

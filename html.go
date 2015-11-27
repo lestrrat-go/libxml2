@@ -5,31 +5,25 @@ import (
 	"io"
 )
 
-const (
-	HTMLParserRecover = 1 << 0
-	HTMLParserNoError = 1<<iota + 5
-	HTMLParserNoWarning
-	HTMLParserPedantic
-	HTMLParserNoBlanks
-	HTMLParserNoNet
-	HTMLParserCompact
-)
-
-const DefaultHTMLParserFlags = HTMLParserCompact | HTMLParserNoBlanks | HTMLParserNoError | HTMLParserNoWarning
-
-func ParseHTML(content []byte) (*Document, error) {
-	return ParseHTMLString(string(content))
+func ParseHTML(content []byte, options ...HTMLParseOption) (*Document, error) {
+	return ParseHTMLString(string(content), options...)
 }
 
-func ParseHTMLString(content string) (*Document, error) {
-	return htmlReadDoc(content, "", "", DefaultHTMLParserFlags)
+func ParseHTMLString(content string, options ...HTMLParseOption) (*Document, error) {
+	var option HTMLParseOption
+	if len(options) > 0 {
+		option = options[0]
+	} else {
+		option = DefaultHTMLParseOptions
+	}
+	return htmlReadDoc(content, "", "", int(option))
 }
 
-func ParseHTMLReader(in io.Reader) (*Document, error) {
+func ParseHTMLReader(in io.Reader, options ...HTMLParseOption) (*Document, error) {
 	buf := &bytes.Buffer{}
 	if _, err := buf.ReadFrom(in); err != nil {
 		return nil, err
 	}
 
-	return ParseHTMLString(buf.String())
+	return ParseHTMLString(buf.String(), options...)
 }
