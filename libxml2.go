@@ -407,11 +407,11 @@ func xmlNewText(txt string) *C.xmlNode {
 }
 
 func (i XmlNodeType) String() string {
-	i -= 1
-	if i < 0 || i+1 >= XmlNodeType(len(_XmlNodeType_index)) {
-		return fmt.Sprintf("XmlNodeType(%d)", i+1)
+	x := i - 1
+	if x < 0 || x+1 >= XmlNodeType(len(_XmlNodeType_index)) {
+		return fmt.Sprintf("XmlNodeType(%d)", x+1)
 	}
-	return _XmlNodeType_name[_XmlNodeType_index[i]:_XmlNodeType_index[i+1]]
+	return _XmlNodeType_name[_XmlNodeType_index[x]:_XmlNodeType_index[x+1]]
 }
 
 func (n NodeList) String() string {
