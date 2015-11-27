@@ -902,23 +902,46 @@ func createElementNS(doc *Document, nsuri, name string) (*Element, error) {
 	return wrapElement((*C.xmlElement)(unsafe.Pointer(newNode))), nil
 }
 
+func validDocumentPtr(doc *Document) (*C.xmlDoc, error) {
+	if dptr := doc.ptr; dptr != nil {
+		return dptr, nil
+	}
+	return nil, ErrInvalidDocument
+}
+
+func documentEncoding(doc *Document) string {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return ""
+	}
+	return xmlCharToString(dptr.encoding)
+}
+
 func documentElement(doc *Document) *C.xmlNode {
-	if doc.ptr == nil {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
 		return nil
 	}
 
-	return C.xmlDocGetRootElement(doc.ptr)
+	return C.xmlDocGetRootElement(dptr)
 }
 
-func xmlFreeDoc(d *Document) {
-	if d.ptr == nil {
-		return
+func xmlFreeDoc(doc *Document) error {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return err
 	}
-	C.xmlFreeDoc(d.ptr)
-	d.ptr = nil
+	C.xmlFreeDoc(dptr)
+	doc.ptr = nil
+	return nil
 }
 
-func documentString(d *Document, encoding string, format bool) string {
+func documentString(doc *Document, encoding string, format bool) string {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return ""
+	}
+
 	var xc *C.xmlChar
 	var intformat C.int
 	if format {
@@ -933,14 +956,18 @@ func documentString(d *Document, encoding string, format bool) string {
 	}
 
 	i := C.int(0)
-	C.xmlDocDumpFormatMemoryEnc(d.ptr, &xc, &i, C.CString(encoding), intformat)
+	C.xmlDocDumpFormatMemoryEnc(dptr, &xc, &i, C.CString(encoding), intformat)
 
-	s := xmlCharToString(xc)
-	return s
+	return xmlCharToString(xc)
 }
 
-func xmlNodeSetBase(d *Document, s string) {
-	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(d.ptr)), stringToXMLChar(s))
+func xmlNodeSetBase(doc *Document, s string) {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return
+	}
+
+	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(dptr)), stringToXMLChar(s))
 }
 
 func validNodePtr(n Node) (*C.xmlNode, error) {
@@ -956,10 +983,10 @@ func validNodePtr(n Node) (*C.xmlNode, error) {
 	return nptr, nil
 }
 
-func setDocumentElement(d *Document, n Node) error {
-	dptr := d.ptr
-	if dptr == nil {
-		return ErrInvalidDocument
+func setDocumentElement(doc *Document, n Node) error {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return err
 	}
 
 	nptr, err := validNodePtr(n)
@@ -971,28 +998,47 @@ func setDocumentElement(d *Document, n Node) error {
 	return nil
 }
 
-func setDocumentEncoding(d *Document, e string) {
-	if d.ptr.encoding != nil {
-		C.MY_xmlFree(unsafe.Pointer(d.ptr.encoding))
+func setDocumentEncoding(doc *Document, e string) {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return
 	}
 
-	d.ptr.encoding = C.xmlStrdup(stringToXMLChar(e))
-}
-
-func setDocumentStandalone(d *Document, v int) {
-	d.ptr.standalone = C.int(v)
-}
-
-func setDocumentVersion(d *Document, v string) {
-	if d.ptr.version != nil {
-		C.MY_xmlFree(unsafe.Pointer(d.ptr.version))
+	if dptr.encoding != nil {
+		C.MY_xmlFree(unsafe.Pointer(dptr.encoding))
 	}
 
-	d.ptr.version = C.xmlStrdup(stringToXMLChar(v))
+	dptr.encoding = C.xmlStrdup(stringToXMLChar(e))
+}
+
+func setDocumentStandalone(doc *Document, v int) {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return
+	}
+	dptr.standalone = C.int(v)
+}
+
+func setDocumentVersion(doc *Document, v string) {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return
+	}
+
+	if dptr.version != nil {
+		C.MY_xmlFree(unsafe.Pointer(dptr.version))
+	}
+
+	dptr.version = C.xmlStrdup(stringToXMLChar(v))
 }
 
 func xmlSetProp(n Node, name, value string) error {
-	C.xmlSetProp((*C.xmlNode)(n.Pointer()), stringToXMLChar(name), stringToXMLChar(value))
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return err
+	}
+
+	C.xmlSetProp(nptr, stringToXMLChar(name), stringToXMLChar(value))
 	return nil
 }
 
@@ -1349,3 +1395,4 @@ func xmlXPathObjectNodeList(x *XPathObject) (NodeList, error) {
 
 	return ret, nil
 }
+
