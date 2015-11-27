@@ -95,95 +95,95 @@ type ParseOptionToString struct {
 func TestParseOptionStringer(t *testing.T) {
 	values := []ParseOptionToString{
 		ParseOptionToString{
-			v: XMLParserRecover,
+			v: XMLParseRecover,
 			e: "Recover",
 		},
 		ParseOptionToString{
-			v: XMLParserNoEnt,
+			v: XMLParseNoEnt,
 			e: "NoEnt",
 		},
 		ParseOptionToString{
-			v: XMLParserDTDLoad,
+			v: XMLParseDTDLoad,
 			e: "DTDLoad",
 		},
 		ParseOptionToString{
-			v: XMLParserDTDAttr,
+			v: XMLParseDTDAttr,
 			e: "DTDAttr",
 		},
 		ParseOptionToString{
-			v: XMLParserDTDValid,
+			v: XMLParseDTDValid,
 			e: "DTDValid",
 		},
 		ParseOptionToString{
-			v: XMLParserNoError,
+			v: XMLParseNoError,
 			e: "NoError",
 		},
 		ParseOptionToString{
-			v: XMLParserNoWarning,
+			v: XMLParseNoWarning,
 			e: "NoWarning",
 		},
 		ParseOptionToString{
-			v: XMLParserPedantic,
+			v: XMLParsePedantic,
 			e: "Pedantic",
 		},
 		ParseOptionToString{
-			v: XMLParserNoBlanks,
+			v: XMLParseNoBlanks,
 			e: "NoBlanks",
 		},
 		ParseOptionToString{
-			v: XMLParserSAX1,
+			v: XMLParseSAX1,
 			e: "SAX1",
 		},
 		ParseOptionToString{
-			v: XMLParserXInclude,
+			v: XMLParseXInclude,
 			e: "XInclude",
 		},
 		ParseOptionToString{
-			v: XMLParserNoNet,
+			v: XMLParseNoNet,
 			e: "NoNet",
 		},
 		ParseOptionToString{
-			v: XMLParserNoDict,
+			v: XMLParseNoDict,
 			e: "NoDict",
 		},
 		ParseOptionToString{
-			v: XMLParserNsclean,
+			v: XMLParseNsclean,
 			e: "Nsclean",
 		},
 		ParseOptionToString{
-			v: XMLParserNoCDATA,
+			v: XMLParseNoCDATA,
 			e: "NoCDATA",
 		},
 		ParseOptionToString{
-			v: XMLParserNoXIncNode,
+			v: XMLParseNoXIncNode,
 			e: "NoXIncNode",
 		},
 		ParseOptionToString{
-			v: XMLParserCompact,
+			v: XMLParseCompact,
 			e: "Compact",
 		},
 		ParseOptionToString{
-			v: XMLParserOld10,
+			v: XMLParseOld10,
 			e: "Old10",
 		},
 		ParseOptionToString{
-			v: XMLParserNoBaseFix,
+			v: XMLParseNoBaseFix,
 			e: "NoBaseFix",
 		},
 		ParseOptionToString{
-			v: XMLParserHuge,
+			v: XMLParseHuge,
 			e: "Huge",
 		},
 		ParseOptionToString{
-			v: XMLParserOldSAX,
+			v: XMLParseOldSAX,
 			e: "OldSAX",
 		},
 		ParseOptionToString{
-			v: XMLParserIgnoreEnc,
+			v: XMLParseIgnoreEnc,
 			e: "IgnoreEnc",
 		},
 		ParseOptionToString{
-			v: XMLParserBigLines,
+			v: XMLParseBigLines,
 			e: "BigLines",
 		},
 	}
@@ -232,12 +232,12 @@ func TestParseNoBlanks(t *testing.T) {
 		goodWFDTDStrings,
 	}
 	for _, input := range inputs {
-		parseShouldSucceed(t, XMLParserNoBlanks, input)
+		parseShouldSucceed(t, XMLParseNoBlanks, input)
 	}
 }
 
 func TestRoundtripNoBlanks(t *testing.T) {
-	doc, err := ParseString(`<a>    <b/> </a>`, XMLParserNoBlanks)
+	doc, err := ParseString(`<a>    <b/> </a>`, XMLParseNoBlanks)
 	if err != nil {
 		t.Errorf("failed to parse string: %s", err)
 		return

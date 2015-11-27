@@ -202,31 +202,31 @@ type XPathExpression struct {
 type ParseOption int
 
 const (
-	XMLParserRecover    ParseOption = 1 << iota /* recover on errors */
-	XMLParserNoEnt                              /* substitute entities */
-	XMLParserDTDLoad                            /* load the external subset */
-	XMLParserDTDAttr                            /* default DTD attributes */
-	XMLParserDTDValid                           /* validate with the DTD */
-	XMLParserNoError                            /* suppress error reports */
-	XMLParserNoWarning                          /* suppress warning reports */
-	XMLParserPedantic                           /* pedantic error reporting */
-	XMLParserNoBlanks                           /* remove blank nodes */
-	XMLParserSAX1                               /* use the SAX1 interface internally */
-	XMLParserXInclude                           /* Implement XInclude substitition  */
-	XMLParserNoNet                              /* Forbid network access */
-	XMLParserNoDict                             /* Do not reuse the context dictionnary */
-	XMLParserNsclean                            /* remove redundant namespaces declarations */
-	XMLParserNoCDATA                            /* merge CDATA as text nodes */
-	XMLParserNoXIncNode                         /* do not generate XINCLUDE START/END nodes */
-	XMLParserCompact                            /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
-	XMLParserOld10                              /* parse using XML-1.0 before update 5 */
-	XMLParserNoBaseFix                          /* do not fixup XINCLUDE xml:base uris */
-	XMLParserHuge                               /* relax any hardcoded limit from the parser */
-	XMLParserOldSAX                             /* parse using SAX2 interface before 2.7.0 */
-	XMLParserIgnoreEnc                          /* ignore internal document encoding hint */
-	XMLParserBigLines                           /* Store big lines numbers in text PSVI field */
-	XMLParserMax
-	XMLParserEmptyOption ParseOption = 0
+	XMLParseRecover    ParseOption = 1 << iota /* recover on errors */
+	XMLParseNoEnt                              /* substitute entities */
+	XMLParseDTDLoad                            /* load the external subset */
+	XMLParseDTDAttr                            /* default DTD attributes */
+	XMLParseDTDValid                           /* validate with the DTD */
+	XMLParseNoError                            /* suppress error reports */
+	XMLParseNoWarning                          /* suppress warning reports */
+	XMLParsePedantic                           /* pedantic error reporting */
+	XMLParseNoBlanks                           /* remove blank nodes */
+	XMLParseSAX1                               /* use the SAX1 interface internally */
+	XMLParseXInclude                           /* Implement XInclude substitition  */
+	XMLParseNoNet                              /* Forbid network access */
+	XMLParseNoDict                             /* Do not reuse the context dictionnary */
+	XMLParseNsclean                            /* remove redundant namespaces declarations */
+	XMLParseNoCDATA                            /* merge CDATA as text nodes */
+	XMLParseNoXIncNode                         /* do not generate XINCLUDE START/END nodes */
+	XMLParseCompact                            /* compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree) */
+	XMLParseOld10                              /* parse using XML-1.0 before update 5 */
+	XMLParseNoBaseFix                          /* do not fixup XINCLUDE xml:base uris */
+	XMLParseHuge                               /* relax any hardcoded limit from the parser */
+	XMLParseOldSAX                             /* parse using SAX2 interface before 2.7.0 */
+	XMLParseIgnoreEnc                          /* ignore internal document encoding hint */
+	XMLParseBigLines                           /* Store big lines numbers in text PSVI field */
+	XMLParseMax
+	XMLParseEmptyOption ParseOption = 0
 )
 
 type ParserCtxt struct {
