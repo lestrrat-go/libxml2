@@ -1,8 +1,6 @@
-// +build bench
-
 // This file is build-tag protected because it involves loading an external
 // library (xmlpath)
-package libxml2
+package libxml2_test
 
 import (
 	"bytes"
@@ -12,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/go-xmlpath/xmlpath"
+	"github.com/lestrrat/go-libxml2"
 )
 
 func BenchmarkXmlpath_Xmlpath(b *testing.B) {
@@ -44,7 +43,7 @@ func BenchmarkXmlpath_Libxml2(b *testing.B) {
 	}
 	defer res.Body.Close()
 
-	doc, err := ParseReader(res.Body)
+	doc, err := libxml2.ParseReader(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -75,11 +74,13 @@ func BenchmarkDOM_EncodingXml(b *testing.B) {
 }
 
 func BenchmarkDOM_Libxml2(b *testing.B) {
+	var buf bytes.Buffer
+	const nsuri = `https://github.com/lestrrat/go-libxml2/foo`
 	f := Foo{
 		Field1: "Hello, World!",
 	}
 	for i := 0; i < b.N; i++ {
-		d := CreateDocument()
+		d := libxml2.CreateDocument()
 		defer d.Free()
 
 		root, err := d.CreateElementNS(nsuri, "foo:foo")
@@ -97,19 +98,5 @@ func BenchmarkDOM_Libxml2(b *testing.B) {
 		f1xml.AppendText(f.Field1)
 		buf.Reset()
 		buf.WriteString(d.Dump(false))
-	}
-}
-
-func Benchmark_stringToXMLChar(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		xmlchar := stringToXMLChar("Hello, World")
-		_ = xmlchar
-	}
-}
-
-func Benchmark_xmlCharToString(b *testing.B) {
-	xmlchar := stringToXMLChar("Hello, World")
-	for i := 0; i < b.N; i++ {
-		_ = xmlCharToString(xmlchar)
 	}
 }

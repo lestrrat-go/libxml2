@@ -43,6 +43,7 @@ const (
 // used in the ParseHTML* functions
 const DefaultHTMLParseOptions = HTMLParseCompact | HTMLParseNoBlanks | HTMLParseNoError | HTMLParseNoWarning
 
+// XMLNodeType identifies the type of the underlying C struct
 type XMLNodeType int
 
 const (

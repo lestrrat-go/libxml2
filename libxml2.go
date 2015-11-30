@@ -283,15 +283,24 @@ func htmlReadDoc(content, url, encoding string, opts int) (*Document, error) {
 }
 
 func createDocument(version, encoding string) *Document {
-	doc := C.xmlNewDoc(stringToXMLChar(version))
+	cver := stringToXMLChar(version)
+	defer C.free(unsafe.Pointer(cver))
+
+	doc := C.xmlNewDoc(cver)
 	if encoding != "" {
-		doc.encoding = C.xmlStrdup(stringToXMLChar(encoding))
+		cenc := stringToXMLChar(encoding)
+		defer C.free(unsafe.Pointer(cenc))
+
+		doc.encoding = C.xmlStrdup(cenc)
 	}
 	return wrapDocument(doc)
 }
 
 func xmlEncodeEntitiesReentrant(doc *Document, s string) *C.xmlChar {
-	return C.xmlEncodeEntitiesReentrant(doc.ptr, stringToXMLChar(s))
+	cent := stringToXMLChar(s)
+	defer C.free(unsafe.Pointer(cent))
+
+	return C.xmlEncodeEntitiesReentrant(doc.ptr, cent)
 }
 
 func myTestNodeName(n string) error {
@@ -1093,7 +1102,11 @@ func documentString(doc *Document, encoding string, format bool) string {
 	}
 
 	i := C.int(0)
-	C.xmlDocDumpFormatMemoryEnc(dptr, &xc, &i, C.CString(encoding), intformat)
+
+	cenc := C.CString(encoding)
+	defer C.free(unsafe.Pointer(cenc))
+
+	C.xmlDocDumpFormatMemoryEnc(dptr, &xc, &i, cenc, intformat)
 
 	return xmlCharToString(xc)
 }
@@ -1104,7 +1117,9 @@ func xmlNodeSetBase(doc *Document, s string) {
 		return
 	}
 
-	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(dptr)), stringToXMLChar(s))
+	cs := stringToXMLChar(s)
+	defer C.free(unsafe.Pointer(cs))
+	C.xmlNodeSetBase((*C.xmlNode)(unsafe.Pointer(dptr)), cs)
 }
 
 func validNodePtr(n Node) (*C.xmlNode, error) {
@@ -1145,7 +1160,9 @@ func setDocumentEncoding(doc *Document, e string) {
 		C.MY_xmlFree(unsafe.Pointer(dptr.encoding))
 	}
 
-	dptr.encoding = C.xmlStrdup(stringToXMLChar(e))
+	// note: this doesn't need to be dup'ed, as 
+	// C.CString is already duped/malloc'ed
+	dptr.encoding = stringToXMLChar(e)
 }
 
 func setDocumentStandalone(doc *Document, v int) {
@@ -1166,7 +1183,9 @@ func setDocumentVersion(doc *Document, v string) {
 		C.MY_xmlFree(unsafe.Pointer(dptr.version))
 	}
 
-	dptr.version = C.xmlStrdup(stringToXMLChar(v))
+	// note: this doesn't need to be dup'ed, as 
+	// C.CString is already duped/malloc'ed
+	dptr.version = stringToXMLChar(v)
 }
 
 func xmlSetProp(n Node, name, value string) error {
@@ -1175,7 +1194,12 @@ func xmlSetProp(n Node, name, value string) error {
 		return err
 	}
 
-	C.xmlSetProp(nptr, stringToXMLChar(name), stringToXMLChar(value))
+	cname := stringToXMLChar(name)
+	cvalue := stringToXMLChar(value)
+	defer C.free(unsafe.Pointer(cname))
+	defer C.free(unsafe.Pointer(cvalue))
+
+	C.xmlSetProp(nptr, cname, cvalue)
 	return nil
 }
 
@@ -1193,6 +1217,10 @@ func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
 
 	debug.Printf("n = %s", n.String())
 	debug.Printf("getAttributeNode(%s)", name)
+
+	cname := stringToXMLChar(name)
+	defer C.free(unsafe.Pointer(cname))
+
 	prop := C.xmlHasNsProp(n.ptr, stringToXMLChar(name), nil)
 	debug.Printf("prop = %v", prop)
 	if prop == nil {
@@ -1200,7 +1228,10 @@ func (n *Element) getAttributeNode(name string) (*C.xmlAttr, error) {
 		debug.Printf("prefix = %s, local = %s", prefix, local)
 		if local != "" {
 			if ns := C.xmlSearchNs(n.ptr.doc, n.ptr, stringToXMLChar(prefix)); ns != nil {
-				prop = C.xmlHasNsProp(n.ptr, stringToXMLChar(local), ns.href)
+				clocal := stringToXMLChar(local)
+				defer C.free(unsafe.Pointer(clocal))
+
+				prop = C.xmlHasNsProp(n.ptr, clocal, ns.href)
 			}
 
 		}
@@ -1235,6 +1266,9 @@ func xmlUnsetProp(n Node, name string) error {
 		return errors.New("invalid node")
 	}
 
+	cname := stringToXMLChar(name)
+	defer C.free(unsafe.Pointer(cname))
+
 	i := C.xmlUnsetProp(nptr, stringToXMLChar(name))
 	if i == C.int(0) {
 		return errors.New("failed to unset prop")
@@ -1248,10 +1282,13 @@ func xmlUnsetNsProp(n Node, ns *Namespace, name string) error {
 		return errors.New("invalid node")
 	}
 
+	cname := stringToXMLChar(name)
+	defer C.free(unsafe.Pointer(cname))
+
 	i := C.xmlUnsetNsProp(
 		nptr,
 		(*C.xmlNs)(unsafe.Pointer(ns.ptr)),
-		stringToXMLChar(name),
+		cname,
 	)
 	if i == C.int(0) {
 		return errors.New("failed to unset prop")
@@ -1285,7 +1322,10 @@ func xmlC14NDocDumpMemory(d *Document, mode C14NMode, withComments bool) (string
 }
 
 func appendText(n Node, s string) error {
-	txt := C.xmlNewText(stringToXMLChar(s))
+	cs := stringToXMLChar(s)
+	defer C.free(unsafe.Pointer(cs))
+
+	txt := C.xmlNewText(cs)
 	if txt == nil {
 		return errors.New("failed to create text node")
 	}
@@ -1390,7 +1430,10 @@ func xmlXPathContextSetContextNode(x *XPathContext, n Node) error {
 }
 
 func xmlXPathCompile(s string) (*XPathExpression, error) {
-	if p := C.xmlXPathCompile(stringToXMLChar(s)); p != nil {
+	cs := stringToXMLChar(s)
+	defer C.free(unsafe.Pointer(cs))
+
+	if p := C.xmlXPathCompile(cs); p != nil {
 		return &XPathExpression{ptr: p, expr: s}, nil
 	}
 	return nil, ErrXPathCompileFailure
@@ -1420,7 +1463,10 @@ func xmlXPathNSLookup(x *XPathContext, prefix string) (string, error) {
 		return "", err
 	}
 
-	if s := C.xmlXPathNsLookup(xptr, stringToXMLChar(prefix)); s != nil {
+	cprefix := stringToXMLChar(prefix)
+	defer C.free(unsafe.Pointer(cprefix))
+
+	if s := C.xmlXPathNsLookup(xptr, cprefix); s != nil {
 		return xmlCharToString(s), nil
 	}
 
@@ -1433,7 +1479,12 @@ func xmlXPathRegisterNS(x *XPathContext, prefix, nsuri string) error {
 		return err
 	}
 
-	if res := C.xmlXPathRegisterNs(xptr, stringToXMLChar(prefix), stringToXMLChar(nsuri)); res == -1 {
+	cprefix := stringToXMLChar(prefix)
+	cnsuri := stringToXMLChar(nsuri)
+	defer C.free(unsafe.Pointer(cprefix))
+	defer C.free(unsafe.Pointer(cnsuri))
+
+	if res := C.xmlXPathRegisterNs(xptr, cprefix, cnsuri); res == -1 {
 		return ErrXPathNamespaceRegisterFailure
 	}
 	return nil
@@ -1457,7 +1508,10 @@ func evalXPath(x *XPathContext, expr *XPathExpression) (*XPathObject, error) {
 	}
 
 	if xptr.doc == nil {
-		xptr.doc = C.xmlNewDoc(stringToXMLChar("1.0"))
+		cs := stringToXMLChar("1.0")
+		defer C.free(unsafe.Pointer(cs))
+		xptr.doc = C.xmlNewDoc(cs)
+
 		defer C.xmlFreeDoc(xptr.doc)
 	}
 
