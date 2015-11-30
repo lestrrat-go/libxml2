@@ -136,6 +136,10 @@ type Node interface {
 	TextContent() string
 	ToString(int, bool) string
 	Walk(func(Node) error) error
+
+	MakeMortal()
+	MakePersistent()
+	AutoFree()
 }
 
 type NodeList []Node
