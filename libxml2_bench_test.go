@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-xmlpath/xmlpath"
 	"github.com/lestrrat/go-libxml2"
+	"gopkg.in/xmlpath.v1"
 )
 
 func BenchmarkXmlpath_Xmlpath(b *testing.B) {
