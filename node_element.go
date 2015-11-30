@@ -24,8 +24,12 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		if err != nil {
 			return err
 		}
-		ns := xmlSearchNs(doc, n, "")
-		if ns != nil && ns.URI() != "" {
+		ns, err := xmlSearchNs(doc, n, "")
+		if err != nil {
+			return err
+		}
+
+		if ns.URI() != "" {
 			if activateflag {
 				xmlSetNs(n, nil)
 			}
@@ -87,8 +91,8 @@ func (n *Element) RemoveAttribute(name string) error {
 	if err != nil {
 		return err
 	}
-	ns := xmlSearchNs(doc, n, name[:i])
-	if ns == nil {
+	ns, err := xmlSearchNs(doc, n, name[:i])
+	if err != nil {
 		return ErrAttributeNotFound
 	}
 

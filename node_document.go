@@ -46,8 +46,8 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 
 	prefix, local := splitPrefixLocal(k)
 
-	ns := xmlSearchNsByHref(d, root, nsuri)
-	if ns == nil {
+	ns, err := xmlSearchNsByHref(d, root, nsuri)
+	if err != nil {
 		ns = xmlNewNs(root, nsuri, prefix)
 		if ns == nil {
 			return nil, errors.New("failed to create namespace")

@@ -330,10 +330,9 @@ func xmlNewNode(ns *Namespace, name string) *C.xmlElement {
 		nsptr = (*C.xmlNs)(unsafe.Pointer(ns.ptr))
 	}
 
-	n := C.xmlNewNode(
-		nsptr,
-		stringToXMLChar(name),
-	)
+	cname := stringToXMLChar(name)
+	defer C.free(unsafe.Pointer(cname))
+	n := C.xmlNewNode(nsptr,cname)
 	return (*C.xmlElement)(unsafe.Pointer(n))
 }
 
@@ -343,46 +342,52 @@ func xmlNewDocProp(doc *Document, k, v string) (*C.xmlAttr, error) {
 		return nil, err
 	}
 
-	attr := C.xmlNewDocProp(
-		doc.ptr,
-		kx,
-		xmlEncodeEntitiesReentrant(doc, v),
-	)
+	docptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return nil, err
+	}
+
+	attr := C.xmlNewDocProp(docptr, kx, xmlEncodeEntitiesReentrant(doc, v))
 	return attr, nil
 }
 
-func xmlSearchNsByHref(doc *Document, n Node, uri string) *Namespace {
+func xmlSearchNsByHref(doc *Document, n Node, uri string) (*Namespace, error) {
 	nptr, _ := validNodePtr(n)
-	var xcuri *C.xmlChar
-	if len(uri) > 0 {
-		xcuri = stringToXMLChar(uri)
+
+	xcuri := stringToXMLChar(uri)
+	defer C.free(unsafe.Pointer(xcuri))
+
+	docptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return nil, err
 	}
 
-	ns := C.xmlSearchNsByHref(
-		doc.ptr,
-		nptr,
-		xcuri,
-	)
+	ns := C.xmlSearchNsByHref(docptr, nptr, xcuri)
 	if ns == nil {
-		return nil
+		return nil, ErrNamespaceNotFound{Target: uri}
 	}
-	return wrapNamespace(ns)
+	return wrapNamespace(ns), nil
 }
 
-func xmlSearchNs(doc *Document, n Node, prefix string) *Namespace {
-	var nptr *C.xmlNode
-	if n != nil {
-		nptr = (*C.xmlNode)(n.Pointer())
+func xmlSearchNs(doc *Document, n Node, prefix string) (*Namespace, error) {
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return nil, err
 	}
-	ns := C.xmlSearchNs(
-		doc.ptr,
-		nptr,
-		stringToXMLChar(prefix),
-	)
+
+	docptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return nil, err
+	}
+
+	cprefix := stringToXMLChar(prefix)
+	defer C.free(unsafe.Pointer(cprefix))
+
+	ns := C.xmlSearchNs(docptr, nptr, cprefix)
 	if ns == nil {
-		return nil
+		return nil, ErrNamespaceNotFound{Target: prefix}
 	}
-	return wrapNamespace(ns)
+	return wrapNamespace(ns), nil
 }
 
 func xmlNewDocNode(doc *Document, ns *Namespace, localname, content string) *C.xmlNode {
@@ -399,11 +404,7 @@ func xmlNewDocNode(doc *Document, ns *Namespace, localname, content string) *C.x
 }
 
 func xmlNewNs(n Node, nsuri, prefix string) *Namespace {
-	var nptr *C.xmlNode
-	if n != nil {
-		nptr = (*C.xmlNode)(n.Pointer())
-	}
-
+	nptr, _ := validNodePtr(n)
 	return wrapNamespace(
 		C.xmlNewNs(
 			nptr,
