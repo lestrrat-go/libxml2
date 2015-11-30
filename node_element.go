@@ -44,9 +44,15 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		return errors.New("missing prefix for SetNamespace")
 	}
 
-	ns := xmlNewNs(n, uri, prefix)
+	ns, err := xmlNewNs(n, uri, prefix)
+	if err != nil {
+		return err
+	}
+
 	if activateflag {
-		xmlSetNs(n, ns)
+		if err := xmlSetNs(n, ns); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -48,9 +48,9 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 
 	ns, err := xmlSearchNsByHref(d, root, nsuri)
 	if err != nil {
-		ns = xmlNewNs(root, nsuri, prefix)
-		if ns == nil {
-			return nil, errors.New("failed to create namespace")
+		ns, err = xmlNewNs(root, nsuri, prefix)
+		if err != nil {
+			return nil, errors.New("failed to create namespace: " + err.Error())
 		}
 	}
 
