@@ -155,13 +155,13 @@ There exists many similar libraries. I want speed, I want DOM, and I want XPath.
 For now my closest contender was [xmlpath](https://github.com/go-xmlpath/xmlpath), but as of this writing it suffers in the speed (for xpath) area a bit:
 
 ```
-shoebill% go test -run=none -v -benchmem -benchtime=5s -bench .
+shoebill% go test -v -run=none -benchmem -benchtime=5s -bench .
 PASS
-BenchmarkXmlpath_Xmlpath-4    200000         44064 ns/op        1394 B/op          6 allocs/op
-BenchmarkXmlpath_Libxml2-4    200000         25889 ns/op          80 B/op          5 allocs/op
-BenchmarkDOM_EncodingXml-4   2000000          3065 ns/op        4496 B/op          8 allocs/op
-BenchmarkDOM_Libxml2-4        500000         18623 ns/op         287 B/op          8 allocs/op
-ok      github.com/lestrrat/go-libxml2  45.175s
+BenchmarkXmlpath_Xmlpath-4    200000         43330 ns/op        1394 B/op          6 allocs/op
+BenchmarkXmlpath_Libxml2-4    200000         25488 ns/op          80 B/op          5 allocs/op
+BenchmarkDOM_EncodingXml-4   2000000          3418 ns/op        4496 B/op          8 allocs/op
+BenchmarkDOM_Libxml2-4        500000         21086 ns/op         287 B/op          8 allocs/op
+ok      github.com/lestrrat/go-libxml2  42.319s
 ```
 
 ## See Also
