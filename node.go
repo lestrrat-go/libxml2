@@ -73,6 +73,7 @@ func (n NodeList) String() string {
 	return buf.String()
 }
 
+// NodeValue returns the concatenation of NodeValue within the nodes in NodeList
 func (n NodeList) NodeValue() string {
 	buf := bytes.Buffer{}
 	for _, x := range n {

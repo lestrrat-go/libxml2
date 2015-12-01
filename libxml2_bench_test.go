@@ -13,7 +13,7 @@ import (
 	"gopkg.in/xmlpath.v1"
 )
 
-func BenchmarkXmlpath_Xmlpath(b *testing.B) {
+func BenchmarkXmlpathXmlpath(b *testing.B) {
 	res, err := http.Get("http://mattn.kaoriya.net/index.xml")
 	if err != nil {
 		log.Fatal(err)
@@ -36,7 +36,7 @@ func BenchmarkXmlpath_Xmlpath(b *testing.B) {
 	}
 }
 
-func BenchmarkXmlpath_Libxml2(b *testing.B) {
+func BenchmarkLibxml2Xmlpath(b *testing.B) {
 	res, err := http.Get("http://mattn.kaoriya.net/index.xml")
 	if err != nil {
 		log.Fatal(err)
@@ -61,7 +61,7 @@ type Foo struct {
 	Field1  string
 }
 
-func BenchmarkDOM_EncodingXml(b *testing.B) {
+func BenchmarkEncodingXMLDOM(b *testing.B) {
 	var buf bytes.Buffer
 	f := Foo{
 		Field1: "Hello, World!",
@@ -73,7 +73,7 @@ func BenchmarkDOM_EncodingXml(b *testing.B) {
 	}
 }
 
-func BenchmarkDOM_Libxml2(b *testing.B) {
+func BenchmarkLibxml2DOM(b *testing.B) {
 	var buf bytes.Buffer
 	const nsuri = `https://github.com/lestrrat/go-libxml2/foo`
 	f := Foo{
