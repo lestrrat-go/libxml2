@@ -145,6 +145,7 @@ func (s *Schema) Free() {
 	}
 
 	C.xmlSchemaFree(sptr)
+	s.ptr = 0
 }
 
 // Error method fulfils the error interface

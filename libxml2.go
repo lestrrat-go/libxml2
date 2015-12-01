@@ -982,6 +982,7 @@ func (n *Namespace) Free() {
 		return
 	}
 	C.MY_xmlFree(unsafe.Pointer(nsptr))
+	n.ptr = 0
 }
 
 func createElement(d *Document, name string) (*Element, error) {
