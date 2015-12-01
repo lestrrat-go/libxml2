@@ -24,6 +24,8 @@ import (
   "net/http"
 
   "github.com/lestrrat/go-libxml2"
+  "github.com/lestrrat/go-libxml2/node"
+  "github.com/lestrrat/go-libxml2/xpath"
 )
 
 func ExmapleXML() {
@@ -41,12 +43,12 @@ func ExmapleXML() {
   }
   defer doc.Free()
 
-  doc.Walk(func(n libxml2.Node) error {
+  doc.Walk(func(n node.Node) error {
     log.Printf(n.NodeName())
     return nil
   })
 
-  ctx, err := libxml2.NewXPathContext(doc.DocumentElement())
+  ctx, err := xpath.NewContext(doc.DocumentElement())
   if err != nil {
     log.Printf("Failed to create xpath context: %s", err)
     return
@@ -54,7 +56,7 @@ func ExmapleXML() {
   defer ctx.Free()
 
   ctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
-  title := ctx.FindValue("/atom:feed/atom:title/text()").String()
+  title := xpath.String(ctx.FindValue("/atom:feed/atom:title/text()"))
   log.Printf("feed title = %s", title)
 }
 ```
@@ -74,7 +76,7 @@ func ExampleHTML() {
   }
   defer doc.Free()
 
-  doc.Walk(func(n libxml2.Node) error {
+  doc.Walk(func(n node.Node) error {
     log.Printf(n.NodeName())
     return nil
   })

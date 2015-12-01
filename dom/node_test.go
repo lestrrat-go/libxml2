@@ -1,4 +1,4 @@
-package libxml2
+package dom
 
 import (
 	"fmt"

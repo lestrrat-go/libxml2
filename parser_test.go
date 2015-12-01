@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/lestrrat/go-libxml2/parser"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -66,7 +67,7 @@ var (
 	}
 )
 
-func parseShouldSucceed(t *testing.T, opts ParseOption, inputs []string) {
+func parseShouldSucceed(t *testing.T, opts parser.Option, inputs []string) {
 	t.Logf("Test parsing with parser %v", opts)
 	for _, s := range inputs {
 		d, err := ParseString(s, opts)
@@ -77,7 +78,7 @@ func parseShouldSucceed(t *testing.T, opts ParseOption, inputs []string) {
 	}
 }
 
-func parseShouldFail(t *testing.T, opts ParseOption, inputs []string) {
+func parseShouldFail(t *testing.T, opts parser.Option, inputs []string) {
 	for _, s := range inputs {
 		d, err := ParseString(s, opts)
 		if err == nil {
@@ -88,102 +89,102 @@ func parseShouldFail(t *testing.T, opts ParseOption, inputs []string) {
 }
 
 type ParseOptionToString struct {
-	v ParseOption
+	v parser.Option
 	e string
 }
 
 func TestParseOptionStringer(t *testing.T) {
 	values := []ParseOptionToString{
 		ParseOptionToString{
-			v: XMLParseRecover,
+			v: parser.XMLParseRecover,
 			e: "Recover",
 		},
 		ParseOptionToString{
-			v: XMLParseNoEnt,
+			v: parser.XMLParseNoEnt,
 			e: "NoEnt",
 		},
 		ParseOptionToString{
-			v: XMLParseDTDLoad,
+			v: parser.XMLParseDTDLoad,
 			e: "DTDLoad",
 		},
 		ParseOptionToString{
-			v: XMLParseDTDAttr,
+			v: parser.XMLParseDTDAttr,
 			e: "DTDAttr",
 		},
 		ParseOptionToString{
-			v: XMLParseDTDValid,
+			v: parser.XMLParseDTDValid,
 			e: "DTDValid",
 		},
 		ParseOptionToString{
-			v: XMLParseNoError,
+			v: parser.XMLParseNoError,
 			e: "NoError",
 		},
 		ParseOptionToString{
-			v: XMLParseNoWarning,
+			v: parser.XMLParseNoWarning,
 			e: "NoWarning",
 		},
 		ParseOptionToString{
-			v: XMLParsePedantic,
+			v: parser.XMLParsePedantic,
 			e: "Pedantic",
 		},
 		ParseOptionToString{
-			v: XMLParseNoBlanks,
+			v: parser.XMLParseNoBlanks,
 			e: "NoBlanks",
 		},
 		ParseOptionToString{
-			v: XMLParseSAX1,
+			v: parser.XMLParseSAX1,
 			e: "SAX1",
 		},
 		ParseOptionToString{
-			v: XMLParseXInclude,
+			v: parser.XMLParseXInclude,
 			e: "XInclude",
 		},
 		ParseOptionToString{
-			v: XMLParseNoNet,
+			v: parser.XMLParseNoNet,
 			e: "NoNet",
 		},
 		ParseOptionToString{
-			v: XMLParseNoDict,
+			v: parser.XMLParseNoDict,
 			e: "NoDict",
 		},
 		ParseOptionToString{
-			v: XMLParseNsclean,
+			v: parser.XMLParseNsclean,
 			e: "Nsclean",
 		},
 		ParseOptionToString{
-			v: XMLParseNoCDATA,
+			v: parser.XMLParseNoCDATA,
 			e: "NoCDATA",
 		},
 		ParseOptionToString{
-			v: XMLParseNoXIncNode,
+			v: parser.XMLParseNoXIncNode,
 			e: "NoXIncNode",
 		},
 		ParseOptionToString{
-			v: XMLParseCompact,
+			v: parser.XMLParseCompact,
 			e: "Compact",
 		},
 		ParseOptionToString{
-			v: XMLParseOld10,
+			v: parser.XMLParseOld10,
 			e: "Old10",
 		},
 		ParseOptionToString{
-			v: XMLParseNoBaseFix,
+			v: parser.XMLParseNoBaseFix,
 			e: "NoBaseFix",
 		},
 		ParseOptionToString{
-			v: XMLParseHuge,
+			v: parser.XMLParseHuge,
 			e: "Huge",
 		},
 		ParseOptionToString{
-			v: XMLParseOldSAX,
+			v: parser.XMLParseOldSAX,
 			e: "OldSAX",
 		},
 		ParseOptionToString{
-			v: XMLParseIgnoreEnc,
+			v: parser.XMLParseIgnoreEnc,
 			e: "IgnoreEnc",
 		},
 		ParseOptionToString{
-			v: XMLParseBigLines,
+			v: parser.XMLParseBigLines,
 			e: "BigLines",
 		},
 	}
@@ -232,12 +233,12 @@ func TestParseNoBlanks(t *testing.T) {
 		goodWFDTDStrings,
 	}
 	for _, input := range inputs {
-		parseShouldSucceed(t, XMLParseNoBlanks, input)
+		parseShouldSucceed(t, parser.XMLParseNoBlanks, input)
 	}
 }
 
 func TestRoundtripNoBlanks(t *testing.T) {
-	doc, err := ParseString(`<a>    <b/> </a>`, XMLParseNoBlanks)
+	doc, err := ParseString(`<a>    <b/> </a>`, parser.XMLParseNoBlanks)
 	if err != nil {
 		t.Errorf("failed to parse string: %s", err)
 		return

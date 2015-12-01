@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/lestrrat/go-libxml2"
+	"github.com/lestrrat/go-libxml2/dom"
 	"gopkg.in/xmlpath.v1"
 )
 
@@ -80,7 +81,7 @@ func BenchmarkLibxml2DOM(b *testing.B) {
 		Field1: "Hello, World!",
 	}
 	for i := 0; i < b.N; i++ {
-		d := libxml2.CreateDocument()
+		d := dom.CreateDocument()
 		defer d.Free()
 
 		root, err := d.CreateElementNS(nsuri, "foo:foo")

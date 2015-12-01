@@ -3,6 +3,7 @@ package libxml2
 import (
 	"testing"
 
+	"github.com/lestrrat/go-libxml2/xpath"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func TestXPathContext(t *testing.T) {
 		return
 	}
 
-	ctx, err := NewXPathContext(root)
+	ctx, err := xpath.NewContext(root)
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
@@ -39,7 +40,7 @@ func TestXPathContext(t *testing.T) {
 	}
 
 	// Use an explicitly compiled expression
-	expr, err := NewXPathExpression(exprString)
+	expr, err := xpath.NewExpression(exprString)
 	if err != nil {
 		t.Errorf("Failed to compile xpath: %s", err)
 		return
@@ -59,7 +60,7 @@ func TestXPathContext(t *testing.T) {
 }
 
 func TestXPathContextExpression_Number(t *testing.T) {
-	ctx, err := NewXPathContext()
+	ctx, err := xpath.NewContext()
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
@@ -73,7 +74,7 @@ func TestXPathContextExpression_Number(t *testing.T) {
 	defer res.Free()
 
 	switch res.Type() {
-	case XPathNumber:
+	case xpath.NumberType:
 		if res.Number() != 2 {
 			t.Errorf("Expected result number to be 2, got %f", res.Number())
 		}
@@ -83,7 +84,7 @@ func TestXPathContextExpression_Number(t *testing.T) {
 }
 
 func TestXPathContextExpression_Boolean(t *testing.T) {
-	ctx, err := NewXPathContext()
+	ctx, err := xpath.NewContext()
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
@@ -97,7 +98,7 @@ func TestXPathContextExpression_Boolean(t *testing.T) {
 	defer res.Free()
 
 	switch res.Type() {
-	case XPathBoolean:
+	case xpath.BooleanType:
 		if !res.Bool() {
 			t.Errorf("Expected result number to be false, got %s", res.Bool())
 		}
@@ -118,7 +119,7 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 		return
 	}
 
-	ctx, err := NewXPathContext(root)
+	ctx, err := xpath.NewContext(root)
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
@@ -132,7 +133,7 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 	defer res.Free()
 
 	switch res.Type() {
-	case XPathNodeSet:
+	case xpath.NodeSetType:
 		s := res.String()
 		if !assert.Equal(t, "baz", s, "results match") {
 			return
@@ -154,7 +155,7 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 		return
 	}
 
-	ctx, err := NewXPathContext(root)
+	ctx, err := xpath.NewContext(root)
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
