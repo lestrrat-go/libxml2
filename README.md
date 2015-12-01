@@ -153,11 +153,11 @@ For now my closest contender was [xmlpath](https://github.com/go-xmlpath/xmlpath
 ```
 shoebill% go test -v -run=none -benchmem -benchtime=5s -bench .
 PASS
-BenchmarkXmlpath_Xmlpath-4    200000         43330 ns/op        1394 B/op          6 allocs/op
-BenchmarkXmlpath_Libxml2-4    200000         25488 ns/op          80 B/op          5 allocs/op
-BenchmarkDOM_EncodingXml-4   2000000          3418 ns/op        4496 B/op          8 allocs/op
-BenchmarkDOM_Libxml2-4        500000         21086 ns/op         287 B/op          8 allocs/op
-ok      github.com/lestrrat/go-libxml2  42.319s
+BenchmarkXmlpathXmlpath-4     200000         43090 ns/op        1394 B/op          6 allocs/op
+BenchmarkLibxml2Xmlpath-4     300000         24424 ns/op         104 B/op          5 allocs/op
+BenchmarkEncodingXMLDOM-4    2000000          3122 ns/op        4496 B/op          8 allocs/op
+BenchmarkLibxml2DOM-4         500000         16528 ns/op         295 B/op          8 allocs/op
+ok      github.com/lestrrat/go-libxml2  43.666s
 ```
 
 ## See Also
