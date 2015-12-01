@@ -27,7 +27,7 @@ static inline void MY_xmlSilenceParseErrors() {
 }
 
 static inline void MY_xmlDefaultParseErrors() {
-	// Checked in the clib source code that using NULL in the second
+	// Checked in the libxml2 source code that using NULL in the second
 	// argument restores the default error handler
 	xmlSetGenericErrorFunc(NULL, NULL);
 }
@@ -257,7 +257,7 @@ func (i XMLNodeType) String() string {
 }
 
 // ReportErrors *globally* changes the behavior of reporting errors.
-// By default clib spews out lots of data to stderr. When you call
+// By default libxml2 spews out lots of data to stderr. When you call
 // this function with a `false` value, all those messages are surpressed.
 // When you call this function a `true` value, the default behavior is
 // restored
