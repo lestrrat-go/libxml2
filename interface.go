@@ -173,6 +173,21 @@ type Text struct {
 	*XMLNode
 }
 
+type XPathResult interface {
+	Bool() bool
+	Free()
+	NodeList() NodeList
+	Number() float64
+	String() string
+	Type() XPathObjectType
+	// Valid returns true if the underlying XPathObject is valid,
+	// that is, the XPath evaluation actually succeeded. If this
+	// returns false, it is most likely that there was a problem
+	// with your XPath, or somehow XPathContext/XPathExpression
+	// was corrupted.
+	Valid() bool
+}
+
 type XPathObjectType int
 
 const (
@@ -184,9 +199,18 @@ const (
 	XPathPoint
 	XPathRange
 	XPathLocationSet
-	XPathUSers
+	XPathUsers
 	XPathXsltTree
 )
+
+// InvalidXPathObject represents an invalid result as a result of the
+// XPathEvaluation -- that is, either there was a problem in the
+// XPathContext, the XPathExpression, or the actually XPath was invalid.
+//
+// This object is returned from FindValue/FindNode so that you can
+// immediatelly call StringValue/BoolValue/etc on the result of those methods
+// without having to check for a second error return value
+type InvalidXPathObject struct {}
 
 type XPathObject struct {
 	ptr *C.xmlXPathObject
@@ -197,6 +221,7 @@ type XPathObject struct {
 
 type XPathContext struct {
 	ptr *C.xmlXPathContext
+	err error
 }
 
 // XPathExpression is a compiled XPath.

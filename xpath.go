@@ -6,7 +6,6 @@ const _XPathObjectTypeName = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberX
 
 var _XPathObjectTypeIndex = [...]uint8{0, 14, 26, 38, 49, 60, 70, 80, 96, 106, 119}
 
-
 // String returns the stringified version of XPathObjectType
 func (i XPathObjectType) String() string {
 	if i < 0 || i+1 >= XPathObjectType(len(_XPathObjectTypeIndex)) {
@@ -15,43 +14,77 @@ func (i XPathObjectType) String() string {
 	return _XPathObjectTypeName[_XPathObjectTypeIndex[i]:_XPathObjectTypeIndex[i+1]]
 }
 
+// Bool for InvalidXPathObject always return false
+func (x InvalidXPathObject) Bool() bool { return false }
+
+// Number for InvalidXPathObject always return 0
+func (x InvalidXPathObject) Number() float64 { return 0 }
+
+// Free for InvalidXPathObject is always a no-op
+func (x InvalidXPathObject) Free() {}
+
+// NodeList for InvalidXPathObject always returns nil
+func (x InvalidXPathObject) NodeList() NodeList { return nil }
+
+// String for InvalidXPathObject always returns ""
+func (x InvalidXPathObject) String() string { return "" }
+
+// Type for InvalidXPathOBject always returns XPathUndefined
+func (x InvalidXPathObject) Type() XPathObjectType { return XPathUndefined }
+
+// Valid for InvalidXPathObject always returns false
+func (x InvalidXPathObject) Valid() bool { return false }
+
+// Valid for XPathObject always returns true
+func (x XPathObject) Valid() bool {
+	return true
+}
+
 // Type returns the XPathObjectType
 func (x XPathObject) Type() XPathObjectType {
 	return xmlXPathObjectType(&x)
 }
 
-// Float64Value returns the floatval component of the XPathObject
-func (x XPathObject) Float64Value() float64 {
-	return xmlXPathObjectFloat64Value(&x)
+// Number returns the floatval component of the XPathObject as float64
+func (x XPathObject) Number() float64 {
+	return xmlXPathObjectFloat64(&x)
 }
 
-// BoolValue returns the boolval component of the XPathObject
-func (x XPathObject) BoolValue() bool {
-	return xmlXPathObjectBoolValue(&x)
+// Bool returns the boolval component of the XPathObject
+func (x XPathObject) Bool() bool {
+	return xmlXPathObjectBool(&x)
 }
 
 // NodeList returns the list of nodes included in this XPathObject
-func (x XPathObject) NodeList() (NodeList, error) {
-	return xmlXPathObjectNodeList(&x)
+func (x XPathObject) NodeList() NodeList {
+	nl, err := xmlXPathObjectNodeList(&x)
+	if err != nil {
+		return nil
+	}
+	return nl
 }
 
-// StringValue returns the stringified value of the nodes included in
+// String returns the stringified value of the nodes included in
 // this XPathObject. If the XPathObject is anything other than a
 // NodeSet, then we fallback to using fmt.Sprintf to generate
 // some sort of readable output
-func (x XPathObject) StringValue() (string, error) {
+func (x XPathObject) String() string {
 	switch x.Type() {
 	case XPathNodeSet:
-		nl, err := x.NodeList()
-		if err != nil {
-			return "", err
+		nl := x.NodeList()
+		if nl == nil {
+			return ""
 		}
 		if x.ForceLiteral {
-			return nl.Literal()
+			s, err := nl.Literal()
+			if err == nil {
+				return s
+			}
+			return ""
 		}
-		return nl.String(), nil
+		return nl.NodeValue()
 	default:
-		return fmt.Sprintf("%v", x), nil
+		return fmt.Sprintf("%v", x)
 	}
 }
 
@@ -88,15 +121,18 @@ func (x *XPathContext) SetContextNode(n Node) error {
 // Exists compiles and evaluates the xpath expression, and returns
 // true if a corresponding node exists
 func (x *XPathContext) Exists(xpath string) bool {
-	res, err := x.FindValue(xpath)
-	if err != nil {
-		return false
-	}
+	res := x.FindValue(xpath)
 	defer res.Free()
 
-	switch res.Type() {
+	if !res.Valid() {
+		return false
+	}
+
+	obj := res.(*XPathObject)
+
+	switch obj.Type() {
 	case XPathNodeSet:
-		return res.ptr.nodesetval.nodeNr > 0
+		return xmlXPathObjectNodeListLen(obj) > 0
 	default:
 		panic("unimplemented")
 	}
@@ -127,34 +163,41 @@ func (x *XPathContext) FindNodesExpr(expr *XPathExpression) (NodeList, error) {
 	}
 	defer res.Free()
 
-	return res.NodeList()
+	return res.NodeList(), nil
 }
 
 // FindValue evaluates the expression s against the nodes registered
-// in x. It returns the resulting data evaluated to an XPathObject.
-func (x *XPathContext) FindValue(s string) (*XPathObject, error) {
+// in x. It returns the resulting data evaluated to an XPathResult.
+func (x *XPathContext) FindValue(s string) XPathResult {
 	expr, err := NewXPathExpression(s)
 	if err != nil {
-		return nil, err
+		x.err = err
+		return InvalidXPathObject{}
 	}
 	defer expr.Free()
 
 	return x.FindValueExpr(expr)
 }
 
-// FindValueExpr evaluates the given XPath expression and returns an XPathObject.
-// You must call `Free()` on this returned object
-func (x *XPathContext) FindValueExpr(expr *XPathExpression) (*XPathObject, error) {
-	res, err := evalXPath(x, expr)
-	if err != nil {
-		return nil, err
-	}
-
-	res.ForceLiteral = true
-	return res, nil
+// LastError returns the error from the last operation
+func (x XPathContext) LastError() error {
+	return x.err
 }
 
-// LookupNamespaceURI looksup the namespace URI associated with prefix 
+// FindValueExpr evaluates the given XPath expression and returns an XPathObject.
+// You must call `Free()` on this returned object
+func (x *XPathContext) FindValueExpr(expr *XPathExpression) XPathResult {
+	res, err := evalXPath(x, expr)
+	if err != nil {
+		x.err = err
+		return InvalidXPathObject{}
+	}
+
+	//	res.ForceLiteral = true
+	return res
+}
+
+// LookupNamespaceURI looksup the namespace URI associated with prefix
 func (x *XPathContext) LookupNamespaceURI(prefix string) (string, error) {
 	return xmlXPathNSLookup(x, prefix)
 }

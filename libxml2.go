@@ -175,9 +175,9 @@ static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 */
 import "C"
 import (
-	"bytes"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"unsafe"
 
@@ -335,7 +335,7 @@ func xmlNewNode(ns *Namespace, name string) *C.xmlElement {
 
 	cname := stringToXMLChar(name)
 	defer C.free(unsafe.Pointer(cname))
-	n := C.xmlNewNode(nsptr,cname)
+	n := C.xmlNewNode(nsptr, cname)
 	return (*C.xmlElement)(unsafe.Pointer(n))
 }
 
@@ -468,37 +468,6 @@ func xmlNewText(txt string) *C.xmlNode {
 	return C.xmlNewText(ctxt)
 }
 
-// String returns the string representation of this XMLNodeType
-func (i XMLNodeType) String() string {
-	x := i - 1
-	if x < 0 || x+1 >= XMLNodeType(len(_XMLNodeTypeIndex)) {
-		return fmt.Sprintf("XMLNodeType(%d)", x+1)
-	}
-	return _XMLNodeTypeName[_XMLNodeTypeIndex[x]:_XMLNodeTypeIndex[x+1]]
-}
-
-// String returns the string representation of the NodeList
-func (n NodeList) String() string {
-	buf := bytes.Buffer{}
-	for _, x := range n {
-		buf.WriteString(x.String())
-	}
-	return buf.String()
-}
-
-// Literal returns the string representation of the NodeList (using Literal())
-func (n NodeList) Literal() (string, error) {
-	buf := bytes.Buffer{}
-	for _, x := range n {
-		l, err := x.Literal()
-		if err != nil {
-			return "", err
-		}
-		buf.WriteString(l)
-	}
-	return buf.String(), nil
-}
-
 func wrapNamespace(n *C.xmlNs) *Namespace {
 	return &Namespace{wrapXMLNode((*C.xmlNode)(unsafe.Pointer(n)))}
 }
@@ -544,12 +513,14 @@ func WrapToNodeUnsafe(n unsafe.Pointer) (Node, error) {
 
 func wrapToNode(n *C.xmlNode) (Node, error) {
 	switch XMLNodeType(n._type) {
+	case AttributeNode:
+		return wrapAttribute((*C.xmlAttr)(unsafe.Pointer(n))), nil
 	case ElementNode:
 		return wrapElement((*C.xmlElement)(unsafe.Pointer(n))), nil
 	case TextNode:
 		return wrapText(n), nil
 	default:
-		return nil, errors.New("unknown node")
+		return nil, errors.New("unknown node: " + strconv.Itoa(int(n._type)))
 	}
 }
 
@@ -584,7 +555,7 @@ func nodeName(n Node) string {
 
 func nodeValue(n Node) string {
 	switch n.NodeType() {
-	case AttributeNode, TextNode, CommentNode, CDataSectionNode, PiNode, EntityRefNode:
+	case AttributeNode, ElementNode, TextNode, CommentNode, CDataSectionNode, PiNode, EntityRefNode:
 		return xmlCharToString(C.xmlXPathCastNodeToString((*C.xmlNode)(n.Pointer())))
 	case EntityDecl:
 		np := (*C.xmlNode)(n.Pointer())
@@ -600,7 +571,7 @@ func nodeValue(n Node) string {
 
 // Pointer returns the pointer to the underlying C struct
 func (n *XMLNode) Pointer() unsafe.Pointer {
-	if n == nil {
+	if n == nil || n.ptr == nil {
 		return nil
 	}
 	return unsafe.Pointer(n.ptr)
@@ -690,19 +661,13 @@ func (n *XMLNode) HasChildNodes() bool {
 	return nptr.children != nil
 }
 
-// IsSameNode returns true if two nodes point to the same node
-func (n *XMLNode) IsSameNode(other Node) bool {
-	return n.Pointer() == other.Pointer()
-}
-
 // LastChild returns the last child node
 func (n *XMLNode) LastChild() (Node, error) {
-	return wrapToNode(n.ptr.last)
-}
-
-// Literal returns the literal string value
-func (n XMLNode) Literal() (string, error) {
-	return n.String(), nil
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return nil, err
+	}
+	return wrapToNode(nptr.last)
 }
 
 // LocalName returns the local name
@@ -733,16 +698,6 @@ func (n *XMLNode) NamespaceURI() string {
 		}
 	}
 	return ""
-}
-
-// NodeName returns the node name
-func (n *XMLNode) NodeName() string {
-	return nodeName(n)
-}
-
-// NodeValue returns the node value
-func (n *XMLNode) NodeValue() string {
-	return nodeValue(n)
 }
 
 // NextSibling returns the next sibling
@@ -825,11 +780,6 @@ func (n *XMLNode) SetNodeValue(value string) {
 	nptr.last = nptr.children
 }
 
-// String returns the string representation
-func (n *XMLNode) String() string {
-	return n.ToString(0, false)
-}
-
 // TextContent returns the text content
 func (n *XMLNode) TextContent() string {
 	return xmlCharToString(C.xmlXPathCastNodeToString(n.ptr))
@@ -887,7 +837,7 @@ func (n *XMLNode) LookupNamespaceURI(prefix string) (string, error) {
 	defer C.free(unsafe.Pointer(cprefix))
 	ns := C.xmlSearchNs(nptr.doc, nptr, cprefix)
 	if ns == nil {
-		return "", ErrNamespaceNotFound{Target :prefix}
+		return "", ErrNamespaceNotFound{Target: prefix}
 	}
 
 	return xmlCharToString(ns.href), nil
@@ -1210,7 +1160,7 @@ func setDocumentEncoding(doc *Document, e string) {
 		C.MY_xmlFree(unsafe.Pointer(dptr.encoding))
 	}
 
-	// note: this doesn't need to be dup'ed, as 
+	// note: this doesn't need to be dup'ed, as
 	// C.CString is already duped/malloc'ed
 	dptr.encoding = stringToXMLChar(e)
 }
@@ -1233,7 +1183,7 @@ func setDocumentVersion(doc *Document, v string) {
 		C.MY_xmlFree(unsafe.Pointer(dptr.version))
 	}
 
-	// note: this doesn't need to be dup'ed, as 
+	// note: this doesn't need to be dup'ed, as
 	// C.CString is already duped/malloc'ed
 	dptr.version = stringToXMLChar(v)
 }
@@ -1576,7 +1526,7 @@ func evalXPath(x *XPathContext, expr *XPathExpression) (*XPathObject, error) {
 }
 
 func xmlXPathFreeObject(x *XPathObject) {
-  xptr, err := validXPathObjectPtr(x)
+	xptr, err := validXPathObjectPtr(x)
 	if err != nil {
 		return
 	}
@@ -1584,6 +1534,19 @@ func xmlXPathFreeObject(x *XPathObject) {
 	//	if xptr.nodesetval != nil {
 	//		C.xmlXPathFreeNodeSet(xptr.nodesetval)
 	//	}
+}
+
+func xmlXPathObjectNodeListLen(x *XPathObject) int {
+	xptr, err := validXPathObjectPtr(x)
+	if err != nil {
+		return 0
+	}
+
+	if xptr.nodesetval == nil {
+		return 0
+	}
+
+	return int(xptr.nodesetval.nodeNr)
 }
 
 func xmlXPathObjectType(x *XPathObject) XPathObjectType {
@@ -1594,7 +1557,7 @@ func xmlXPathObjectType(x *XPathObject) XPathObjectType {
 	return XPathObjectType(xptr._type)
 }
 
-func xmlXPathObjectFloat64Value(x *XPathObject) float64 {
+func xmlXPathObjectFloat64(x *XPathObject) float64 {
 	xptr, err := validXPathObjectPtr(x)
 	if err != nil {
 		return float64(0)
@@ -1603,7 +1566,7 @@ func xmlXPathObjectFloat64Value(x *XPathObject) float64 {
 	return float64(xptr.floatval)
 }
 
-func xmlXPathObjectBoolValue(x *XPathObject) bool {
+func xmlXPathObjectBool(x *XPathObject) bool {
 	xptr, err := validXPathObjectPtr(x)
 	if err != nil {
 		return false
@@ -1638,4 +1601,3 @@ func xmlXPathObjectNodeList(x *XPathObject) (NodeList, error) {
 
 	return ret, nil
 }
-

@@ -54,11 +54,7 @@ func ExmapleXML() {
   defer ctx.Free()
 
   ctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
-  title, err := ctx.FindValue("/atom:feed/atom:title/text()")
-  if err != nil {
-    log.Printf("Failed to run FindValue: %s", err)
-    return
-  }
+  title := ctx.FindValue("/atom:feed/atom:title/text()").String()
   log.Printf("feed title = %s", title)
 }
 ```
