@@ -217,14 +217,21 @@ func xmlCreateMemoryParserCtxt(s string, o ParseOption) (*ParserCtxt, error) {
 	}, nil
 }
 
+func validParserCtxtPtr(ctx *ParserCtxt) (*C.xmlParserCtxt, error) {
+	if ptr := ctx.ptr; ptr != nil {
+		return ptr, nil
+	}
+	return nil, ErrInvalidParser
+}
+
 // Parse starts the parsing on the ParserCtxt
 func (ctx ParserCtxt) Parse() error {
-	ptr := ctx.ptr
-	if ptr == nil {
-		return ErrInvalidParser
+	ctxptr, err := validParserCtxtPtr(&ctx)
+	if err != nil {
+		return err
 	}
 
-	if C.xmlParseDocument(ptr) != C.int(0) {
+	if C.xmlParseDocument(ctxptr) != C.int(0) {
 		return errors.New("parse failed")
 	}
 	return nil
@@ -232,11 +239,12 @@ func (ctx ParserCtxt) Parse() error {
 
 // Free releases the underlying C struct
 func (ctx *ParserCtxt) Free() error {
-	ptr := ctx.ptr
-	if ptr == nil {
-		return ErrInvalidParser
+	ctxptr, err := validParserCtxtPtr(ctx)
+	if err != nil {
+		return err
 	}
-	C.xmlFreeParserCtxt(ptr)
+
+	C.xmlFreeParserCtxt(ctxptr)
 	ctx.ptr = nil
 
 	return nil
@@ -244,22 +252,22 @@ func (ctx *ParserCtxt) Free() error {
 
 // WellFormed returns true if the resulting document after parsing
 func (ctx ParserCtxt) WellFormed() bool {
-	ptr := ctx.ptr
-	if ptr == nil {
+	ctxptr, err := validParserCtxtPtr(&ctx)
+	if err != nil {
 		return false
 	}
 
-	return ptr.wellFormed == C.int(0)
+	return ctxptr.wellFormed == C.int(0)
 }
 
 // Document returns the resulting document after parsing
 func (ctx ParserCtxt) Document() (*Document, error) {
-	ptr := ctx.ptr
-	if ptr == nil {
-		return nil, ErrInvalidParser
+	ctxptr, err := validParserCtxtPtr(&ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	doc := ptr.myDoc
+	doc := ctxptr.myDoc
 	if doc != nil {
 		return wrapDocument(doc), nil
 	}
@@ -268,10 +276,17 @@ func (ctx ParserCtxt) Document() (*Document, error) {
 
 func htmlReadDoc(content, url, encoding string, opts int) (*Document, error) {
 	// TODO: use htmlCtxReadDoc later, so we can get the error
+	ccontent := C.CString(content)
+	curl := C.CString(url)
+	cencoding := C.CString(encoding)
+	defer C.free(unsafe.Pointer(ccontent))
+	defer C.free(unsafe.Pointer(curl))
+	defer C.free(unsafe.Pointer(cencoding))
+
 	doc := C.htmlReadDoc(
-		C.xmlCharStrdup(C.CString(content)),
-		C.CString(url),
-		C.CString(encoding),
+		(*C.xmlChar)(unsafe.Pointer(ccontent)),
+		curl,
+		cencoding,
 		C.int(opts),
 	)
 
