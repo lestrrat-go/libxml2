@@ -31,14 +31,6 @@ package libxml2
 #include <libxml/c14n.h>
 
 
-static inline xmlChar* MY_toxmlcharptr(const char *s) {
-	return (xmlChar *) s;
-}
-
-static inline char * MY_tocharptr(const xmlChar *s) {
-	return (char *) s;
-}
-
 static inline void MY_nilErrorHandler(void *ctx, const char *msg, ...) {}
 
 static inline void MY_xmlSilenceParseErrors() {
@@ -198,11 +190,14 @@ func ReportErrors(b bool) {
 }
 
 func xmlCharToString(s *C.xmlChar) string {
-	return C.GoString(C.MY_tocharptr(s))
+	return C.GoString((*C.char)(unsafe.Pointer(s)))
 }
 
+// stringToXMLChar creates a new *C.xmlChar from a Go string.
+// Remember to always free this data, as C.CString creates a copy
+// of the byte buffer contained in the string
 func stringToXMLChar(s string) *C.xmlChar {
-	return C.MY_toxmlcharptr(C.CString(s))
+	return (*C.xmlChar)(unsafe.Pointer(C.CString(s)))
 }
 
 func xmlCreateMemoryParserCtxt(s string, o ParseOption) (*ParserCtxt, error) {
