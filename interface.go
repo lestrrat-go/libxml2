@@ -1,12 +1,5 @@
 package libxml2
 
-/*
-#cgo pkg-config: libxml-2.0
-#include "libxml/tree.h"
-#include "libxml/xpath.h"
-#include <libxml/xpathInternals.h>
-*/
-import "C"
 import (
 	"errors"
 	"unsafe"
@@ -145,7 +138,7 @@ type Node interface {
 type NodeList []Node
 
 type XMLNode struct {
-	ptr    *C.xmlNode
+	ptr    uintptr // *C.xmlNode
 	mortal bool
 }
 
@@ -166,7 +159,7 @@ type Element struct {
 }
 
 type Document struct {
-	ptr *C.xmlDoc
+	ptr uintptr // *C.xmlDoc
 }
 
 type Text struct {
@@ -213,20 +206,20 @@ const (
 type InvalidXPathObject struct {}
 
 type XPathObject struct {
-	ptr *C.xmlXPathObject
+	ptr uintptr // *C.xmlXPathObject
 	// This flag controls if the StringValue should use the *contents* (literal value)
 	// of the nodeset instead of stringifying the node
 	ForceLiteral bool
 }
 
 type XPathContext struct {
-	ptr *C.xmlXPathContext
+	ptr uintptr // *C.xmlXPathContext
 	err error
 }
 
 // XPathExpression is a compiled XPath.
 type XPathExpression struct {
-	ptr *C.xmlXPathCompExpr
+	ptr uintptr // *C.xmlXPathCompExpr
 	// This exists mainly for debugging purposes
 	expr string
 }
@@ -263,7 +256,7 @@ const (
 )
 
 type ParserCtxt struct {
-	ptr *C.xmlParserCtxt
+	ptr uintptr // *C.xmlParserCtxt
 }
 
 type Parser struct {

@@ -78,11 +78,7 @@ func (n *Element) GetAttribute(name string) (*Attribute, error) {
 
 // Attributes returns a list of attributes on a node
 func (n *Element) Attributes() ([]*Attribute, error) {
-	attrs := []*Attribute{}
-	for attr := n.ptr.properties; attr != nil; attr = attr.next {
-		attrs = append(attrs, wrapAttribute(attr))
-	}
-	return attrs, nil
+	return xmlElementAttributes(n)
 }
 
 // RemoveAttribute completely removes an attribute from the node
@@ -110,21 +106,8 @@ func (n *Element) RemoveAttribute(name string) error {
 // objects which allocates C structures for each namespace.
 // Therefore you MUST free the structures, or otherwise you
 // WILL leak memory.
-func (n *Element) GetNamespaces() []*Namespace {
-	ret := []*Namespace{}
-	for ns := n.ptr.nsDef; ns != nil; ns = ns.next {
-		if ns.prefix == nil && ns.href == nil {
-			continue
-		}
-		// ALERT! Allocating new C struct here
-		newns := xmlCopyNamespace(ns)
-		if newns == nil { // XXX this is an error, no?
-			continue
-		}
-
-		ret = append(ret, wrapNamespace(newns))
-	}
-	return ret
+func (n *Element) GetNamespaces() ([]*Namespace, error) {
+	return xmlElementNamespaces(n)
 }
 
 // Literal returns a stringified version of this node and its

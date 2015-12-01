@@ -108,11 +108,6 @@ import (
 	"github.com/lestrrat/go-libxml2"
 )
 
-// Schema represents an XML schema.
-type Schema struct {
-	ptr C.xmlSchemaPtr
-}
-
 // Parse is used to parse an XML Schema Document to produce a
 // Schema instance. Make sure to call Free() on the instance
 // when you are done with it.
@@ -131,21 +126,25 @@ func Parse(buf []byte) (*Schema, error) {
 		return nil, errors.New("failed to parse schema")
 	}
 
-	return &Schema{ptr: s}, nil
+	return &Schema{ptr: uintptr(unsafe.Pointer(s))}, nil
+}
+
+func validSchemaPtr(s *Schema) (*C.xmlSchema, error) {
+	if s == nil || s.ptr == 0 {
+		return nil, ErrInvalidSchema
+	}
+
+	return (*C.xmlSchema)(unsafe.Pointer(s.ptr)), nil
 }
 
 // Free frees the underlying C struct
 func (s *Schema) Free() {
-	if ptr := s.ptr; ptr != nil {
-		C.xmlSchemaFree(ptr)
+	sptr, err := validSchemaPtr(s)
+	if err != nil {
+		return
 	}
-}
 
-// SchemaValidationError is returned when the Validate() function
-// finds errors. When there are multiple errors, you may access
-// them using the Errors() method
-type SchemaValidationError struct {
-	errors []error
+	C.xmlSchemaFree(sptr)
 }
 
 // Error method fulfils the error interface
@@ -162,7 +161,12 @@ func (sve SchemaValidationError) Errors() []error {
 // the schema. If there are any problems, and error is
 // returned.
 func (s *Schema) Validate(d *libxml2.Document) error {
-	ctx := C.xmlSchemaNewValidCtxt(s.ptr)
+	sptr, err := validSchemaPtr(s)
+	if err != nil {
+		return err
+	}
+
+	ctx := C.xmlSchemaNewValidCtxt(sptr)
 	if ctx == nil {
 		return errors.New("failed to build validator")
 	}

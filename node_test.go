@@ -171,7 +171,11 @@ func TestNode_StandaloneWithNamespaces(t *testing.T) {
 		return
 	}
 
-	nslist := elem.GetNamespaces()
+	nslist, err := elem.GetNamespaces()
+	if !assert.NoError(t, err, "GetNamespaces succeeds") {
+		return
+	}
+
 	defer func() {
 		for _, ns := range nslist {
 			ns.Free()
