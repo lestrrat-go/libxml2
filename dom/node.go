@@ -1,25 +1,10 @@
 package dom
 
 import (
-	"fmt"
-
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/node"
 	"github.com/lestrrat/go-libxml2/xpath"
 )
-
-var _XMLNodeTypeIndex = [...]uint8{0, 11, 24, 32, 48, 61, 71, 77, 88, 100, 116, 132, 144, 160, 167, 178, 191, 201, 214, 227, 238, 254}
-
-const _XMLNodeTypeName = `ElementNodeAttributeNodeTextNodeCDataSectionNodeEntityRefNodeEntityNodePiNodeCommentNodeDocumentNodeDocumentTypeNodeDocumentFragNodeNotationNodeHTMLDocumentNodeDTDNodeElementDeclAttributeDeclEntityDeclNamespaceDeclXIncludeStartXIncludeEndDocbDocumentNode`
-
-// String returns the string representation of this XMLNodeType
-func (i XMLNodeType) String() string {
-	x := i - 1
-	if x < 0 || x+1 >= XMLNodeType(len(_XMLNodeTypeIndex)) {
-		return fmt.Sprintf("XMLNodeType(%d)", x+1)
-	}
-	return _XMLNodeTypeName[_XMLNodeTypeIndex[x]:_XMLNodeTypeIndex[x+1]]
-}
 
 // ChildNodes returns the child nodes
 func (n *XMLNode) ChildNodes() (node.List, error) {
