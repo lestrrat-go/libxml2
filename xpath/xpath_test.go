@@ -71,6 +71,9 @@ func TestXPathContextExpression_Number(t *testing.T) {
 	if !assert.Equal(t, float64(2), xpath.Number(ctx.FindValue("1+1")), "XPath evaluates to 2") {
 		return
 	}
+	if !assert.Equal(t, float64(0), xpath.Number(ctx.FindValue("1<>1")), "XPath evaluates to 0") {
+		return
+	}
 }
 
 func TestXPathContextExpression_Boolean(t *testing.T) {
@@ -84,10 +87,13 @@ func TestXPathContextExpression_Boolean(t *testing.T) {
 	if !assert.True(t, xpath.Bool(ctx.FindValue("1=1")), "XPath evaluates to true") {
 		return
 	}
+	if !assert.False(t, xpath.Bool(ctx.FindValue("1<>1")), "XPath evaluates to false") {
+		return
+	}
 }
 
 func TestXPathContextExpression_NodeList(t *testing.T) {
-	doc, err := libxml2.ParseString(`<foo><bar a="b">baz</bar></foo>`)
+	doc, err := libxml2.ParseString(`<foo><bar a="b">baz</bar><bar a="c">quux</bar></foo>`)
 	if err != nil {
 		t.Errorf("Failed to parse string: %s", err)
 	}
@@ -105,7 +111,19 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	if !assert.Equal(t, "baz", xpath.String(ctx.FindValue("/foo/bar")), "XPath evaluates to 'baz'") {
+	if !assert.Len(t, xpath.NodeList(ctx.FindValue("/foo/bar")), 2, "XPath evaluates to 2 nodes") {
+		return
+	}
+
+	if !assert.Len(t, xpath.NodeList(ctx.FindValue("/foo/bar[bogus")), 0, "XPath evaluates to 0 nodes") {
+		return
+	}
+
+	if !assert.Equal(t, "bazquux", xpath.String(ctx.FindValue("/foo/bar")), "XPath evaluates to 'bazquux'") {
+		return
+	}
+
+	if !assert.Equal(t, "", xpath.String(ctx.FindValue("/[bogus")), "XPath evaluates to ''") {
 		return
 	}
 }
