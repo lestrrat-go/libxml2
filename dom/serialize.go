@@ -1,7 +1,6 @@
-package libxml2
+package dom
 
 import (
-	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/node"
 )
@@ -37,7 +36,7 @@ func (s C14NSerialize) Serialize(n node.Node) (string, error) {
 	 *
 	 */
 	switch n.(type) {
-	case *dom.Document:
+	case *Document:
 	default:
 		return "", ErrInvalidNodeType
 	}

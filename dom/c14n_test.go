@@ -1,8 +1,10 @@
-package libxml2
+package dom_test
 
 import (
 	"testing"
 
+	"github.com/lestrrat/go-libxml2"
+	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +16,7 @@ func TestC14N(t *testing.T) {
 <!-- Comment 2 -->
 <!-- Comment 3 -->`
 
-	doc, err := ParseString(`<?xml version="1.0"?>
+	doc, err := libxml2.ParseString(`<?xml version="1.0"?>
 <?xml-stylesheet   href="doc.xsl"
    type="text/xsl"   ?>
 
@@ -33,7 +35,7 @@ func TestC14N(t *testing.T) {
 		return
 	}
 
-	s, err := C14NSerialize{Mode: C14NExclusive1_0, WithComments: true}.Serialize(doc)
+	s, err := dom.C14NSerialize{Mode: dom.C14NExclusive1_0, WithComments: true}.Serialize(doc)
 	if !assert.NoError(t, err, "C14N should succeed") {
 		return
 	}
