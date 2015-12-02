@@ -44,7 +44,7 @@ func ExmapleXML() {
 	defer ctx.Free()
 
 	ctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
-	title := xpath.String(ctx.FindValue("/atom:feed/atom:title/text()"))
+	title := xpath.String(ctx.Find("/atom:feed/atom:title/text()"))
 	log.Printf("feed title = %s", title)
 }
 
@@ -65,7 +65,7 @@ func ExampleHTML() {
 		return nil
 	})
 
-	nodes := xpath.NodeList(doc.FindValue(`//div[@id="menu"]/a`))
+	nodes := xpath.NodeList(doc.Find(`//div[@id="menu"]/a`))
 	for i := 0; i < len(nodes); i++ {
 		log.Printf("Found node: %s", nodes[i].NodeName())
 	}

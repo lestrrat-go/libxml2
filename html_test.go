@@ -23,7 +23,7 @@ func TestParseHTML(t *testing.T) {
 		return
 	}
 
-	nodes := xpath.NodeList(doc.FindValue("/html/body/h1"))
+	nodes := xpath.NodeList(doc.Find("/html/body/h1"))
 	if len(nodes) != 1 {
 		t.Errorf("Could not find matching nodes")
 		return

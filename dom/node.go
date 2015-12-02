@@ -103,26 +103,26 @@ func (n *XMLNode) ParseInContext(s string, o int) (node.Node, error) {
 	return WrapNode(nptr)
 }
 
-// FindValue evaluates the xpath expression and returns the matching nodes
-func (n *XMLNode) FindValue(expr string) (node.XPathResult, error) {
+// Find evaluates the xpath expression and returns the matching nodes
+func (n *XMLNode) Find(expr string) (node.XPathResult, error) {
 	ctx, err := xpath.NewContext(n)
 	if err != nil {
 		return nil, err
 	}
 	defer ctx.Free()
 
-	return ctx.FindValue(expr)
+	return ctx.Find(expr)
 }
 
-// FindValueExpr evalues the pre-compiled xpath expression and returns the matching nodes
-func (n *XMLNode) FindValueExpr(expr *xpath.Expression) (node.XPathResult, error) {
+// FindExpr evalues the pre-compiled xpath expression and returns the matching nodes
+func (n *XMLNode) FindExpr(expr *xpath.Expression) (node.XPathResult, error) {
 	ctx, err := xpath.NewContext(n)
 	if err != nil {
 		return nil, err
 	}
 	defer ctx.Free()
 
-	return ctx.FindValueExpr(expr)
+	return ctx.FindExpr(expr)
 }
 
 // HasChildNodes returns true if the node contains children

@@ -56,7 +56,7 @@ func ExmapleXML() {
   defer ctx.Free()
 
   ctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
-  title := xpath.String(ctx.FindValue("/atom:feed/atom:title/text()"))
+  title := xpath.String(ctx.Find("/atom:feed/atom:title/text()"))
   log.Printf("feed title = %s", title)
 }
 ```

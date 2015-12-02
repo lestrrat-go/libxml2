@@ -29,7 +29,7 @@ func TestXPathContext(t *testing.T) {
 
 	// Use a string
 	exprString := `/*`
-	nodes := xpath.NodeList(ctx.FindValue(exprString))
+	nodes := xpath.NodeList(ctx.Find(exprString))
 	if len(nodes) != 1 {
 		t.Errorf("Expected 1 nodes, got %d", len(nodes))
 		return
@@ -43,7 +43,7 @@ func TestXPathContext(t *testing.T) {
 	}
 	defer expr.Free()
 
-	nodes = xpath.NodeList(ctx.FindValueExpr(expr))
+	nodes = xpath.NodeList(ctx.FindExpr(expr))
 	if len(nodes) != 1 {
 		t.Errorf("Expected 1 nodes, got %d", len(nodes))
 		return
@@ -58,10 +58,10 @@ func TestXPathContextExpression_Number(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	if !assert.Equal(t, float64(2), xpath.Number(ctx.FindValue("1+1")), "XPath evaluates to 2") {
+	if !assert.Equal(t, float64(2), xpath.Number(ctx.Find("1+1")), "XPath evaluates to 2") {
 		return
 	}
-	if !assert.Equal(t, float64(0), xpath.Number(ctx.FindValue("1<>1")), "XPath evaluates to 0") {
+	if !assert.Equal(t, float64(0), xpath.Number(ctx.Find("1<>1")), "XPath evaluates to 0") {
 		return
 	}
 }
@@ -74,10 +74,10 @@ func TestXPathContextExpression_Boolean(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	if !assert.True(t, xpath.Bool(ctx.FindValue("1=1")), "XPath evaluates to true") {
+	if !assert.True(t, xpath.Bool(ctx.Find("1=1")), "XPath evaluates to true") {
 		return
 	}
-	if !assert.False(t, xpath.Bool(ctx.FindValue("1<>1")), "XPath evaluates to false") {
+	if !assert.False(t, xpath.Bool(ctx.Find("1<>1")), "XPath evaluates to false") {
 		return
 	}
 }
@@ -101,19 +101,19 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	if !assert.Len(t, xpath.NodeList(ctx.FindValue("/foo/bar")), 2, "XPath evaluates to 2 nodes") {
+	if !assert.Len(t, xpath.NodeList(ctx.Find("/foo/bar")), 2, "XPath evaluates to 2 nodes") {
 		return
 	}
 
-	if !assert.Len(t, xpath.NodeList(ctx.FindValue("/foo/bar[bogus")), 0, "XPath evaluates to 0 nodes") {
+	if !assert.Len(t, xpath.NodeList(ctx.Find("/foo/bar[bogus")), 0, "XPath evaluates to 0 nodes") {
 		return
 	}
 
-	if !assert.Equal(t, "bazquux", xpath.String(ctx.FindValue("/foo/bar")), "XPath evaluates to 'bazquux'") {
+	if !assert.Equal(t, "bazquux", xpath.String(ctx.Find("/foo/bar")), "XPath evaluates to 'bazquux'") {
 		return
 	}
 
-	if !assert.Equal(t, "", xpath.String(ctx.FindValue("/[bogus")), "XPath evaluates to ''") {
+	if !assert.Equal(t, "", xpath.String(ctx.Find("/[bogus")), "XPath evaluates to ''") {
 		return
 	}
 }
@@ -144,7 +144,7 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 		return
 	}
 
-	nodes := xpath.NodeList(ctx.FindValue(`/xxx:foo`))
+	nodes := xpath.NodeList(ctx.Find(`/xxx:foo`))
 	if len(nodes) != 1 {
 		t.Errorf(`Expected 1 node, got %d`, len(nodes))
 		return

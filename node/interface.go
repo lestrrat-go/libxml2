@@ -32,7 +32,7 @@ type Node interface {
 	ChildNodes() (List, error)
 	Copy() (Node, error)
 	OwnerDocument() (Document, error)
-	FindValue(string) (XPathResult, error)
+	Find(string) (XPathResult, error)
 	FirstChild() (Node, error)
 	Free()
 	HasChildNodes() bool

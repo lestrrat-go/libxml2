@@ -51,7 +51,7 @@ func BenchmarkLibxml2Xmlpath(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		nodes := xpath.NodeList(doc.FindValue(`//loc`))
+		nodes := xpath.NodeList(doc.Find(`//loc`))
 		for _, n := range nodes {
 			_ = n
 		}

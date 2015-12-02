@@ -132,7 +132,7 @@ func (x *Context) SetContextNode(n node.Node) error {
 // Exists compiles and evaluates the xpath expression, and returns
 // true if a corresponding node exists
 func (x *Context) Exists(xpath string) bool {
-	list := NodeList(x.FindValue(xpath))
+	list := NodeList(x.Find(xpath))
 	if list == nil {
 		return false
 	}
@@ -154,28 +154,28 @@ func (x *Context) evalXPathExpr(expr *Expression) (node.XPathResult, error) {
 	return &Object{ptr: res}, nil
 }
 
-// FindValue evaluates the expression s against the nodes registered
+// Find evaluates the expression s against the nodes registered
 // in x. It returns the resulting data evaluated to an Result.
 //
 // You MUST call Free() on the Result, or you will leak memory
 // If you don't really care for errors and just want to grab the
 // value of Result, checkout xpath.String(), xpath.Number(), xpath.Bool()
 // et al.
-func (x *Context) FindValue(s string) (node.XPathResult, error) {
+func (x *Context) Find(s string) (node.XPathResult, error) {
 	expr, err := NewExpression(s)
 	if err != nil {
 		return nil, err
 	}
 	defer expr.Free()
 
-	return x.FindValueExpr(expr)
+	return x.FindExpr(expr)
 }
 
-// FindValueExpr evaluates the given XPath expression and returns an Object.
+// FindExpr evaluates the given XPath expression and returns an Object.
 // You must call `Free()` on this returned object
 //
 // You MUST call Free() on the Result, or you will leak memory
-func (x *Context) FindValueExpr(expr *Expression) (node.XPathResult, error) {
+func (x *Context) FindExpr(expr *Expression) (node.XPathResult, error) {
 	o, err := x.evalXPathExpr(expr)
 	if err != nil {
 		return nil, err
