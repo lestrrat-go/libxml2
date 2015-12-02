@@ -67,7 +67,7 @@ func TestXPathContextExpression_Number(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	if !assert.Equal(t, 2, xpath.Number(ctx.FindValue("1+1")), "XPath evaluates to 2") {
+	if !assert.Equal(t, float64(2), xpath.Number(ctx.FindValue("1+1")), "XPath evaluates to 2") {
 		return
 	}
 }
