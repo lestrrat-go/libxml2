@@ -29,12 +29,7 @@ func TestXPathContext(t *testing.T) {
 
 	// Use a string
 	exprString := `/*`
-	nodes, err := ctx.FindNodes(exprString)
-	if err != nil {
-		t.Errorf("Failed to execute FindNodes: %s", err)
-		return
-	}
-
+	nodes := xpath.NodeList(ctx.FindValue(exprString))
 	if len(nodes) != 1 {
 		t.Errorf("Expected 1 nodes, got %d", len(nodes))
 		return
@@ -48,12 +43,7 @@ func TestXPathContext(t *testing.T) {
 	}
 	defer expr.Free()
 
-	nodes, err = ctx.FindNodesExpr(expr)
-	if err != nil {
-		t.Errorf("Failed to execute FindNodesExpr: %s", err)
-		return
-	}
-
+	nodes = xpath.NodeList(ctx.FindValueExpr(expr))
 	if len(nodes) != 1 {
 		t.Errorf("Expected 1 nodes, got %d", len(nodes))
 		return
@@ -154,11 +144,7 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 		return
 	}
 
-	nodes, err := ctx.FindNodes(`/xxx:foo`)
-	if err != nil {
-		t.Errorf(`Failed to evaluate "/xxx:foo": %s`, err)
-		return
-	}
+	nodes := xpath.NodeList(ctx.FindValue(`/xxx:foo`))
 	if len(nodes) != 1 {
 		t.Errorf(`Expected 1 node, got %d`, len(nodes))
 		return
