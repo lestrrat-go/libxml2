@@ -68,10 +68,14 @@ const (
 	XMLParseEmptyOption Option = 0
 )
 
+// Ctxt represents the Parser context. You normally should be using
+// Parser, but if you for some reason need to do more low-level
+// magic you will have to tinker with this struct
 type Ctxt struct {
-	ptr uintptr // *C.xmlCtxt
+	ptr uintptr // *C.xmlParserCtxt
 }
 
+// Parser represents the high-level parser.
 type Parser struct {
 	Options Option
 }

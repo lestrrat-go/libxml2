@@ -4,6 +4,15 @@ import "errors"
 
 // C14NMode represents the C14N mode supported by libxml2
 type C14NMode int
+
+// PtrSource is the single interface that connects the rest of
+// libxml2 package with this pacakge. The clib packages does not
+// really care what sort of object you pass to these low-level
+// functions, as long as the arguments fulfill this interface.
+//
+// Obviously this causes problems if you pass the an Element node
+// where a Document node is expected, but it is the caller's
+// responsibility to align the argument list.
 type PtrSource interface {
 	Pointer() uintptr
 }

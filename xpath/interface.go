@@ -18,6 +18,8 @@ const (
 	XSLTTreeType    = clib.XPathXSLTTreeType
 )
 
+// Object is the concrete implementatin of Result (types.XPathResult).
+// This struct contains the result of evaluating an XPath expression.
 type Object struct {
 	ptr uintptr // *C.xmlObject
 	// This flag controls if the StringValue should use the *contents* (literal value)
@@ -25,6 +27,8 @@ type Object struct {
 	ForceLiteral bool
 }
 
+// Context holds the current XPath context. You may register namespaces and
+// context nodes to evaluate your XPath expressions with it.
 type Context struct {
 	ptr uintptr // *C.xmlContext
 }
@@ -36,4 +40,5 @@ type Expression struct {
 	expr string
 }
 
+// Result is an alias to types.XPathResult
 type Result types.XPathResult
