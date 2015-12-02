@@ -19,32 +19,6 @@ func (i ObjectType) String() string {
 	return _ObjectTypeName[_ObjectTypeIndex[i]:_ObjectTypeIndex[i+1]]
 }
 
-// Bool for InvalidObject always return false
-func (x InvalidObject) Bool() bool { return false }
-
-// Number for InvalidObject always return 0
-func (x InvalidObject) Number() float64 { return 0 }
-
-// Free for InvalidObject is always a no-op
-func (x InvalidObject) Free() {}
-
-// NodeList for InvalidObject always returns nil
-func (x InvalidObject) NodeList() node.List { return nil }
-
-// String for InvalidObject always returns ""
-func (x InvalidObject) String() string { return "" }
-
-// Type for InvalidXPathOBject always returns XPathUndefined
-func (x InvalidObject) Type() ObjectType { return UndefinedType }
-
-// Valid for InvalidObject always returns false
-func (x InvalidObject) Valid() bool { return false }
-
-// Valid for Object always returns true
-func (x Object) Valid() bool {
-	return true
-}
-
 // Pointer returns the underlying C struct
 func (x Object) Pointer() uintptr {
 	return x.ptr
