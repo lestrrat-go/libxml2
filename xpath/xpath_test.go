@@ -1,14 +1,15 @@
-package libxml2
+package xpath_test
 
 import (
 	"testing"
 
+	"github.com/lestrrat/go-libxml2"
 	"github.com/lestrrat/go-libxml2/xpath"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestXPathContext(t *testing.T) {
-	doc, err := ParseString(`<foo><bar a="b"></bar></foo>`)
+	doc, err := libxml2.ParseString(`<foo><bar a="b"></bar></foo>`)
 	if err != nil {
 		t.Errorf("Failed to parse string: %s", err)
 	}
@@ -86,7 +87,7 @@ func TestXPathContextExpression_Boolean(t *testing.T) {
 }
 
 func TestXPathContextExpression_NodeList(t *testing.T) {
-	doc, err := ParseString(`<foo><bar a="b">baz</bar></foo>`)
+	doc, err := libxml2.ParseString(`<foo><bar a="b">baz</bar></foo>`)
 	if err != nil {
 		t.Errorf("Failed to parse string: %s", err)
 	}
@@ -110,7 +111,7 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 }
 
 func TestXPathContextExpression_Namespaces(t *testing.T) {
-	doc, err := ParseString(`<foo xmlns="http://example.com/foobar"><bar a="b"></bar></foo>`)
+	doc, err := libxml2.ParseString(`<foo xmlns="http://example.com/foobar"><bar a="b"></bar></foo>`)
 	if err != nil {
 		t.Errorf("Failed to parse string: %s", err)
 	}
