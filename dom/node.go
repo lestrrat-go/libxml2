@@ -2,18 +2,18 @@ package dom
 
 import (
 	"github.com/lestrrat/go-libxml2/clib"
-	"github.com/lestrrat/go-libxml2/node"
+	"github.com/lestrrat/go-libxml2/types"
 	"github.com/lestrrat/go-libxml2/xpath"
 )
 
 // ChildNodes returns the child nodes
-func (n *XMLNode) ChildNodes() (node.List, error) {
+func (n *XMLNode) ChildNodes() (types.NodeList, error) {
 	list, err := clib.XMLChildNodes(n)
 	if err != nil {
 		return nil, err
 	}
 
-	ret := make(node.List, len(list))
+	ret := make(types.NodeList, len(list))
 	for i, x := range list {
 		ret[i], err = WrapNode(x)
 		if err != nil {
@@ -34,7 +34,7 @@ func (n *XMLNode) String() string {
 }
 
 // OwnerDocument returns the Document that this node belongs to
-func (n *XMLNode) OwnerDocument() (node.Document, error) {
+func (n *XMLNode) OwnerDocument() (types.Document, error) {
 	ptr, err := clib.XMLOwnerDocument(n)
 	if err != nil {
 		return nil, err
@@ -70,12 +70,12 @@ func (n XMLNode) Literal() (string, error) {
 }
 
 // IsSameNode returns true if two nodes point to the same node
-func (n *XMLNode) IsSameNode(other node.Node) bool {
+func (n *XMLNode) IsSameNode(other types.Node) bool {
 	return n.Pointer() == other.Pointer()
 }
 
 // Copy creates a copy of the node
-func (n *XMLNode) Copy() (node.Node, error) {
+func (n *XMLNode) Copy() (types.Node, error) {
 	doc, err := n.OwnerDocument()
 	if err != nil {
 		return nil, err
@@ -88,14 +88,14 @@ func (n *XMLNode) Copy() (node.Node, error) {
 }
 
 // SetDocument sets the document of this node and its descendants
-func (n *XMLNode) SetDocument(d node.Document) error {
+func (n *XMLNode) SetDocument(d types.Document) error {
 	return clib.XMLSetTreeDoc(n, d)
 }
 
 // ParseInContext parses a chunk of XML in the context of the current
 // node. This makes it safe to append the resulting node to the current
 // node or other nodes in the same document.
-func (n *XMLNode) ParseInContext(s string, o int) (node.Node, error) {
+func (n *XMLNode) ParseInContext(s string, o int) (types.Node, error) {
 	nptr, err := clib.XMLParseInNodeContext(n, s, o)
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (n *XMLNode) ParseInContext(s string, o int) (node.Node, error) {
 }
 
 // Find evaluates the xpath expression and returns the matching nodes
-func (n *XMLNode) Find(expr string) (node.XPathResult, error) {
+func (n *XMLNode) Find(expr string) (types.XPathResult, error) {
 	ctx, err := xpath.NewContext(n)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func (n *XMLNode) Find(expr string) (node.XPathResult, error) {
 }
 
 // FindExpr evalues the pre-compiled xpath expression and returns the matching nodes
-func (n *XMLNode) FindExpr(expr *xpath.Expression) (node.XPathResult, error) {
+func (n *XMLNode) FindExpr(expr *xpath.Expression) (types.XPathResult, error) {
 	ctx, err := xpath.NewContext(n)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (n *XMLNode) HasChildNodes() bool {
 }
 
 // FirstChild reutrns the first child node
-func (n *XMLNode) FirstChild() (node.Node, error) {
+func (n *XMLNode) FirstChild() (types.Node, error) {
 	ptr, err := clib.XMLFirstChild(n)
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (n *XMLNode) FirstChild() (node.Node, error) {
 }
 
 // LastChild returns the last child node
-func (n *XMLNode) LastChild() (node.Node, error) {
+func (n *XMLNode) LastChild() (types.Node, error) {
 	ptr, err := clib.XMLFirstChild(n)
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (n *XMLNode) NamespaceURI() string {
 }
 
 // NextSibling returns the next sibling
-func (n *XMLNode) NextSibling() (node.Node, error) {
+func (n *XMLNode) NextSibling() (types.Node, error) {
 	ptr, err := clib.XMLNextSibling(n)
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (n *XMLNode) NextSibling() (node.Node, error) {
 }
 
 // ParentNode returns the parent node
-func (n *XMLNode) ParentNode() (node.Node, error) {
+func (n *XMLNode) ParentNode() (types.Node, error) {
 	ptr, err := clib.XMLParentNode(n)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func (n *XMLNode) Prefix() string {
 }
 
 // PreviousSibling returns the previous sibling
-func (n *XMLNode) PreviousSibling() (node.Node, error) {
+func (n *XMLNode) PreviousSibling() (types.Node, error) {
 	ptr, err := clib.XMLPreviousSibling(n)
 	if err != nil {
 		return nil, err
@@ -203,7 +203,7 @@ func (n *XMLNode) SetNodeValue(value string) {
 }
 
 // AddChild appends the node
-func (n *XMLNode) AddChild(child node.Node) error {
+func (n *XMLNode) AddChild(child types.Node) error {
 	return clib.XMLAddChild(n, child)
 }
 
@@ -252,7 +252,7 @@ func (n *XMLNode) Free() {
 	n.ptr = 0
 }
 
-func walk(n node.Node, fn func(node.Node) error) error {
+func walk(n types.Node, fn func(types.Node) error) error {
 	if err := fn(n); err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func walk(n node.Node, fn func(node.Node) error) error {
 }
 
 // Walk traverses through all of the nodes
-func (n *XMLNode) Walk(fn func(node.Node) error) error {
+func (n *XMLNode) Walk(fn func(types.Node) error) error {
 	walk(n, fn)
 	return nil
 }

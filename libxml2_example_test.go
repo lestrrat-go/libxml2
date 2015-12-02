@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/lestrrat/go-libxml2"
-	"github.com/lestrrat/go-libxml2/node"
 	"github.com/lestrrat/go-libxml2/parser"
+	"github.com/lestrrat/go-libxml2/types"
 	"github.com/lestrrat/go-libxml2/xpath"
 )
 
@@ -25,7 +25,7 @@ func ExmapleXML() {
 	}
 	defer doc.Free()
 
-	doc.Walk(func(n node.Node) error {
+	doc.Walk(func(n types.Node) error {
 		log.Printf(n.NodeName())
 		return nil
 	})
@@ -60,7 +60,7 @@ func ExampleHTML() {
 	}
 	defer doc.Free()
 
-	doc.Walk(func(n node.Node) error {
+	doc.Walk(func(n types.Node) error {
 		log.Printf(n.NodeName())
 		return nil
 	})

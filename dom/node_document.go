@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/lestrrat/go-libxml2/clib"
-	"github.com/lestrrat/go-libxml2/node"
+	"github.com/lestrrat/go-libxml2/types"
 )
 
 // CreateDocument creates a new document with version="1.0", and no encoding
@@ -38,7 +38,7 @@ func (d *Document) MakePersistent() {
 	d.mortal = false
 }
 
-func (d *Document) IsSameNode(n node.Node) bool {
+func (d *Document) IsSameNode(n types.Node) bool {
 	return d.ptr == n.Pointer()
 }
 
@@ -47,7 +47,7 @@ func (d *Document) HasChildNodes() bool {
 	return err != nil
 }
 
-func (d *Document) FirstChild() (node.Node, error) {
+func (d *Document) FirstChild() (types.Node, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (d *Document) FirstChild() (node.Node, error) {
 	return root, nil
 }
 
-func (d *Document) LastChild() (node.Node, error) {
+func (d *Document) LastChild() (types.Node, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return nil, err
@@ -65,11 +65,11 @@ func (d *Document) LastChild() (node.Node, error) {
 	return root, nil
 }
 
-func (d *Document) NextSibling() (node.Node, error) {
+func (d *Document) NextSibling() (types.Node, error) {
 	return nil, errors.New("document has no siblings")
 }
 
-func (d *Document) PreviousSibling() (node.Node, error) {
+func (d *Document) PreviousSibling() (types.Node, error) {
 	return nil, errors.New("document has no siblings")
 }
 
@@ -89,19 +89,19 @@ func (d *Document) SetNodeValue(s string) {
 //	return errors.New("cannot set node value on a document")
 }
 
-func (d *Document) OwnerDocument() (node.Document, error) {
+func (d *Document) OwnerDocument() (types.Document, error) {
 	return d, nil
 }
 
-func (d *Document) SetDocument(n node.Document) error {
+func (d *Document) SetDocument(n types.Document) error {
 	return errors.New("cannot set document on a document")
 }
 
-func (d *Document) ParentNode() (node.Node, error) {
+func (d *Document) ParentNode() (types.Node, error) {
 	return nil, errors.New("document has no parent node")
 }
 
-func (d *Document) ParseInContext(s string, n int) (node.Node, error) {
+func (d *Document) ParseInContext(s string, n int) (types.Node, error) {
 	return nil, errors.New("unimplemented")
 }
 
@@ -118,22 +118,22 @@ func (n *Document) ToString(x int, b bool) string {
 	return n.Dump(false)
 }
 
-func (d *Document) ChildNodes() (node.List, error) {
+func (d *Document) ChildNodes() (types.NodeList, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return nil, err
 	}
 
-	return []node.Node{root}, nil
+	return []types.Node{root}, nil
 }
 
-func (d *Document) Copy() (node.Node, error) {
+func (d *Document) Copy() (types.Node, error) {
 	// Unimplemented
 	return nil, errors.New("unimplemented")
 }
 
 // AddChild is a no op for Document
-func (d *Document) AddChild(n node.Node) error {
+func (d *Document) AddChild(n types.Node) error {
 	return errors.New("method AddChild is not available for Document node")
 }
 
@@ -227,7 +227,7 @@ func (d *Document) CreateTextNode(txt string) (*Text, error) {
 }
 
 // DocumentElement returns the root node of the document
-func (d *Document) DocumentElement() (node.Node, error) {
+func (d *Document) DocumentElement() (types.Node, error) {
 	n, err := clib.XMLDocumentElement(d)
 	if err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func (d *Document) DocumentElement() (node.Node, error) {
 
 // Find returns the nodes that can be selected with the
 // given xpath string
-func (d *Document) Find(xpath string) (node.XPathResult, error) {
+func (d *Document) Find(xpath string) (types.XPathResult, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return nil, err
@@ -277,7 +277,7 @@ func (d *Document) SetBaseURI(s string) {
 }
 
 // SetDocumentElement sets the document element
-func (d *Document) SetDocumentElement(n node.Node) error {
+func (d *Document) SetDocumentElement(n types.Node) error {
 	return clib.XMLSetDocumentElement(d, n)
 }
 
@@ -312,7 +312,7 @@ func (d *Document) Version() string {
 }
 
 // Walk traverses the nodes in the document
-func (d *Document) Walk(fn func(node.Node) error) error {
+func (d *Document) Walk(fn func(types.Node) error) error {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return err

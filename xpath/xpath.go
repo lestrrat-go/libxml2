@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lestrrat/go-libxml2/clib"
-	"github.com/lestrrat/go-libxml2/node"
+	"github.com/lestrrat/go-libxml2/types"
 )
 
 // Pointer returns the underlying C struct
@@ -27,10 +27,10 @@ func (x Object) Bool() bool {
 	return clib.XMLXPathObjectBool(x)
 }
 
-var WrapNodeFunc func(uintptr) (node.Node, error)
+var WrapNodeFunc func(uintptr) (types.Node, error)
 
 // NodeList returns the list of nodes included in this Object
-func (x Object) NodeList() node.List {
+func (x Object) NodeList() types.NodeList {
 	if WrapNodeFunc == nil {
 		panic("WarapNodeFunc not initialized. read XXX for details")
 	}
@@ -40,7 +40,7 @@ func (x Object) NodeList() node.List {
 		return nil
 	}
 
-	ret := make([]node.Node, len(nl))
+	ret := make([]types.Node, len(nl))
 	for i, p := range nl {
 		n, err := WrapNodeFunc(p)
 		if err != nil {
@@ -105,8 +105,8 @@ func (x *Expression) Free() {
 //
 // Note that although we are specifying `n... Node` for the argument,
 // only the first, node is considered for the context node
-func NewContext(n ...node.Node) (*Context, error) {
-	var node node.Node
+func NewContext(n ...types.Node) (*Context, error) {
+	var node types.Node
 	if len(n) > 0 {
 		node = n[0]
 	}
@@ -125,7 +125,7 @@ func (x *Context) Pointer() uintptr {
 
 // SetContextNode sets or resets the context node which
 // XPath expressions will be evaluated against.
-func (x *Context) SetContextNode(n node.Node) error {
+func (x *Context) SetContextNode(n types.Node) error {
 	return clib.XMLXPathContextSetContextNode(x, n)
 }
 
@@ -145,7 +145,7 @@ func (x *Context) Free() {
 	clib.XMLXPathFreeContext(x)
 }
 
-func (x *Context) evalXPathExpr(expr *Expression) (node.XPathResult, error) {
+func (x *Context) evalXPathExpr(expr *Expression) (types.XPathResult, error) {
 	res, err := clib.XMLEvalXPath(x, expr)
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func (x *Context) evalXPathExpr(expr *Expression) (node.XPathResult, error) {
 // If you don't really care for errors and just want to grab the
 // value of Result, checkout xpath.String(), xpath.Number(), xpath.Bool()
 // et al.
-func (x *Context) Find(s string) (node.XPathResult, error) {
+func (x *Context) Find(s string) (types.XPathResult, error) {
 	expr, err := NewExpression(s)
 	if err != nil {
 		return nil, err
@@ -175,7 +175,7 @@ func (x *Context) Find(s string) (node.XPathResult, error) {
 // You must call `Free()` on this returned object
 //
 // You MUST call Free() on the Result, or you will leak memory
-func (x *Context) FindExpr(expr *Expression) (node.XPathResult, error) {
+func (x *Context) FindExpr(expr *Expression) (types.XPathResult, error) {
 	o, err := x.evalXPathExpr(expr)
 	if err != nil {
 		return nil, err

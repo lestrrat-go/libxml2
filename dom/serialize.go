@@ -2,11 +2,11 @@ package dom
 
 import (
 	"github.com/lestrrat/go-libxml2/clib"
-	"github.com/lestrrat/go-libxml2/node"
+	"github.com/lestrrat/go-libxml2/types"
 )
 
 // Serialize produces serialization of the document, canonicalized.
-func (s C14NSerialize) Serialize(n node.Node) (string, error) {
+func (s C14NSerialize) Serialize(n types.Node) (string, error) {
 	/*
 	 * Below document is taken from libxml2 directly. Pay special attention
 	 * to the required settings when parsing the document to be canonicalized.

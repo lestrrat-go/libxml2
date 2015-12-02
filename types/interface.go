@@ -1,11 +1,12 @@
-package node
+package types
 
 import "github.com/lestrrat/go-libxml2/clib"
 
+// XPathResult defines the interface for result of calling Find().
 type XPathResult interface {
 	Bool() bool
 	Free()
-	NodeList() List
+	NodeList() NodeList
 	Number() float64
 	String() string
 	Type() clib.XPathObjectType
@@ -29,7 +30,7 @@ type Node interface {
 	ParseInContext(string, int) (Node, error)
 
 	AddChild(Node) error
-	ChildNodes() (List, error)
+	ChildNodes() (NodeList, error)
 	Copy() (Node, error)
 	OwnerDocument() (Document, error)
 	Find(string) (XPathResult, error)
@@ -61,4 +62,4 @@ type Node interface {
 	AutoFree()
 }
 
-type List []Node
+type NodeList []Node

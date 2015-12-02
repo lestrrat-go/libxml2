@@ -4,14 +4,13 @@ import (
 	"errors"
 
 	"github.com/lestrrat/go-libxml2/clib"
-	"github.com/lestrrat/go-libxml2/node"
+	"github.com/lestrrat/go-libxml2/types"
 	"github.com/lestrrat/go-libxml2/xpath"
 )
 
-func init () {
+func init() {
 	xpath.WrapNodeFunc = WrapNode
 }
-
 
 func WrapDocument(n uintptr) *Document {
 	return &Document{
@@ -60,7 +59,7 @@ func wrapXMLNode(n uintptr) *XMLNode {
 // WrapNode is a function created with the sole purpose of allowing
 // go-libxml2 consumers that can generate a C.xmlNode pointer to
 // create libxml2.Node types, e.g. go-xmlsec.
-func WrapNode(n uintptr) (node.Node, error) {
+func WrapNode(n uintptr) (types.Node, error) {
 	switch clib.XMLGetNodeTypeRaw(n) {
 	case clib.AttributeNode:
 		return wrapAttribute(n), nil
@@ -72,4 +71,3 @@ func WrapNode(n uintptr) (node.Node, error) {
 		return nil, errors.New("unknown node")
 	}
 }
-

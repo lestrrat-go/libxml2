@@ -2,7 +2,7 @@ package xpath
 
 import (
 	"github.com/lestrrat/go-libxml2/clib"
-	"github.com/lestrrat/go-libxml2/node"
+	"github.com/lestrrat/go-libxml2/types"
 )
 
 const (
@@ -36,4 +36,4 @@ type Expression struct {
 	expr string
 }
 
-type Result node.XPathResult
+type Result types.XPathResult

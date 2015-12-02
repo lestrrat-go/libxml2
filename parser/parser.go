@@ -7,7 +7,7 @@ import (
 
 	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/lestrrat/go-libxml2/clib"
-	"github.com/lestrrat/go-libxml2/node"
+	"github.com/lestrrat/go-libxml2/types"
 )
 
 const _OptionName = "RecoverNoEntDTDLoadDTDAttrDTDValidNoErrorNoWarningPedanticNoBlanksSAX1XIncludeNoNetNoDictNscleanNoCDATANoXIncNodeCompactOld10NoBaseFixHugeOldSAXIgnoreEncBigLines"
@@ -87,12 +87,12 @@ func New(opts ...Option) *Parser {
 }
 
 // Parse parses XML from the given byte buffer
-func (p *Parser) Parse(buf []byte) (node.Document, error) {
+func (p *Parser) Parse(buf []byte) (types.Document, error) {
 	return p.ParseString(string(buf))
 }
 
 // ParseString parses XML from the given string
-func (p *Parser) ParseString(s string) (node.Document, error) {
+func (p *Parser) ParseString(s string) (types.Document, error) {
 	ctx, err := NewCtxt(s, p.Options)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func (p *Parser) ParseString(s string) (node.Document, error) {
 }
 
 // ParseReader parses XML from the given io.Reader
-func (p *Parser) ParseReader(in io.Reader) (node.Document, error) {
+func (p *Parser) ParseReader(in io.Reader) (types.Document, error) {
 	buf := &bytes.Buffer{}
 	if _, err := buf.ReadFrom(in); err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (ctx Ctxt) WellFormed() bool {
 }
 
 // Document returns the resulting document after parsing
-func (ctx Ctxt) Document() (node.Document, error) {
+func (ctx Ctxt) Document() (types.Document, error) {
 	docptr := clib.XMLParserCtxtDocument(ctx)
 	if docptr != 0 {
 		return dom.WrapDocument(docptr), nil
