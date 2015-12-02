@@ -170,22 +170,12 @@ func (x *Context) SetContextNode(n node.Node) error {
 // Exists compiles and evaluates the xpath expression, and returns
 // true if a corresponding node exists
 func (x *Context) Exists(xpath string) bool {
-	res := x.FindValue(xpath)
-	defer res.Free()
-
-	if !res.Valid() {
+	list := NodeList(x.FindValue(xpath))
+	if list == nil {
 		return false
 	}
 
-	obj := res.(*Object)
-
-	switch obj.Type() {
-	case NodeSetType:
-		return clib.XMLXPathObjectNodeListLen(obj) > 0
-	default:
-		panic("unimplemented")
-	}
-	return false
+	return len(list) > 0
 }
 
 // Free releases the underlying C structs in the XPath
@@ -228,34 +218,30 @@ func (x *Context) evalXPathExpr(expr *Expression) (Result, error) {
 // in x. It returns the resulting data evaluated to an Result.
 //
 // You MUST call Free() on the Result, or you will leak memory
-func (x *Context) FindValue(s string) Result {
+// If you don't really care for errors and just want to grab the
+// value of Result, checkout xpath.String(), xpath.Number(), xpath.Bool()
+// et al.
+func (x *Context) FindValue(s string) (Result, error) {
 	expr, err := NewExpression(s)
 	if err != nil {
-		x.err = err
-		return InvalidObject{}
+		return nil, err
 	}
 	defer expr.Free()
 
 	return x.FindValueExpr(expr)
 }
 
-// LastError returns the error from the last operation
-func (x Context) LastError() error {
-	return x.err
-}
-
 // FindValueExpr evaluates the given XPath expression and returns an Object.
 // You must call `Free()` on this returned object
 //
 // You MUST call Free() on the Result, or you will leak memory
-func (x *Context) FindValueExpr(expr *Expression) Result {
+func (x *Context) FindValueExpr(expr *Expression) (Result, error) {
 	o, err := x.evalXPathExpr(expr)
 	if err != nil {
-		x.err = err
-		return InvalidObject{}
+		return nil, err
 	}
 	//	res.ForceLiteral = true
-	return o
+	return o, err
 }
 
 // LookupNamespaceURI looksup the namespace URI associated with prefix

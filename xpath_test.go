@@ -67,19 +67,8 @@ func TestXPathContextExpression_Number(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	res := ctx.FindValue("1+1")
-	if !assert.True(t, res.Valid(), "Failed to evaluate XPath expression: %s", ctx.LastError()) {
+	if !assert.Equal(t, 2, xpath.Number(ctx.FindValue("1+1")), "XPath evaluates to 2") {
 		return
-	}
-	defer res.Free()
-
-	switch res.Type() {
-	case xpath.NumberType:
-		if res.Number() != 2 {
-			t.Errorf("Expected result number to be 2, got %f", res.Number())
-		}
-	default:
-		t.Errorf("Expected type to be XPathObjectNumber, got %s", res.Type())
 	}
 }
 
@@ -91,19 +80,8 @@ func TestXPathContextExpression_Boolean(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	res := ctx.FindValue("1=1")
-	if !assert.True(t, res.Valid(), "Failed to evaluate XPath expression: %s", ctx.LastError()) {
+	if !assert.True(t, xpath.Bool(ctx.FindValue("1=1")), "XPath evaluates to true") {
 		return
-	}
-	defer res.Free()
-
-	switch res.Type() {
-	case xpath.BooleanType:
-		if !res.Bool() {
-			t.Errorf("Expected result number to be false, got %s", res.Bool())
-		}
-	default:
-		t.Errorf("Expected type to be XPathObjectBoolean, got %s", res.Type())
 	}
 }
 
@@ -126,20 +104,8 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 	}
 	defer ctx.Free()
 
-	res := ctx.FindValue("/foo/bar")
-	if !assert.True(t, res.Valid(), "Failed to evaluate XPath expression: %s", ctx.LastError()) {
+	if !assert.Equal(t, "baz", xpath.String(ctx.FindValue("/foo/bar")), "XPath evaluates to 'baz'") {
 		return
-	}
-	defer res.Free()
-
-	switch res.Type() {
-	case xpath.NodeSetType:
-		s := res.String()
-		if !assert.Equal(t, "baz", s, "results match") {
-			return
-		}
-	default:
-		t.Errorf("Expected type to be XPathObjectNodeSet, got %s", res.Type())
 	}
 }
 
