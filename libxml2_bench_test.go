@@ -11,6 +11,7 @@ import (
 
 	"github.com/lestrrat/go-libxml2"
 	"github.com/lestrrat/go-libxml2/dom"
+	"github.com/lestrrat/go-libxml2/xpath"
 	"gopkg.in/xmlpath.v1"
 )
 
@@ -50,7 +51,7 @@ func BenchmarkLibxml2Xmlpath(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		nodes, _ := doc.FindNodes(`//loc`)
+		nodes := xpath.NodeList(doc.FindValue(`//loc`))
 		for _, n := range nodes {
 			_ = n
 		}

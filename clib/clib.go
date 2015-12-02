@@ -178,6 +178,18 @@ import (
 	"github.com/lestrrat/go-libxml2/internal/debug"
 )
 
+const _XPathObjectTypeName = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberXPathStringXPathPointXPathRangeXPathLocationSetXPathUSersXPathXsltTree"
+
+var _XPathObjectTypeIndex = [...]uint8{0, 14, 26, 38, 49, 60, 70, 80, 96, 106, 119}
+
+// String returns the stringified version of XPathObjectType
+func (i XPathObjectType) String() string {
+	if i < 0 || i+1 >= XPathObjectType(len(_XPathObjectTypeIndex)) {
+		return fmt.Sprintf("XPathObjectType(%d)", i)
+	}
+	return _XPathObjectTypeName[_XPathObjectTypeIndex[i]:_XPathObjectTypeIndex[i+1]]
+}
+
 func validDocumentPtr(doc PtrSource) (*C.xmlDoc, error) {
 	if doc == nil {
 		return nil, ErrInvalidDocument

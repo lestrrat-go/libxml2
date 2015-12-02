@@ -3,6 +3,7 @@ package libxml2
 import (
 	"testing"
 
+	"github.com/lestrrat/go-libxml2/xpath"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,11 +23,7 @@ func TestParseHTML(t *testing.T) {
 		return
 	}
 
-	nodes, err := doc.FindNodes("/html/body/h1")
-	if err != nil {
-		t.Errorf("Failed to evaluate xpath: %s", err)
-		return
-	}
+	nodes := xpath.NodeList(doc.FindValue("/html/body/h1"))
 	if len(nodes) != 1 {
 		t.Errorf("Could not find matching nodes")
 		return

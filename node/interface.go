@@ -2,6 +2,16 @@ package node
 
 import "github.com/lestrrat/go-libxml2/clib"
 
+type XPathResult interface {
+	Bool() bool
+	Free()
+	NodeList() List
+	Number() float64
+	String() string
+	Type() clib.XPathObjectType
+}
+
+
 type Document interface {
 	Node
 	DocumentElement() (Node, error)
@@ -22,7 +32,7 @@ type Node interface {
 	ChildNodes() (List, error)
 	Copy() (Node, error)
 	OwnerDocument() (Document, error)
-	FindNodes(string) (List, error)
+	FindValue(string) (XPathResult, error)
 	FirstChild() (Node, error)
 	Free()
 	HasChildNodes() bool
@@ -52,5 +62,3 @@ type Node interface {
 }
 
 type List []Node
-
-

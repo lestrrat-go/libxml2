@@ -6,19 +6,18 @@ import (
 )
 
 const (
-	UndefinedType   ObjectType = ObjectType(clib.XPathUndefinedType)
-	NodeSetType                = ObjectType(clib.XPathNodeSetType)
-	BooleanType                = ObjectType(clib.XPathBooleanType)
-	NumberType                 = ObjectType(clib.XPathNumberType)
-	StringType                 = ObjectType(clib.XPathStringType)
-	PointType                  = ObjectType(clib.XPathPointType)
-	RangeType                  = ObjectType(clib.XPathRangeType)
-	LocationSetType            = ObjectType(clib.XPathLocationSetType)
-	UsersType                  = ObjectType(clib.XPathUsersType)
-	XSLTTreeType               = ObjectType(clib.XPathXSLTTreeType)
+	UndefinedType   = clib.XPathUndefinedType
+	NodeSetType     = clib.XPathNodeSetType
+	BooleanType     = clib.XPathBooleanType
+	NumberType      = clib.XPathNumberType
+	StringType      = clib.XPathStringType
+	PointType       = clib.XPathPointType
+	RangeType       = clib.XPathRangeType
+	LocationSetType = clib.XPathLocationSetType
+	UsersType       = clib.XPathUsersType
+	XSLTTreeType    = clib.XPathXSLTTreeType
 )
 
-type ObjectType clib.XPathObjectType
 type Object struct {
 	ptr uintptr // *C.xmlObject
 	// This flag controls if the StringValue should use the *contents* (literal value)
@@ -37,13 +36,4 @@ type Expression struct {
 	expr string
 }
 
-type Result interface {
-	Bool() bool
-	Free()
-	NodeList() node.List
-	Number() float64
-	String() string
-	Type() ObjectType
-}
-
-
+type Result node.XPathResult

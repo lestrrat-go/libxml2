@@ -235,14 +235,14 @@ func (d *Document) DocumentElement() (node.Node, error) {
 	return WrapNode(n)
 }
 
-// FindNodes returns the nodes that can be selected with the
+// FindValue returns the nodes that can be selected with the
 // given xpath string
-func (d *Document) FindNodes(xpath string) (node.List, error) {
+func (d *Document) FindValue(xpath string) (node.XPathResult, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return nil, err
 	}
-	return root.FindNodes(xpath)
+	return root.FindValue(xpath)
 }
 
 // Encoding returns the d

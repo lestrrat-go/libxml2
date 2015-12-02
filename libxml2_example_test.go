@@ -65,11 +65,7 @@ func ExampleHTML() {
 		return nil
 	})
 
-	nodes, err := doc.FindNodes(`//div[@id="menu"]/a`)
-	if err != nil {
-		panic("failed to evaluate xpath: " + err.Error())
-	}
-
+	nodes := xpath.NodeList(doc.FindValue(`//div[@id="menu"]/a`))
 	for i := 0; i < len(nodes); i++ {
 		log.Printf("Found node: %s", nodes[i].NodeName())
 	}
