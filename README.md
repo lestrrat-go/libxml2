@@ -11,8 +11,48 @@ Interface to libxml2, with DOM interface.
 * This library should be considered alpha grade. API may still change.
 * Much of commonly used functionalities from libxml2 that *I* use are there already, and are known to be functional
 
-Having said the above, AFAIK this is the most complete Go wrapper for libxml2 as of this writing
-(Nov, 2015).
+## Package Layout:
+
+| Name    | Description                                                 |
+|---------|-------------------------------------------------------------|
+| libxml2 | Globally available utility functions, such as `ParseString` |
+| types   | Common data types, such as `types.Node`                     |
+| parser  | Parser routines                                             |
+| dom     | DOM-like manipulation of XML document/nodes                 |
+| xpath   | XPath related tools                                         |
+| xsd     | XML Schema related tools                                    |
+| clib    | Wrapper around C libxml2 library - DO NOT TOUCH IF UNSURE   |
+
+## Features
+
+Create XML documents using DOM-like interface:
+
+```go
+  d := dom.CreateDocument()
+  e, err := d.CreateElement("foo")
+  if err != nil {
+    println(err)
+    return
+  }
+  d.SetDocumentElement(e)
+  ...
+```
+
+Parse documents:
+
+```go
+  d, err := libxml2.ParseString(xmlstring)
+  if err != nil {
+    println(err)
+    return
+  }
+```
+
+Use XPath to extract node values:
+
+```go
+  text := xpath.String(node.Find("//xpath/expression"))
+```
 
 ## Examples
 
