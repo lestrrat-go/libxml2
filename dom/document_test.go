@@ -3,8 +3,9 @@ package dom_test
 import (
 	"testing"
 
-	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/lestrrat/go-libxml2/clib"
+	"github.com/lestrrat/go-libxml2/dom"
+	"github.com/lestrrat/go-libxml2/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,7 +51,7 @@ func TestDocumentAttributes(t *testing.T) {
 	}
 }
 
-func checkElement(t *testing.T, e *dom.Element, assertName, testCase string) bool {
+func checkElement(t *testing.T, e types.Element, assertName, testCase string) bool {
 	if e == nil {
 		t.Errorf("%s: Element is nil", testCase)
 		return false

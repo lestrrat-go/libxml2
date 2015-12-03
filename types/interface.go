@@ -15,9 +15,36 @@ type XPathResult interface {
 
 type Document interface {
 	Node
+	CreateElement(string) (Element, error)
+	CreateElementNS(string, string) (Element, error)
 	DocumentElement() (Node, error)
 	Dump(bool) string
 	Encoding() string
+}
+
+type Attribute interface {
+	Node
+	Value() string
+}
+
+type Element interface {
+	Node
+	AppendText(string) error
+	Attributes() ([]Attribute, error)
+	GetAttribute(string) (Attribute, error)
+	GetNamespaces() ([]Namespace, error)
+	LocalName() string
+	NamespaceURI() string
+	Prefix() string
+	RemoveAttribute(string) error
+	SetAttribute(string, string) error
+	SetNamespace(string, string, ...bool) error
+}
+
+type Namespace interface {
+	Node
+	Prefix() string
+	URI() string
 }
 
 // Node defines the basic DOM interface
@@ -43,6 +70,8 @@ type Node interface {
 	// and Attribute nodes. String() will return the XML stringification of
 	// these, but Literal() will return the "value" associated with them.
 	Literal() (string, error)
+	LookupNamespacePrefix(string) (string, error)
+	LookupNamespaceURI(string) (string, error)
 	NextSibling() (Node, error)
 	NodeName() string
 	NodeType() clib.XMLNodeType

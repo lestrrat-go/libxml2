@@ -39,3 +39,11 @@ func (n NodeList) Literal() (string, error) {
 	}
 	return buf.String(), nil
 }
+
+func (n NodeList) First() Node {
+	if n == nil {
+		return nil
+	}
+
+	return n[0]
+}

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/lestrrat/go-libxml2/clib"
+	"github.com/lestrrat/go-libxml2/types"
 )
 
 // SetNamespace sets up a new namespace on the given node.
@@ -71,7 +72,7 @@ func (n *Element) SetAttribute(name, value string) error {
 }
 
 // GetAttribute retrieves the value of an attribute
-func (n *Element) GetAttribute(name string) (*Attribute, error) {
+func (n *Element) GetAttribute(name string) (types.Attribute, error) {
 	attrNode, err := clib.XMLElementGetAttributeNode(n, name)
 	if err != nil {
 		return nil, err
@@ -80,12 +81,12 @@ func (n *Element) GetAttribute(name string) (*Attribute, error) {
 }
 
 // Attributes returns a list of attributes on a node
-func (n *Element) Attributes() ([]*Attribute, error) {
+func (n *Element) Attributes() ([]types.Attribute, error) {
 	attrs, err := clib.XMLElementAttributes(n)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*Attribute, len(attrs))
+	ret := make([]types.Attribute, len(attrs))
 	for i, attr := range attrs {
 		ret[i] = wrapAttribute(attr)
 	}
@@ -117,12 +118,12 @@ func (n *Element) RemoveAttribute(name string) error {
 // objects which allocates C structures for each namespace.
 // Therefore you MUST free the structures, or otherwise you
 // WILL leak memory.
-func (n *Element) GetNamespaces() ([]*Namespace, error) {
+func (n *Element) GetNamespaces() ([]types.Namespace, error) {
 	list, err := clib.XMLElementNamespaces(n)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*Namespace, len(list))
+	ret := make([]types.Namespace, len(list))
 	for i, nsptr := range list {
 		ret[i] = wrapNamespace(nsptr)
 	}

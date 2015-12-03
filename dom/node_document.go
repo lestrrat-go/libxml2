@@ -178,7 +178,7 @@ func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
 }
 
 // CreateElement creates a new element node
-func (d *Document) CreateElement(name string) (*Element, error) {
+func (d *Document) CreateElement(name string) (types.Element, error) {
 	ptr, err := clib.XMLCreateElement(d, name)
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (d *Document) CreateElement(name string) (*Element, error) {
 }
 
 // CreateElementNS creates a new element node in the given XML namespace
-func (d *Document) CreateElementNS(nsuri, name string) (*Element, error) {
+func (d *Document) CreateElementNS(nsuri, name string) (types.Element, error) {
 	ptr, err := clib.XMLCreateElementNS(d, nsuri, name)
 	if err != nil {
 		return nil, err
@@ -298,3 +298,22 @@ func (d *Document) Walk(fn func(types.Node) error) error {
 	walk(root, fn)
 	return nil
 }
+
+func (d *Document) LookupNamespacePrefix(href string) (string, error) {
+	root, err := d.DocumentElement()
+	if err != nil {
+		return "", err
+	}
+
+	return root.LookupNamespacePrefix(href)
+}
+
+func (d *Document) LookupNamespaceURI(prefix string) (string, error) {
+	root, err := d.DocumentElement()
+	if err != nil {
+		return "", err
+	}
+
+	return root.LookupNamespaceURI(prefix)
+}
+

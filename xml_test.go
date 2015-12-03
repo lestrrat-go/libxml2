@@ -7,6 +7,7 @@ import (
 
 	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/lestrrat/go-libxml2/parser"
+	"github.com/lestrrat/go-libxml2/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -61,7 +62,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 		return
 	}
 
-	var c *dom.Element
+	var c types.Element
 	for _, name := range []string{"a", "b", "c"} {
 		child, err := d.CreateElementNS("http://children", "child:"+name)
 		if !assert.NoError(t, err, "CreateElementNS should succeed") {
