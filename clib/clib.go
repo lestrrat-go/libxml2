@@ -412,7 +412,7 @@ func xmlMakeSafeName(n string) (*C.xmlChar, error) {
 		for p := n; len(p) > 0; {
 			r, n := utf8.DecodeRuneInString(p)
 			p = p[n:]
-			if !unicode.IsLetter(r) && r != '_' && r != ':' {
+			if !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '_' && r != ':' {
 				return nil, ErrInvalidNodeName
 			}
 		}
