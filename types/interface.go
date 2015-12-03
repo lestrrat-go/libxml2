@@ -2,19 +2,22 @@ package types
 
 import "github.com/lestrrat/go-libxml2/clib"
 
-type PointerSource interface {
-	// Pointer() returns the underlying C pointer. This is an exported
+// PtrSource defines the interface for things that is backed by
+// a C backend
+type PtrSource interface {
+	// Pointer returns the underlying C pointer. This is an exported
 	// method to allow various internal go-libxml2 packages to interoperate
 	// on each other. End users are STRONGLY advised not to touch this
 	// method or its return values
 	Pointer() uintptr
 
+	// Free releases the underlying resources
 	Free()
 }
 
 // XPathExpression defines the interface for XPath expression
 type XPathExpression interface {
-	PointerSource
+	PtrSource
 }
 
 // XPathResult defines the interface for result of calling Find().
@@ -67,7 +70,7 @@ type Namespace interface {
 
 // Node defines the basic DOM interface
 type Node interface {
-	PointerSource
+	PtrSource
 
 	ParseInContext(string, int) (Node, error)
 

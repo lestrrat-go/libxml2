@@ -40,10 +40,15 @@ func (n NodeList) Literal() (string, error) {
 	return buf.String(), nil
 }
 
+// First returns the first node in the list, or nil otherwise.
 func (n NodeList) First() Node {
 	if n == nil {
 		return nil
 	}
 
-	return n[0]
+	if len(n) > 0 {
+		return n[0]
+	}
+
+	return nil
 }
