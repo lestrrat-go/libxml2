@@ -201,8 +201,9 @@ MY_xmlCreateElementNS(xmlDoc *doc, xmlChar *nsuri, xmlChar *name) {
 	}
 
 	if (local != name) {
-		prefix = (xmlChar *) malloc(sizeof(xmlChar) * (local - name) - 1);
+		prefix = (xmlChar *) malloc(sizeof(xmlChar) * (local - name));
 		memcpy(prefix, name, local - name - 1);
+		prefix[(local - name - 1)] = '\0';
 	}
 
 	xmlNode *root = xmlDocGetRootElement(doc);
