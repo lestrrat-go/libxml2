@@ -3,6 +3,7 @@ package parser
 import "errors"
 
 var (
+	// ErrMalformedXML is returned when the XML source is malformed
 	ErrMalformedXML = errors.New("malformed XML")
 )
 

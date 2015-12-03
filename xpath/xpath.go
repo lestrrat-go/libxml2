@@ -159,6 +159,8 @@ func (x *Context) Free() {
 	clib.XMLXPathFreeContext(x)
 }
 
+// EvalXPathExpr evaluates the given compiled XPath expression, and
+// returns the result as an object.
 func (x *Context) EvalXPathExpr(expr types.XPathExpression) (types.XPathResult, error) {
 	res, err := clib.XMLEvalXPath(x, expr)
 	if err != nil {

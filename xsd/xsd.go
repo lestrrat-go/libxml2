@@ -33,6 +33,7 @@ func Parse(buf []byte) (*Schema, error) {
 	return &Schema{ptr: sptr}, nil
 }
 
+// Pointer returns the underlying C struct
 func (s *Schema) Pointer() uintptr {
 	return s.ptr
 }

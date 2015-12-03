@@ -23,6 +23,7 @@ func (d *Document) Pointer() uintptr {
 	return d.ptr
 }
 
+// AutoFree calls Free() if the document is moral.
 func (d *Document) AutoFree() {
 	if !d.mortal {
 		return
@@ -30,23 +31,28 @@ func (d *Document) AutoFree() {
 	d.Free()
 }
 
+// MakeMortal sets the flag
 func (d *Document) MakeMortal() {
 	d.mortal = true
 }
 
+// MakePersistent unsets the flag
 func (d *Document) MakePersistent() {
 	d.mortal = false
 }
 
+// IsSameNode checks if the underlying C pointer points to the same C struct
 func (d *Document) IsSameNode(n types.Node) bool {
 	return d.ptr == n.Pointer()
 }
 
+// HasChildNodes returns true if the document node is available
 func (d *Document) HasChildNodes() bool {
 	_, err := d.DocumentElement()
 	return err != nil
 }
 
+// FirstChild returns the document element
 func (d *Document) FirstChild() (types.Node, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
@@ -56,6 +62,7 @@ func (d *Document) FirstChild() (types.Node, error) {
 	return root, nil
 }
 
+// LastChild returns the document element
 func (d *Document) LastChild() (types.Node, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
@@ -65,59 +72,72 @@ func (d *Document) LastChild() (types.Node, error) {
 	return root, nil
 }
 
+// NextSibling always returns nil for Document
 func (d *Document) NextSibling() (types.Node, error) {
 	return nil, errors.New("document has no siblings")
 }
 
+// PreviousSibling always returns nil for Document
 func (d *Document) PreviousSibling() (types.Node, error) {
 	return nil, errors.New("document has no siblings")
 }
 
+// NodeName always returns an empty string for Document
 func (d *Document) NodeName() string {
 	return ""
 }
 
+// SetNodeName is a no op for document
 func (d *Document) SetNodeName(s string) {
 //	return errors.New("cannot set node name on a document")
 }
 
+// NodeValue always returns an empty string for Document
 func (d *Document) NodeValue() string {
 	return ""
 }
 
+// SetNodeValue is a no op for document
 func (d *Document) SetNodeValue(s string) {
 //	return errors.New("cannot set node value on a document")
 }
 
+// OwnerDocument always returns the document itself
 func (d *Document) OwnerDocument() (types.Document, error) {
 	return d, nil
 }
 
+// SetDocument always returns an error for a document
 func (d *Document) SetDocument(n types.Document) error {
 	return errors.New("cannot set document on a document")
 }
 
+// ParentNode always returns an error for a document
 func (d *Document) ParentNode() (types.Node, error) {
 	return nil, errors.New("document has no parent node")
 }
 
+// ParseInContext is currently unimplemented
 func (d *Document) ParseInContext(s string, n int) (types.Node, error) {
 	return nil, errors.New("unimplemented")
 }
 
+// Literal is currently just an alias to Dump(false)
 func (d *Document) Literal() (string, error) {
 	return d.Dump(false), nil
 }
 
 // TextContent returns the text content
-func (n *Document) TextContent() string {
+func (d *Document) TextContent() string {
 	return clib.XMLTextContent(n)
 }
 
-func (n *Document) ToString(x int, b bool) string {
+// ToString is currently just an alias to Dump(false)
+func (d *Document) ToString(x int, b bool) string {
 	return n.Dump(false)
 }
 
+// ChildNodes returns the document element
 func (d *Document) ChildNodes() (types.NodeList, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
@@ -127,6 +147,7 @@ func (d *Document) ChildNodes() (types.NodeList, error) {
 	return []types.Node{root}, nil
 }
 
+// Copy is currently unimplemented
 func (d *Document) Copy() (types.Node, error) {
 	// Unimplemented
 	return nil, errors.New("unimplemented")
@@ -299,6 +320,8 @@ func (d *Document) Walk(fn func(types.Node) error) error {
 	return nil
 }
 
+// LookupNamespacePrefix looks for a namespace prefix that matches
+// the given namespace URI
 func (d *Document) LookupNamespacePrefix(href string) (string, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
@@ -308,6 +331,8 @@ func (d *Document) LookupNamespacePrefix(href string) (string, error) {
 	return root.LookupNamespacePrefix(href)
 }
 
+// LookupNamespaceURI looks for a namespace uri that matches
+// the given namespace prefix
 func (d *Document) LookupNamespaceURI(prefix string) (string, error) {
 	root, err := d.DocumentElement()
 	if err != nil {

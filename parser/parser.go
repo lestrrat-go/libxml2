@@ -124,6 +124,7 @@ func (p *Parser) ParseReader(in io.Reader) (types.Document, error) {
 	return p.ParseString(buf.String())
 }
 
+// NewCtxt creates a new Parser context
 func NewCtxt(s string, o Option) (*Ctxt, error) {
 	ctxptr, err := clib.XMLCreateMemoryParserCtxt(s, int(o))
 	if err != nil {
@@ -132,6 +133,7 @@ func NewCtxt(s string, o Option) (*Ctxt, error) {
 	return &Ctxt{ptr: ctxptr}, nil
 }
 
+// Pointer returns the underlying C struct
 func (ctx Ctxt) Pointer() uintptr {
 	return ctx.ptr
 }
