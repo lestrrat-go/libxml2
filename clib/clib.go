@@ -23,6 +23,7 @@ package clib
 #cgo pkg-config: libxml-2.0
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <libxml/HTMLparser.h>
 #include <libxml/HTMLtree.h>
 #include <libxml/globals.h>
@@ -33,7 +34,7 @@ package clib
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/c14n.h>
-
+#include <libxml/xmlschemas.h>
 
 static inline void MY_nilErrorHandler(void *ctx, const char *msg, ...) {}
 
@@ -246,6 +247,83 @@ CLEANUP:
 	}
 
 	return node;
+}
+
+#define GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE 32
+typedef struct go_libxml2_errwarn_accumulator {
+	char *errors[GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE];
+	char *warnings[GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE];
+	int erridx;
+	int warnidx;
+} go_libxml2_errwarn_accumulator;
+
+static
+go_libxml2_errwarn_accumulator*
+MY_createErrWarnAccumulator() {
+	int i;
+	go_libxml2_errwarn_accumulator *ctx;
+	ctx = (go_libxml2_errwarn_accumulator *) malloc(sizeof(go_libxml2_errwarn_accumulator));
+	for (i = 0; i < GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE; i++) {
+		ctx->errors[i] = NULL;
+		ctx->warnings[i] = NULL;
+	}
+	ctx->erridx = 0;
+	ctx->warnidx = 0;
+	return ctx;
+}
+
+static
+void
+MY_freeErrWarnAccumulator(go_libxml2_errwarn_accumulator* ctx) {
+	int i = 0;
+	for (i = 0; i < GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE; i++) {
+		if (ctx->errors[i] != NULL) {
+			free(ctx->errors[i]);
+		}
+		if (ctx->warnings[i] != NULL) {
+			free(ctx->errors[i]);
+		}
+	}
+	free(ctx);
+}
+
+static
+void
+MY_accumulateErr(void *ctx, const char *msg, ...) {
+  char buf[1024];
+  va_list args;
+	go_libxml2_errwarn_accumulator *accum;
+	int len;
+
+	accum = (go_libxml2_errwarn_accumulator *) ctx;
+	if (accum->erridx >= GO_LIBXML2_ERRWARN_ACCUMULATOR_SIZE) {
+		return;
+	}
+
+  va_start(args, msg);
+  len = vsnprintf(buf, sizeof(buf), msg, args);
+  va_end(args);
+
+	if (len == 0) {
+		return;
+	}
+
+	char *out = (char *) calloc(sizeof(char), len);
+	if (buf[len-1] == '\n') {
+		// don't want newlines in my error values
+		buf[len-1] = '\0';
+		len--;
+	}
+	memcpy(out, buf, len);
+
+  int i = accum->erridx++;
+	accum->errors[i] = out;
+}
+
+static
+void
+MY_setErrWarnAccumulator(xmlSchemaValidCtxtPtr ctxt, go_libxml2_errwarn_accumulator *accum) {
+	xmlSchemaSetValidErrors(ctxt, MY_accumulateErr, NULL, accum);
 }
 */
 import "C"
@@ -1757,4 +1835,77 @@ func XMLTextData(n PtrSource) string {
 		return ""
 	}
 	return xmlCharToString(nptr.content)
+}
+
+func XMLSchemaParse(buf []byte) (uintptr, error) {
+	parserCtx := C.xmlSchemaNewMemParserCtxt(
+		(*C.char)(unsafe.Pointer(&buf[0])),
+		C.int(len(buf)),
+	)
+	if parserCtx == nil {
+		return 0, errors.New("failed to create parser")
+	}
+	defer C.xmlSchemaFreeParserCtxt(parserCtx)
+
+	s := C.xmlSchemaParse(parserCtx)
+	if s == nil {
+		return 0, errors.New("failed to parse schema")
+	}
+
+	return uintptr(unsafe.Pointer(s)), nil
+}
+
+func XMLSchemaValidateDocument(schema PtrSource, document PtrSource) []error {
+	sptr, err := validSchemaPtr(schema)
+	if err != nil {
+		return []error{err}
+	}
+
+	dptr, err := validDocumentPtr(document)
+	if err != nil {
+		return []error{err}
+	}
+
+	ctx := C.xmlSchemaNewValidCtxt(sptr)
+	if ctx == nil {
+		return []error{errors.New("failed to build validator")}
+	}
+	defer C.xmlSchemaFreeValidCtxt(ctx)
+
+	accum := C.MY_createErrWarnAccumulator()
+	defer C.MY_freeErrWarnAccumulator(accum)
+
+	C.MY_setErrWarnAccumulator(ctx, accum)
+
+	if C.xmlSchemaValidateDoc(ctx, dptr) == 0 {
+		return nil
+	}
+
+	errs := make([]error, accum.erridx)
+	for i := 0; i < int(accum.erridx); i++ {
+		errs[i] = errors.New(C.GoString(accum.errors[i]))
+	}
+	return errs
+}
+
+func validSchemaPtr(schema PtrSource) (*C.xmlSchema, error) {
+	if schema == nil {
+		return nil, ErrInvalidSchema
+	}
+	sptr := schema.Pointer()
+	if sptr == 0 {
+		return nil, ErrInvalidSchema
+	}
+
+	return (*C.xmlSchema)(unsafe.Pointer(sptr)), nil
+}
+
+func XMLSchemaFree(s PtrSource) error {
+	sptr, err := validSchemaPtr(s)
+	if err != nil {
+		return err
+	}
+
+	C.xmlSchemaFree(sptr)
+	return nil
 }

@@ -45,16 +45,35 @@ const (
 )
 
 var (
-	ErrInvalidAttribute              = errors.New("invalid attribute")
-	ErrInvalidArgument               = errors.New("invalid argument")
-	ErrInvalidDocument               = errors.New("invalid document")
-	ErrInvalidParser                 = errors.New("invalid parser")
-	ErrInvalidNamespace              = errors.New("invalid namespace")
-	ErrInvalidNode                   = errors.New("invalid node")
-	ErrInvalidNodeName               = errors.New("invalid node name")
-	ErrInvalidXPathContext           = errors.New("invalid xpath context")
-	ErrInvalidXPathExpression        = errors.New("invalid xpath expression")
-	ErrInvalidXPathObject            = errors.New("invalid xpath object")
+	// ErrInvalidAttribute is returned when the Attribute struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidAttribute = errors.New("invalid attribute")
+	ErrInvalidArgument  = errors.New("invalid argument")
+	// ErrInvalidDocument is returned when the Document struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidDocument = errors.New("invalid document")
+	// ErrInvalidParser is returned when the Parser struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidParser = errors.New("invalid parser")
+	// ErrInvalidNamespace is returned when the Namespace struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidNamespace = errors.New("invalid namespace")
+	// ErrInvalidNode is returned when the Node struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidNode     = errors.New("invalid node")
+	ErrInvalidNodeName = errors.New("invalid node name")
+	// ErrInvalidXPathContext is returned when the XPathContext struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidXPathContext = errors.New("invalid xpath context")
+	// ErrInvalidXPathExpression is returned when the XPathExpression struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidXPathExpression = errors.New("invalid xpath expression")
+	// ErrInvalidXPathObject is returned when the XPathObject struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidXPathObject = errors.New("invalid xpath object")
+	// ErrInvalidSchema is returned when the Schema struct (probably
+	// the pointer to the underlying C struct is not valid)
+	ErrInvalidSchema                 = errors.New("invalid schema")
 	ErrNodeNotFound                  = errors.New("node not found")
 	ErrXPathEmptyResult              = errors.New("empty xpath result")
 	ErrXPathCompileFailure           = errors.New("xpath compilation failed")
