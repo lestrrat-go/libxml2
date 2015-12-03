@@ -64,6 +64,7 @@ import (
   "net/http"
 
   "github.com/lestrrat/go-libxml2"
+  "github.com/lestrrat/go-libxml2/parser"
   "github.com/lestrrat/go-libxml2/types"
   "github.com/lestrrat/go-libxml2/xpath"
 )
@@ -74,7 +75,7 @@ func ExmapleXML() {
     panic("failed to get blog.golang.org: " + err.Error())
   }
 
-  p := libxml2.NewParser()
+  p := parser.New()
   doc, err := p.ParseReader(res.Body)
   defer res.Body.Close()
 
