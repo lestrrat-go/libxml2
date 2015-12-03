@@ -163,11 +163,6 @@ MY_test_node_name( xmlChar * name )
 	return(1);
 }
 
-// Because Go can't do pointer airthmetics...
-static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
-	return nodes[i];
-}
-
 // optimization
 static xmlNode*
 MY_xmlCreateElement(xmlDoc *doc, xmlChar *name) {
@@ -256,6 +251,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -1064,7 +1060,7 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 		return 0, err
 	}
 
-	rootptr :=  C.xmlDocGetRootElement(dptr)
+	rootptr := C.xmlDocGetRootElement(dptr)
 	if rootptr == nil {
 		return 0, errors.New("no document element found")
 	}
@@ -1074,7 +1070,6 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 		return 0, err
 	}
 	defer C.free(unsafe.Pointer(xck))
-
 
 	prefix, local := SplitPrefixLocal(k)
 
@@ -1740,9 +1735,16 @@ func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {
 		return nil, ErrInvalidNode
 	}
 
+	hdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(nodeset.nodeTab)),
+		Len:  int(nodeset.nodeNr),
+		Cap:  int(nodeset.nodeNr),
+	}
+	nodes := *(*[]*C.xmlNode)(unsafe.Pointer(&hdr))
+
 	ret := make([]uintptr, nodeset.nodeNr)
 	for i := 0; i < int(nodeset.nodeNr); i++ {
-		ret[i] = uintptr(unsafe.Pointer(C.MY_xmlNodeSetTabAt(nodeset.nodeTab, C.int(i))))
+		ret[i] = uintptr(unsafe.Pointer(nodes[i]))
 	}
 
 	return ret, nil
