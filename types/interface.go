@@ -2,6 +2,21 @@ package types
 
 import "github.com/lestrrat/go-libxml2/clib"
 
+type PointerSource interface {
+	// Pointer() returns the underlying C pointer. This is an exported
+	// method to allow various internal go-libxml2 packages to interoperate
+	// on each other. End users are STRONGLY advised not to touch this
+	// method or its return values
+	Pointer() uintptr
+
+	Free()
+}
+
+// XPathExpression defines the interface for XPath expression
+type XPathExpression interface {
+	PointerSource
+}
+
 // XPathResult defines the interface for result of calling Find().
 type XPathResult interface {
 	Bool() bool
@@ -12,7 +27,7 @@ type XPathResult interface {
 	Type() clib.XPathObjectType
 }
 
-
+// Document defines the interface for XML document
 type Document interface {
 	Node
 	CreateElement(string) (Element, error)
@@ -22,11 +37,13 @@ type Document interface {
 	Encoding() string
 }
 
+// Attribute defines the interface for XML attribute
 type Attribute interface {
 	Node
 	Value() string
 }
 
+// Element defines the interface for XML element
 type Element interface {
 	Node
 	AppendText(string) error
@@ -41,6 +58,7 @@ type Element interface {
 	SetNamespace(string, string, ...bool) error
 }
 
+// Namespace defines the interface for XML namespace
 type Namespace interface {
 	Node
 	Prefix() string
@@ -49,11 +67,8 @@ type Namespace interface {
 
 // Node defines the basic DOM interface
 type Node interface {
-	// Pointer() returns the underlying C pointer. This is an exported
-	// method to allow various internal go-libxml2 packages to interoperate
-	// on each other. End users are STRONGLY advised not to touch this
-	// method or its return values
-	Pointer() uintptr
+	PointerSource
+
 	ParseInContext(string, int) (Node, error)
 
 	AddChild(Node) error
@@ -62,7 +77,6 @@ type Node interface {
 	OwnerDocument() (Document, error)
 	Find(string) (XPathResult, error)
 	FirstChild() (Node, error)
-	Free()
 	HasChildNodes() bool
 	IsSameNode(Node) bool
 	LastChild() (Node, error)
@@ -91,4 +105,5 @@ type Node interface {
 	AutoFree()
 }
 
+// NodeList is a set of Nodes
 type NodeList []Node

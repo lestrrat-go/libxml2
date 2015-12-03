@@ -159,7 +159,7 @@ func (x *Context) Free() {
 	clib.XMLXPathFreeContext(x)
 }
 
-func (x *Context) evalXPathExpr(expr *Expression) (types.XPathResult, error) {
+func (x *Context) EvalXPathExpr(expr types.XPathExpression) (types.XPathResult, error) {
 	res, err := clib.XMLEvalXPath(x, expr)
 	if err != nil {
 		return nil, err
@@ -189,8 +189,8 @@ func (x *Context) Find(s string) (types.XPathResult, error) {
 // You must call `Free()` on this returned object
 //
 // You MUST call Free() on the Result, or you will leak memory
-func (x *Context) FindExpr(expr *Expression) (types.XPathResult, error) {
-	o, err := x.evalXPathExpr(expr)
+func (x *Context) FindExpr(expr types.XPathExpression) (types.XPathResult, error) {
+	o, err := x.EvalXPathExpr(expr)
 	if err != nil {
 		return nil, err
 	}

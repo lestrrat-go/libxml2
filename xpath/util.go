@@ -7,7 +7,7 @@ import (
 // String returns the string component of the result, and as a side effect
 // releases the Result by calling Free() on it. Use this if you do not
 // really care about the error value from Find()
-func String(r Result, err error) string {
+func String(r types.XPathResult, err error) string {
 	if err != nil {
 		return ""
 	}
@@ -19,7 +19,7 @@ func String(r Result, err error) string {
 // Bool returns the boolean component of the result, and as a side effect
 // releases the Result by calling Free() on it. Use this if you do not
 // really care about the error value from Find()
-func Bool(r Result, err error) bool {
+func Bool(r types.XPathResult, err error) bool {
 	if err != nil {
 		return false
 	}
@@ -31,7 +31,7 @@ func Bool(r Result, err error) bool {
 // Number returns the numeric component of the result, and as a side effect
 // releases the Result by calling Free() on it. Use this if you do not
 // really care about the error value from Find()
-func Number(r Result, err error) float64 {
+func Number(r types.XPathResult, err error) float64 {
 	if err != nil {
 		return 0
 	}
@@ -43,7 +43,7 @@ func Number(r Result, err error) float64 {
 // NodeList returns the nodes associated with this result, and as a side effect
 // releases the Result by calling Free() on it. Use this if you do not
 // really care about the error value from Find()
-func NodeList(r Result, err error) types.NodeList {
+func NodeList(r types.XPathResult, err error) types.NodeList {
 	if err != nil {
 		return nil
 	}
