@@ -129,12 +129,12 @@ func (d *Document) Literal() (string, error) {
 
 // TextContent returns the text content
 func (d *Document) TextContent() string {
-	return clib.XMLTextContent(n)
+	return clib.XMLTextContent(d)
 }
 
 // ToString is currently just an alias to Dump(false)
 func (d *Document) ToString(x int, b bool) string {
-	return n.Dump(false)
+	return d.Dump(false)
 }
 
 // ChildNodes returns the document element
