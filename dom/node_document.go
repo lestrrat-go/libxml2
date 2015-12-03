@@ -152,33 +152,11 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 		return d.CreateAttribute(k, v)
 	}
 
-	if err := clib.XMLTestNodeName(k); err != nil {
-		return nil, err
-	}
-
-	root, err := d.DocumentElement()
-	if err != nil {
-		return nil, errors.New("attribute with namespaces require a root node")
-	}
-
-	prefix, local := clib.SplitPrefixLocal(k)
-
-	ns, err := clib.XMLSearchNsByHref(d, root, nsuri)
-	if err != nil {
-		ns, err = clib.XMLNewNs(root, nsuri, prefix)
-		if err != nil {
-			return nil, errors.New("failed to create namespace: " + err.Error())
-		}
-	}
-
-	newAttr, err := clib.XMLNewDocProp(d, local, v)
+	ptr, err := clib.XMLCreateAttributeNS(d, nsuri, k, v)
 	if err != nil {
 		return nil, err
 	}
-	attr := wrapAttribute(newAttr)
-	clib.XMLSetNs(attr, wrapNamespace(ns))
-
-	return wrapAttribute(newAttr), nil
+	return wrapAttribute(ptr), nil
 }
 
 // CreateCDataSection creates a new CDATA section node

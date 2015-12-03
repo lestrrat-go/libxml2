@@ -173,6 +173,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 	"unsafe"
 
 	"github.com/lestrrat/go-libxml2/internal/debug"
@@ -250,7 +252,7 @@ func validXPathContextPtr(x PtrSource) (*C.xmlXPathContext, error) {
 func validXPathExpressionPtr(x PtrSource) (*C.xmlXPathCompExpr, error) {
 	if x == nil {
 		return nil, ErrInvalidXPathExpression
-}
+	}
 
 	if xptr := x.Pointer(); xptr != 0 {
 		return (*C.xmlXPathCompExpr)(unsafe.Pointer(xptr)), nil
@@ -405,21 +407,23 @@ func XMLEncodeEntitiesReentrant(docptr *C.xmlDoc, s string) (*C.xmlChar, error) 
 	return C.xmlEncodeEntitiesReentrant(docptr, cent), nil
 }
 
-func XMLTestNodeName(n string) error {
+func xmlMakeSafeName(n string) (*C.xmlChar, error) {
+	if utf8.ValidString(n) { // UTF-8, we can do everything in go
+		for p := n; len(p) > 0; {
+			r, n := utf8.DecodeRuneInString(p)
+			p = p[n:]
+			if !unicode.IsLetter(r) && r != '_' && r != ':' {
+				return nil, ErrInvalidNodeName
+			}
+		}
+		return stringToXMLChar(n), nil
+	}
+
 	cn := stringToXMLChar(n)
-	defer C.free(unsafe.Pointer(cn))
-
 	if C.MY_test_node_name(cn) == 0 {
-		return ErrInvalidNodeName
+		return nil, ErrInvalidNodeName
 	}
-	return nil
-}
-
-func xmlMakeSafeName(k string) (*C.xmlChar, error) {
-	if err := XMLTestNodeName(k); err != nil {
-		return nil, err
-	}
-	return stringToXMLChar(k), nil
+	return cn, nil
 }
 
 func validNamespacePtr(s PtrSource) (*C.xmlNs, error) {
@@ -959,17 +963,69 @@ func XMLNamespaceFree(n PtrSource) {
 	C.MY_xmlFree(unsafe.Pointer(nsptr))
 }
 
+func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
+	dptr, err := validDocumentPtr(doc)
+	if err != nil {
+		return 0, err
+	}
+
+	rootptr :=  C.xmlDocGetRootElement(dptr)
+	if rootptr == nil {
+		return 0, errors.New("no document element found")
+	}
+
+	xck, err := xmlMakeSafeName(k)
+	defer C.free(unsafe.Pointer(xck))
+
+	if err != nil {
+		return 0, err
+	}
+
+	prefix, _ := SplitPrefixLocal(k)
+
+	xcuri := stringToXMLChar(uri)
+	defer C.free(unsafe.Pointer(xcuri))
+
+	ns := C.xmlSearchNsByHref(
+		(*C.xmlDoc)(unsafe.Pointer(dptr)),
+		(*C.xmlNode)(unsafe.Pointer(rootptr)),
+		xcuri,
+	)
+	if ns == nil {
+		xcprefix := stringToXMLChar(prefix)
+		defer C.free(unsafe.Pointer(xcprefix))
+
+		ns := C.xmlNewNs(rootptr, xcuri, xcprefix)
+		if ns == nil {
+			return 0, errors.New("failed to create namespace")
+		}
+	}
+
+	xcv := stringToXMLChar(v)
+	defer C.free(unsafe.Pointer(xcv))
+
+	ent := C.xmlEncodeEntitiesReentrant(dptr, xcv)
+	if ent == nil {
+		return 0, errors.New("failed to encode value")
+	}
+	attr := C.xmlNewDocProp(dptr, xck, ent)
+
+	C.xmlSetNs((*C.xmlNode)(unsafe.Pointer(attr)), ns)
+
+	return uintptr(unsafe.Pointer(attr)), nil
+}
+
 func XMLCreateElement(d PtrSource, name string) (uintptr, error) {
 	dptr, err := validDocumentPtr(d)
 	if err != nil {
 		return 0, err
 	}
-	if err := XMLTestNodeName(name); err != nil {
+	cname, err := xmlMakeSafeName(name)
+	if err != nil {
 		return 0, err
 	}
-
-	cname := stringToXMLChar(name)
 	defer C.free(unsafe.Pointer(cname))
+
 	newNode := C.xmlNewNode(nil, cname)
 	if newNode == nil {
 		return 0, errors.New("element creation failed")
@@ -985,7 +1041,11 @@ func XMLCreateElementNS(doc PtrSource, nsuri, name string) (uintptr, error) {
 		return 0, err
 	}
 
-	if err := XMLTestNodeName(name); err != nil {
+	// XXX currently this xmlChar string is wasted. Think of a way to
+	// get this right
+	s, err := xmlMakeSafeName(name)
+	defer C.free(unsafe.Pointer(s))
+	if err != nil {
 		return 0, err
 	}
 
