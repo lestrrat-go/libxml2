@@ -986,11 +986,11 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 	}
 
 	xck, err := xmlMakeSafeName(k)
-	defer C.free(unsafe.Pointer(xck))
-
 	if err != nil {
 		return 0, err
 	}
+	defer C.free(unsafe.Pointer(xck))
+
 
 	prefix, local := SplitPrefixLocal(k)
 
@@ -1059,10 +1059,10 @@ func XMLCreateElementNS(doc PtrSource, nsuri, name string) (uintptr, error) {
 	// XXX currently this xmlChar string is wasted. Think of a way to
 	// get this right
 	s, err := xmlMakeSafeName(name)
-	defer C.free(unsafe.Pointer(s))
 	if err != nil {
 		return 0, err
 	}
+	defer C.free(unsafe.Pointer(s))
 
 	if nsuri == "" {
 		return XMLCreateElement(doc, name)
