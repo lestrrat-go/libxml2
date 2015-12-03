@@ -21,6 +21,7 @@ package clib
 
 /*
 #cgo pkg-config: libxml-2.0
+#include <string.h>
 #include <stdbool.h>
 #include <libxml/HTMLparser.h>
 #include <libxml/HTMLtree.h>
@@ -167,6 +168,88 @@ static inline xmlNodePtr MY_xmlNodeSetTabAt(xmlNodePtr *nodes, int i) {
 	return nodes[i];
 }
 
+// optimization
+static xmlNode*
+MY_xmlCreateElement(xmlDoc *doc, xmlChar *name) {
+	if (MY_test_node_name(name) == 0) {
+		return NULL;
+	}
+
+	xmlNode *ptr = xmlNewNode(NULL, name);
+	if (ptr == NULL) {
+		return NULL;
+	}
+
+	ptr->doc = doc;
+	return ptr;
+}
+
+static
+xmlNode *
+MY_xmlCreateElementNS(xmlDoc *doc, xmlChar *nsuri, xmlChar *name) {
+	xmlChar *local = name;
+	xmlChar *prefix = NULL;
+	xmlNode *node = NULL;
+
+	if (MY_test_node_name(name) == 0) {
+		return NULL;
+	}
+
+	for (int i = 0; i < xmlStrlen(name); i++) {
+		local++;
+		// XXX boundary check!
+		if (*local == ':') {
+			local++;
+			break;
+		}
+	}
+
+	if (local != name) {
+		prefix = (xmlChar *) malloc(sizeof(xmlChar) * (local - name) - 1);
+		memcpy(prefix, name, local - name - 1);
+	}
+
+	xmlNode *root = xmlDocGetRootElement(doc);
+	xmlNs *ns;
+	if (root == NULL) {
+		// No document element
+		ns = xmlNewNs(NULL, nsuri, prefix);
+	} else if (prefix != NULL) {
+		// Prefix exists, check if this is declared
+		ns = xmlSearchNs(doc, root, prefix);
+		if (ns == NULL) { // Not declared, create a new one
+			ns = xmlNewNs(NULL, nsuri, prefix);
+		} else { // Declared. Does the uri match?
+			if (xmlStrcmp(ns->href, nsuri) != 0) {
+				// Cleanup prefix
+				goto CLEANUP;
+			}
+			// Namespace is already registered, we don't need to provide a
+			// namespace element to xmlNewDocNode
+			ns = NULL;
+			local = name;
+		}
+	} else {
+		// If the name does not contain a prefix, check for the
+		// existence of this namespace via the URI
+		ns = xmlSearchNsByHref(doc, root, nsuri);
+		if (ns == NULL) {
+			ns = xmlNewNs(NULL, nsuri, NULL);
+		}
+	}
+
+	node = xmlNewDocNode(doc, ns, local, NULL);
+	if (ns != NULL) {
+		node->nsDef = ns;
+	}
+
+CLEANUP:
+	if (prefix != NULL) {
+		free(prefix);
+	}
+
+	return node;
+}
 */
 import "C"
 import (
@@ -1035,91 +1118,39 @@ func XMLCreateElement(d PtrSource, name string) (uintptr, error) {
 	if err != nil {
 		return 0, err
 	}
-	cname, err := xmlMakeSafeName(name)
-	if err != nil {
-		return 0, err
-	}
-	defer C.free(unsafe.Pointer(cname))
 
-	newNode := C.xmlNewNode(nil, cname)
-	if newNode == nil {
+	xcname := stringToXMLChar(name)
+	defer C.free(unsafe.Pointer(xcname))
+
+	nptr := C.MY_xmlCreateElement(dptr, xcname)
+	if nptr == nil {
 		return 0, errors.New("element creation failed")
 	}
-	// XXX hmmm...
-	newNode.doc = dptr
-	return uintptr(unsafe.Pointer(newNode)), nil
+
+	return uintptr(unsafe.Pointer(nptr)), nil
 }
 
 func XMLCreateElementNS(doc PtrSource, nsuri, name string) (uintptr, error) {
+	if nsuri == "" {
+		return XMLCreateElement(doc, name)
+	}
+
 	dptr, err := validDocumentPtr(doc)
 	if err != nil {
 		return 0, err
 	}
 
-	// XXX currently this xmlChar string is wasted. Think of a way to
-	// get this right
-	s, err := xmlMakeSafeName(name)
-	if err != nil {
-		return 0, err
-	}
-	defer C.free(unsafe.Pointer(s))
+	xcnsuri := stringToXMLChar(nsuri)
+	xcname := stringToXMLChar(name)
+	defer C.free(unsafe.Pointer(xcnsuri))
+	defer C.free(unsafe.Pointer(xcname))
 
-	if nsuri == "" {
-		return XMLCreateElement(doc, name)
+	nptr := C.MY_xmlCreateElementNS(dptr, xcnsuri, xcname)
+	if nptr == nil {
+		return 0, errors.New("failed to create element")
 	}
 
-	rootptr := C.xmlDocGetRootElement(dptr)
-
-	var prefix, localname string
-	var ns *C.xmlNs
-
-	if i := strings.IndexByte(name, ':'); i > 0 {
-		prefix = name[:i]
-		localname = name[i+1:]
-	} else {
-		localname = name
-	}
-
-	xmlnsuri := stringToXMLChar(nsuri)
-	xmlprefix := stringToXMLChar(prefix)
-	defer C.free(unsafe.Pointer(xmlnsuri))
-	defer C.free(unsafe.Pointer(xmlprefix))
-
-	// Optimization: if rootptr is nil, then you can just
-	// create the namespace
-	if rootptr == nil {
-		ns = C.xmlNewNs(nil, xmlnsuri, xmlprefix)
-	} else if prefix != "" {
-		// prefix exists, see if this is declared
-		ns = C.xmlSearchNs(dptr, rootptr, xmlprefix)
-		if ns == nil { // not declared. create a new one
-			ns = C.xmlNewNs(nil, xmlnsuri, xmlprefix)
-		} else { // declared. does uri match?
-			if C.xmlStrcmp(ns.href, xmlnsuri) != C.int(0) {
-				return 0, errors.New("prefix already registered to different uri")
-			}
-			// Namespace is already registered, we don't need to provide a
-			// namespace element to xmlNewDocNode
-			ns = nil
-
-			// but the localname should be prefix:localname
-			localname = name
-		}
-	} else {
-		// If the name does not contain a prefix, check for the
-		// existence of this namespace via the URI
-		ns = C.xmlSearchNsByHref(dptr, rootptr, xmlnsuri)
-		if ns == nil {
-			ns = C.xmlNewNs(nil, xmlnsuri, nil)
-		}
-	}
-
-	clocal := stringToXMLChar(localname)
-	defer C.free(unsafe.Pointer(clocal))
-	newNode := C.xmlNewDocNode(dptr, ns, clocal, nil)
-	newNode.nsDef = ns
-
-	return uintptr(unsafe.Pointer(newNode)), nil
+	return uintptr(unsafe.Pointer(nptr)), nil
 }
 
 func XMLDocumentEncoding(doc PtrSource) string {
@@ -1182,7 +1213,6 @@ func XMLDocumentString(doc PtrSource, encoding string, format bool) string {
 		return ""
 	}
 
-	var xc *C.xmlChar
 	var intformat C.int
 	if format {
 		intformat = C.int(1)
@@ -1200,6 +1230,7 @@ func XMLDocumentString(doc PtrSource, encoding string, format bool) string {
 	cenc := C.CString(encoding)
 	defer C.free(unsafe.Pointer(cenc))
 
+	var xc *C.xmlChar
 	C.xmlDocDumpFormatMemoryEnc(dptr, &xc, &i, cenc, intformat)
 
 	return xmlCharToString(xc)
