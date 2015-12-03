@@ -1,7 +1,12 @@
-package libxml2
+package dom
+
+import (
+	"github.com/lestrrat/go-libxml2/clib"
+	"github.com/lestrrat/go-libxml2/types"
+)
 
 // Serialize produces serialization of the document, canonicalized.
-func (s C14NSerialize) Serialize(n interface{}) (string, error) {
+func (s C14NSerialize) Serialize(n types.Node) (string, error) {
 	/*
 	 * Below document is taken from libxml2 directly. Pay special attention
 	 * to the required settings when parsing the document to be canonicalized.
@@ -36,5 +41,5 @@ func (s C14NSerialize) Serialize(n interface{}) (string, error) {
 		return "", ErrInvalidNodeType
 	}
 
-	return xmlC14NDocDumpMemory(n.(*Document), s.Mode, s.WithComments)
+	return clib.XMLC14NDocDumpMemory(n, int(s.Mode), s.WithComments)
 }

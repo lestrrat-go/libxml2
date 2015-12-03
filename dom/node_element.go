@@ -1,9 +1,11 @@
-package libxml2
+package dom
 
 import (
 	"bytes"
 	"errors"
 	"strings"
+
+	"github.com/lestrrat/go-libxml2/clib"
 )
 
 // SetNamespace sets up a new namespace on the given node.
@@ -24,14 +26,15 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		if err != nil {
 			return err
 		}
-		ns, err := xmlSearchNs(doc, n, "")
+		nsptr, err := clib.XMLSearchNs(doc, n, "")
 		if err != nil {
 			return err
 		}
 
+		ns := wrapNamespace(nsptr)
 		if ns.URI() != "" {
 			if activateflag {
-				xmlSetNs(n, nil)
+				clib.XMLSetNs(n, nil)
 			}
 		}
 		return nil
@@ -44,13 +47,13 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		return errors.New("missing prefix for SetNamespace")
 	}
 
-	ns, err := xmlNewNs(n, uri, prefix)
+	ns, err := clib.XMLNewNs(n, uri, prefix)
 	if err != nil {
 		return err
 	}
 
 	if activateflag {
-		if err := xmlSetNs(n, ns); err != nil {
+		if err := clib.XMLSetNs(n, wrapNamespace(ns)); err != nil {
 			return err
 		}
 	}
@@ -59,17 +62,17 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 
 // AppendText adds a new text node
 func (n *Element) AppendText(s string) error {
-	return appendText(n, s)
+	return clib.XMLAppendText(n, s)
 }
 
 // SetAttribute sets an attribute
 func (n *Element) SetAttribute(name, value string) error {
-	return xmlSetProp(n, name, value)
+	return clib.XMLSetProp(n, name, value)
 }
 
 // GetAttribute retrieves the value of an attribute
 func (n *Element) GetAttribute(name string) (*Attribute, error) {
-	attrNode, err := n.getAttributeNode(name)
+	attrNode, err := clib.XMLElementGetAttributeNode(n, name)
 	if err != nil {
 		return nil, err
 	}
@@ -78,14 +81,22 @@ func (n *Element) GetAttribute(name string) (*Attribute, error) {
 
 // Attributes returns a list of attributes on a node
 func (n *Element) Attributes() ([]*Attribute, error) {
-	return xmlElementAttributes(n)
+	attrs, err := clib.XMLElementAttributes(n)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]*Attribute, len(attrs))
+	for i, attr := range attrs {
+		ret[i] = wrapAttribute(attr)
+	}
+	return ret, nil
 }
 
 // RemoveAttribute completely removes an attribute from the node
 func (n *Element) RemoveAttribute(name string) error {
 	i := strings.IndexByte(name, ':')
 	if i == -1 {
-		return xmlUnsetProp(n, name)
+		return clib.XMLUnsetProp(n, name)
 	}
 
 	// look for the prefix
@@ -93,12 +104,12 @@ func (n *Element) RemoveAttribute(name string) error {
 	if err != nil {
 		return err
 	}
-	ns, err := xmlSearchNs(doc, n, name[:i])
+	ns, err := clib.XMLSearchNs(doc, n, name[:i])
 	if err != nil {
 		return ErrAttributeNotFound
 	}
 
-	return xmlUnsetNsProp(n, ns, name)
+	return clib.XMLUnsetNsProp(n, wrapNamespace(ns), name)
 }
 
 // GetNamespaces returns Namespace objects associated with this
@@ -107,7 +118,15 @@ func (n *Element) RemoveAttribute(name string) error {
 // Therefore you MUST free the structures, or otherwise you
 // WILL leak memory.
 func (n *Element) GetNamespaces() ([]*Namespace, error) {
-	return xmlElementNamespaces(n)
+	list, err := clib.XMLElementNamespaces(n)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]*Namespace, len(list))
+	for i, nsptr := range list {
+		ret[i] = wrapNamespace(nsptr)
+	}
+	return ret, nil
 }
 
 // Literal returns a stringified version of this node and its

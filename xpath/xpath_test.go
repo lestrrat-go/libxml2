@@ -1,13 +1,15 @@
-package libxml2
+package xpath_test
 
 import (
 	"testing"
 
+	"github.com/lestrrat/go-libxml2"
+	"github.com/lestrrat/go-libxml2/xpath"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestXPathContext(t *testing.T) {
-	doc, err := ParseString(`<foo><bar a="b"></bar></foo>`)
+	doc, err := libxml2.ParseString(`<foo><bar a="b"></bar></foo>`)
 	if err != nil {
 		t.Errorf("Failed to parse string: %s", err)
 	}
@@ -18,7 +20,7 @@ func TestXPathContext(t *testing.T) {
 		return
 	}
 
-	ctx, err := NewXPathContext(root)
+	ctx, err := xpath.NewContext(root)
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
@@ -27,31 +29,21 @@ func TestXPathContext(t *testing.T) {
 
 	// Use a string
 	exprString := `/*`
-	nodes, err := ctx.FindNodes(exprString)
-	if err != nil {
-		t.Errorf("Failed to execute FindNodes: %s", err)
-		return
-	}
-
+	nodes := xpath.NodeList(ctx.Find(exprString))
 	if len(nodes) != 1 {
 		t.Errorf("Expected 1 nodes, got %d", len(nodes))
 		return
 	}
 
 	// Use an explicitly compiled expression
-	expr, err := NewXPathExpression(exprString)
+	expr, err := xpath.NewExpression(exprString)
 	if err != nil {
 		t.Errorf("Failed to compile xpath: %s", err)
 		return
 	}
 	defer expr.Free()
 
-	nodes, err = ctx.FindNodesExpr(expr)
-	if err != nil {
-		t.Errorf("Failed to execute FindNodesExpr: %s", err)
-		return
-	}
-
+	nodes = xpath.NodeList(ctx.FindExpr(expr))
 	if len(nodes) != 1 {
 		t.Errorf("Expected 1 nodes, got %d", len(nodes))
 		return
@@ -59,55 +51,39 @@ func TestXPathContext(t *testing.T) {
 }
 
 func TestXPathContextExpression_Number(t *testing.T) {
-	ctx, err := NewXPathContext()
+	ctx, err := xpath.NewContext()
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
 	}
 	defer ctx.Free()
 
-	res := ctx.FindValue("1+1")
-	if !assert.True(t, res.Valid(), "Failed to evaluate XPath expression: %s", ctx.LastError()) {
+	if !assert.Equal(t, float64(2), xpath.Number(ctx.Find("1+1")), "XPath evaluates to 2") {
 		return
 	}
-	defer res.Free()
-
-	switch res.Type() {
-	case XPathNumber:
-		if res.Number() != 2 {
-			t.Errorf("Expected result number to be 2, got %f", res.Number())
-		}
-	default:
-		t.Errorf("Expected type to be XPathObjectNumber, got %s", res.Type())
+	if !assert.Equal(t, float64(0), xpath.Number(ctx.Find("1<>1")), "XPath evaluates to 0") {
+		return
 	}
 }
 
 func TestXPathContextExpression_Boolean(t *testing.T) {
-	ctx, err := NewXPathContext()
+	ctx, err := xpath.NewContext()
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
 	}
 	defer ctx.Free()
 
-	res := ctx.FindValue("1=1")
-	if !assert.True(t, res.Valid(), "Failed to evaluate XPath expression: %s", ctx.LastError()) {
+	if !assert.True(t, xpath.Bool(ctx.Find("1=1")), "XPath evaluates to true") {
 		return
 	}
-	defer res.Free()
-
-	switch res.Type() {
-	case XPathBoolean:
-		if !res.Bool() {
-			t.Errorf("Expected result number to be false, got %s", res.Bool())
-		}
-	default:
-		t.Errorf("Expected type to be XPathObjectBoolean, got %s", res.Type())
+	if !assert.False(t, xpath.Bool(ctx.Find("1<>1")), "XPath evaluates to false") {
+		return
 	}
 }
 
 func TestXPathContextExpression_NodeList(t *testing.T) {
-	doc, err := ParseString(`<foo><bar a="b">baz</bar></foo>`)
+	doc, err := libxml2.ParseString(`<foo><bar a="b">baz</bar><bar a="c">quux</bar></foo>`)
 	if err != nil {
 		t.Errorf("Failed to parse string: %s", err)
 	}
@@ -118,32 +94,32 @@ func TestXPathContextExpression_NodeList(t *testing.T) {
 		return
 	}
 
-	ctx, err := NewXPathContext(root)
+	ctx, err := xpath.NewContext(root)
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
 	}
 	defer ctx.Free()
 
-	res := ctx.FindValue("/foo/bar")
-	if !assert.True(t, res.Valid(), "Failed to evaluate XPath expression: %s", ctx.LastError()) {
+	if !assert.Len(t, xpath.NodeList(ctx.Find("/foo/bar")), 2, "XPath evaluates to 2 nodes") {
 		return
 	}
-	defer res.Free()
 
-	switch res.Type() {
-	case XPathNodeSet:
-		s := res.String()
-		if !assert.Equal(t, "baz", s, "results match") {
-			return
-		}
-	default:
-		t.Errorf("Expected type to be XPathObjectNodeSet, got %s", res.Type())
+	if !assert.Len(t, xpath.NodeList(ctx.Find("/foo/bar[bogus")), 0, "XPath evaluates to 0 nodes") {
+		return
+	}
+
+	if !assert.Equal(t, "bazquux", xpath.String(ctx.Find("/foo/bar")), "XPath evaluates to 'bazquux'") {
+		return
+	}
+
+	if !assert.Equal(t, "", xpath.String(ctx.Find("/[bogus")), "XPath evaluates to ''") {
+		return
 	}
 }
 
 func TestXPathContextExpression_Namespaces(t *testing.T) {
-	doc, err := ParseString(`<foo xmlns="http://example.com/foobar"><bar a="b"></bar></foo>`)
+	doc, err := libxml2.ParseString(`<foo xmlns="http://example.com/foobar"><bar a="b"></bar></foo>`)
 	if err != nil {
 		t.Errorf("Failed to parse string: %s", err)
 	}
@@ -154,7 +130,7 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 		return
 	}
 
-	ctx, err := NewXPathContext(root)
+	ctx, err := xpath.NewContext(root)
 	if err != nil {
 		t.Errorf("Failed to initialize XPathContext: %s", err)
 		return
@@ -168,11 +144,7 @@ func TestXPathContextExpression_Namespaces(t *testing.T) {
 		return
 	}
 
-	nodes, err := ctx.FindNodes(`/xxx:foo`)
-	if err != nil {
-		t.Errorf(`Failed to evaluate "/xxx:foo": %s`, err)
-		return
-	}
+	nodes := xpath.NodeList(ctx.Find(`/xxx:foo`))
 	if len(nodes) != 1 {
 		t.Errorf(`Expected 1 node, got %d`, len(nodes))
 		return

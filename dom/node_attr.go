@@ -1,8 +1,12 @@
-package libxml2
+package dom
+
+import (
+	"github.com/lestrrat/go-libxml2/clib"
+)
 
 // Free releases the underlying C struct
 func (n *Attribute) Free() {
-	xmlFreeProp(n)
+	clib.XMLFreeProp(n)
 }
 
 // HasChildNodes returns true if the node contains any child nodes.
@@ -14,5 +18,9 @@ func (n *Attribute) HasChildNodes() bool {
 
 // Value returns the value of the attribute.
 func (n *Attribute) Value() string {
-	return nodeValue(n)
+	v, err := clib.XMLNodeValue(n)
+	if err != nil {
+		return ""
+	}
+	return v
 }

@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/lestrrat/go-libxml2/dom"
+	"github.com/lestrrat/go-libxml2/parser"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +20,7 @@ func TestEncoding(t *testing.T) {
 		}
 		defer f.Close()
 
-		p := NewParser()
+		p := parser.New()
 		doc, err := p.ParseReader(f)
 		if err != nil {
 			t.Errorf("Failed to parse %s: %s", fn, err)
@@ -33,7 +35,7 @@ func TestEncoding(t *testing.T) {
 }
 
 func TestNamespacedReconciliation(t *testing.T) {
-	d := CreateDocument()
+	d := dom.CreateDocument()
 	root, err := d.CreateElement("foo")
 	if !assert.NoError(t, err, "failed to create document") {
 		return
@@ -59,7 +61,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 		return
 	}
 
-	var c *Element
+	var c *dom.Element
 	for _, name := range []string{"a", "b", "c"} {
 		child, err := d.CreateElementNS("http://children", "child:"+name)
 		if !assert.NoError(t, err, "CreateElementNS should succeed") {

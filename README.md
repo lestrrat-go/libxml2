@@ -11,8 +11,48 @@ Interface to libxml2, with DOM interface.
 * This library should be considered alpha grade. API may still change.
 * Much of commonly used functionalities from libxml2 that *I* use are there already, and are known to be functional
 
-Having said the above, AFAIK this is the most complete Go wrapper for libxml2 as of this writing
-(Nov, 2015).
+## Package Layout:
+
+| Name    | Description                                                 |
+|---------|-------------------------------------------------------------|
+| libxml2 | Globally available utility functions, such as `ParseString` |
+| types   | Common data types, such as `types.Node`                     |
+| parser  | Parser routines                                             |
+| dom     | DOM-like manipulation of XML document/nodes                 |
+| xpath   | XPath related tools                                         |
+| xsd     | XML Schema related tools                                    |
+| clib    | Wrapper around C libxml2 library - DO NOT TOUCH IF UNSURE   |
+
+## Features
+
+Create XML documents using DOM-like interface:
+
+```go
+  d := dom.CreateDocument()
+  e, err := d.CreateElement("foo")
+  if err != nil {
+    println(err)
+    return
+  }
+  d.SetDocumentElement(e)
+  ...
+```
+
+Parse documents:
+
+```go
+  d, err := libxml2.ParseString(xmlstring)
+  if err != nil {
+    println(err)
+    return
+  }
+```
+
+Use XPath to extract node values:
+
+```go
+  text := xpath.String(node.Find("//xpath/expression"))
+```
 
 ## Examples
 
@@ -24,6 +64,8 @@ import (
   "net/http"
 
   "github.com/lestrrat/go-libxml2"
+  "github.com/lestrrat/go-libxml2/types"
+  "github.com/lestrrat/go-libxml2/xpath"
 )
 
 func ExmapleXML() {
@@ -41,12 +83,12 @@ func ExmapleXML() {
   }
   defer doc.Free()
 
-  doc.Walk(func(n libxml2.Node) error {
+  doc.Walk(func(n types.Node) error {
     log.Printf(n.NodeName())
     return nil
   })
 
-  ctx, err := libxml2.NewXPathContext(doc.DocumentElement())
+  ctx, err := xpath.NewContext(doc.DocumentElement())
   if err != nil {
     log.Printf("Failed to create xpath context: %s", err)
     return
@@ -54,7 +96,7 @@ func ExmapleXML() {
   defer ctx.Free()
 
   ctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
-  title := ctx.FindValue("/atom:feed/atom:title/text()").String()
+  title := xpath.String(ctx.Find("/atom:feed/atom:title/text()"))
   log.Printf("feed title = %s", title)
 }
 ```
@@ -74,7 +116,7 @@ func ExampleHTML() {
   }
   defer doc.Free()
 
-  doc.Walk(func(n libxml2.Node) error {
+  doc.Walk(func(n types.Node) error {
     log.Printf(n.NodeName())
     return nil
   })

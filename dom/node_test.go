@@ -1,18 +1,19 @@
-package libxml2
+package dom
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/stretchr/testify/assert"
 )
 
 func init() {
-	ReportErrors(false)
+	clib.ReportErrors(false)
 }
 
 type XMLNodeTypeToString struct {
-	v XMLNodeType
+	v clib.XMLNodeType
 	e string
 }
 

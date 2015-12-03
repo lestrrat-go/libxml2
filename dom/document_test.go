@@ -1,15 +1,17 @@
-package libxml2
+package dom_test
 
 import (
 	"testing"
 
+	"github.com/lestrrat/go-libxml2/dom"
+	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/stretchr/testify/assert"
 )
 
 // Tests for DOM Level 3
 
 func TestDocumentAttributes(t *testing.T) {
-	doc := CreateDocument()
+	doc := dom.CreateDocument()
 	defer doc.Free()
 	if doc.Encoding() != "" {
 		t.Errorf("Encoding should be empty string at first, got '%s'", doc.Encoding())
@@ -48,13 +50,13 @@ func TestDocumentAttributes(t *testing.T) {
 	}
 }
 
-func checkElement(t *testing.T, e *Element, assertName, testCase string) bool {
+func checkElement(t *testing.T, e *dom.Element, assertName, testCase string) bool {
 	if e == nil {
 		t.Errorf("%s: Element is nil", testCase)
 		return false
 	}
 
-	if e.NodeType() != ElementNode {
+	if e.NodeType() != clib.ElementNode {
 		t.Errorf("%s: Expected node type 'ElementNode', got '%s'", testCase, e.NodeType())
 		return false
 	}
@@ -66,7 +68,7 @@ func checkElement(t *testing.T, e *Element, assertName, testCase string) bool {
 	return true
 }
 
-func createElementAndCheck(t *testing.T, doc *Document, name, assertName, testCase string) bool {
+func createElementAndCheck(t *testing.T, doc *dom.Document, name, assertName, testCase string) bool {
 	node, err := doc.CreateElement(name)
 	if err != nil {
 		t.Errorf("Failed to create new element '%s': %s", name, err)
@@ -75,24 +77,24 @@ func createElementAndCheck(t *testing.T, doc *Document, name, assertName, testCa
 	return checkElement(t, node, assertName, testCase)
 }
 
-func withDocument(cb func(*Document)) {
-	doc := CreateDocument()
+func withDocument(cb func(*dom.Document)) {
+	doc := dom.CreateDocument()
 	defer doc.Free()
 
 	cb(doc)
 }
 
 func TestDocumentCreateElements(t *testing.T) {
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		createElementAndCheck(t, d, "foo", "foo", "Simple Element")
 	})
 
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		d.SetEncoding("iso-8859-1")
 		createElementAndCheck(t, d, "foo", "foo", "Create element with document with encoding")
 	})
 
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		caseName := "Create element with namespace"
 		e, err := d.CreateElementNS("http://kungfoo", "foo:bar")
 		if err != nil {
@@ -114,7 +116,7 @@ func TestDocumentCreateElements(t *testing.T) {
 	})
 
 	// Bad elements
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		badnames := []string{";", "&", "<><", "/", "1A"}
 		for _, name := range badnames {
 			if _, err := d.CreateElement(name); err == nil {
@@ -125,15 +127,15 @@ func TestDocumentCreateElements(t *testing.T) {
 }
 
 func TestDocumentCreateText(t *testing.T) {
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		node, err := d.CreateTextNode("foo")
 		if err != nil {
 			t.Errorf("Failed to create text node: %s", err)
 			return
 		}
 
-		if node.NodeType() != TextNode {
-			t.Errorf("Expected NodeType '%s', got '%s'", TextNode, node.NodeType())
+		if node.NodeType() != clib.TextNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", clib.TextNode, node.NodeType())
 			return
 		}
 
@@ -145,15 +147,15 @@ func TestDocumentCreateText(t *testing.T) {
 }
 
 func TestDocumentCreateComment(t *testing.T) {
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		node, err := d.CreateCommentNode("foo")
 		if err != nil {
 			t.Errorf("Failed to create Comment node: %s", err)
 			return
 		}
 
-		if node.NodeType() != CommentNode {
-			t.Errorf("Expected NodeType '%s', got '%s'", CommentNode, node.NodeType())
+		if node.NodeType() != clib.CommentNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", clib.CommentNode, node.NodeType())
 			return
 		}
 
@@ -170,15 +172,15 @@ func TestDocumentCreateComment(t *testing.T) {
 }
 
 func TestDocumentCreateCDataSection(t *testing.T) {
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		node, err := d.CreateCDataSection("foo")
 		if err != nil {
 			t.Errorf("Failed to create CDataSection node: %s", err)
 			return
 		}
 
-		if node.NodeType() != CDataSectionNode {
-			t.Errorf("Expected NodeType '%s', got '%s'", CDataSectionNode, node.NodeType())
+		if node.NodeType() != clib.CDataSectionNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", clib.CDataSectionNode, node.NodeType())
 			return
 		}
 
@@ -195,15 +197,15 @@ func TestDocumentCreateCDataSection(t *testing.T) {
 }
 
 func TestDocumentCreateAttribute(t *testing.T) {
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		node, err := d.CreateAttribute("foo", "bar")
 		if err != nil {
 			t.Errorf("Failed to create Attribute node: %s", err)
 			return
 		}
 
-		if node.NodeType() != AttributeNode {
-			t.Errorf("Expected NodeType '%s', got '%s'", AttributeNode, node.NodeType())
+		if node.NodeType() != clib.AttributeNode {
+			t.Errorf("Expected NodeType '%s', got '%s'", clib.AttributeNode, node.NodeType())
 			return
 		}
 
@@ -233,14 +235,14 @@ func TestDocumentCreateAttribute(t *testing.T) {
 			return
 		}
 
-		if content.NodeType() != TextNode {
-			t.Errorf("Expected content node NodeType '%s', got '%s'", TextNode, content.NodeType())
+		if content.NodeType() != clib.TextNode {
+			t.Errorf("Expected content node NodeType '%s', got '%s'", clib.TextNode, content.NodeType())
 			return
 		}
 	})
 
 	// Bad elements
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		badnames := []string{";", "&", "<><", "/", "1A"}
 		for _, name := range badnames {
 			if _, err := d.CreateAttribute(name, "bar"); err == nil {
@@ -251,7 +253,7 @@ func TestDocumentCreateAttribute(t *testing.T) {
 }
 
 func TestDocumentCreateAttributeNS(t *testing.T) {
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		elem, err := d.CreateElement("foo")
 		if err != nil {
 			t.Errorf("Failed to create Element node: %s", err)
@@ -298,7 +300,7 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 		}
 	})
 
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		attr, err := d.CreateAttributeNS("http://kungfoo", "kung:foo", "bar")
 		if err == nil {
 			t.Errorf("Creating Attribute node w/o root node should have failed")
@@ -341,7 +343,7 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 	})
 
 	// Bad elements
-	withDocument(func(d *Document) {
+	withDocument(func(d *dom.Document) {
 		elem, err := d.CreateElement("foo")
 		if err != nil {
 			t.Errorf("Failed to create Element node: %s", err)

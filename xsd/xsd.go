@@ -105,7 +105,7 @@ import (
 	"errors"
 	"unsafe"
 
-	"github.com/lestrrat/go-libxml2"
+	"github.com/lestrrat/go-libxml2/types"
 )
 
 // Parse is used to parse an XML Schema Document to produce a
@@ -161,7 +161,7 @@ func (sve SchemaValidationError) Errors() []error {
 // Validate takes in a XML document and validates it against
 // the schema. If there are any problems, and error is
 // returned.
-func (s *Schema) Validate(d *libxml2.Document) error {
+func (s *Schema) Validate(d types.Document) error {
 	sptr, err := validSchemaPtr(s)
 	if err != nil {
 		return err
@@ -178,7 +178,7 @@ func (s *Schema) Validate(d *libxml2.Document) error {
 
 	C.MY_setErrWarnAccumulator(ctx, accum)
 
-	if C.xmlSchemaValidateDoc(ctx, (C.xmlDocPtr)(d.Pointer())) != 0 {
+	if C.xmlSchemaValidateDoc(ctx, (C.xmlDocPtr)(unsafe.Pointer(d.Pointer()))) != 0 {
 		// Create an err
 		err := SchemaValidationError{
 			errors: make([]error, 0, accum.erridx),
