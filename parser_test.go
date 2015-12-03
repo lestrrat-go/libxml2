@@ -217,8 +217,8 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseBad(t *testing.T) {
-	ReportErrors(false)
-	defer ReportErrors(true)
+	clib.ReportErrors(false)
+	defer clib.ReportErrors(true)
 
 	inputs := [][]string{
 		badWFStrings,
