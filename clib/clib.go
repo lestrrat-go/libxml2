@@ -190,12 +190,13 @@ MY_xmlCreateElementNS(xmlDoc *doc, xmlChar *nsuri, xmlChar *name) {
 	xmlChar *local = name;
 	xmlChar *prefix = NULL;
 	xmlNode *node = NULL;
+	int i;
 
 	if (MY_test_node_name(name) == 0) {
 		return NULL;
 	}
 
-	for (int i = 0; i < xmlStrlen(name); i++) {
+	for (i = 0; i < xmlStrlen(name); i++) {
 		local++;
 		// XXX boundary check!
 		if (*local == ':') {
