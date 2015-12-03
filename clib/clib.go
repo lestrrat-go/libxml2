@@ -407,19 +407,30 @@ func XMLEncodeEntitiesReentrant(docptr *C.xmlDoc, s string) (*C.xmlChar, error) 
 	return C.xmlEncodeEntitiesReentrant(docptr, cent), nil
 }
 
-func xmlMakeSafeName(n string) (*C.xmlChar, error) {
-	if utf8.ValidString(n) { // UTF-8, we can do everything in go
-		for p := n; len(p) > 0; {
-			r, n := utf8.DecodeRuneInString(p)
+func xmlMakeSafeName(name string) (*C.xmlChar, error) {
+	if name == "" {
+		return nil, ErrInvalidNodeName
+	}
+
+	if utf8.ValidString(name) { // UTF-8, we can do everything in go
+		p := name
+		r, n := utf8.DecodeRuneInString(p)
+		p = p[n:]
+		if !unicode.IsLetter(r) && r != '_' && r != ':' {
+			return nil, ErrInvalidNodeName
+		}
+
+		for len(p) > 0 {
+			r, n = utf8.DecodeRuneInString(p)
 			p = p[n:]
 			if !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '_' && r != ':' {
 				return nil, ErrInvalidNodeName
 			}
 		}
-		return stringToXMLChar(n), nil
+		return stringToXMLChar(name), nil
 	}
 
-	cn := stringToXMLChar(n)
+	cn := stringToXMLChar(name)
 	if C.MY_test_node_name(cn) == 0 {
 		return nil, ErrInvalidNodeName
 	}
@@ -981,7 +992,7 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 		return 0, err
 	}
 
-	prefix, _ := SplitPrefixLocal(k)
+	prefix, local := SplitPrefixLocal(k)
 
 	xcuri := stringToXMLChar(uri)
 	defer C.free(unsafe.Pointer(xcuri))
@@ -995,7 +1006,7 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 		xcprefix := stringToXMLChar(prefix)
 		defer C.free(unsafe.Pointer(xcprefix))
 
-		ns := C.xmlNewNs(rootptr, xcuri, xcprefix)
+		ns = C.xmlNewNs(rootptr, xcuri, xcprefix)
 		if ns == nil {
 			return 0, errors.New("failed to create namespace")
 		}
@@ -1008,7 +1019,11 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 	if ent == nil {
 		return 0, errors.New("failed to encode value")
 	}
-	attr := C.xmlNewDocProp(dptr, xck, ent)
+
+	xclocal := stringToXMLChar(local)
+	defer C.free(unsafe.Pointer(xclocal))
+
+	attr := C.xmlNewDocProp(dptr, xclocal, ent)
 
 	C.xmlSetNs((*C.xmlNode)(unsafe.Pointer(attr)), ns)
 
