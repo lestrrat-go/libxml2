@@ -1,6 +1,6 @@
 /*
 
-Package clib holds all of the dirty C interaction for go-libxml2
+Package clib holds all of the dirty C interaction for go-libxml2.
 
 Although this package is visible to the outside world, the API in this
 package is in NO WAY guaranteed to be stable. This package was
@@ -9,7 +9,8 @@ API was not available to the outside world.
 
 The only reason this is visible is so that the REALLY advanced users
 can abuse the quasi-direct-C-API to overcome shortcomings of the
-"public" API, if any.
+"public" API, if any (and of course, you WILL send me a pull request
+later... won't you?)
 
 Please DO NOT rely on this API and expect that it will keep backcompat.
 When the need arises, it WILL be changed, and if you are not ready

@@ -35,6 +35,18 @@ func TestXPathContext(t *testing.T) {
 		return
 	}
 
+	iter := xpath.NodeIter(ctx.Find(exprString))
+	{
+		count := 0
+		for iter.Next() {
+			iter.Node()
+			count++
+		}
+		if !assert.Equal(t, 1, count, "got 1 nodes from iterator") {
+			return
+		}
+	}
+
 	// Use an explicitly compiled expression
 	expr, err := xpath.NewExpression(exprString)
 	if err != nil {

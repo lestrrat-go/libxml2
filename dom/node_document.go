@@ -341,4 +341,3 @@ func (d *Document) LookupNamespaceURI(prefix string) (string, error) {
 
 	return root.LookupNamespaceURI(prefix)
 }
-

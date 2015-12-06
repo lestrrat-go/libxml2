@@ -25,6 +25,7 @@ type XPathResult interface {
 	Bool() bool
 	Free()
 	NodeList() NodeList
+	NodeIter() NodeIter
 	Number() float64
 	String() string
 	Type() clib.XPathObjectType
@@ -106,6 +107,11 @@ type Node interface {
 	MakeMortal()
 	MakePersistent()
 	AutoFree()
+}
+
+type NodeIter interface {
+	Next() bool
+	Node() Node
 }
 
 // NodeList is a set of Nodes

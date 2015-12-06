@@ -64,6 +64,14 @@ func (x Object) NodeList() types.NodeList {
 	return ret
 }
 
+func (x Object) NodeIter() types.NodeIter {
+	nl, err := clib.XMLXPathObjectNodeList(x)
+	if err != nil {
+		return NewNodeIterator(nil)
+	}
+	return NewNodeIterator(nl)
+}
+
 // String returns the stringified value of the nodes included in
 // this Object. If the Object is anything other than a
 // NodeSet, then we fallback to using fmt.Sprintf to generate
@@ -100,12 +108,17 @@ func NewExpression(s string) (*Expression, error) {
 		return nil, err
 	}
 
-	return &Expression{ptr: ptr}, nil
+	return &Expression{ptr: ptr, expr: s}, nil
 }
 
 // Pointer returns the underlying C struct
 func (x *Expression) Pointer() uintptr {
 	return x.ptr
+}
+
+// String returns the expression as it was given to NewExpression
+func (x Expression) String() string {
+	return x.expr
 }
 
 // Free releases the underlying C structs in the Expression
@@ -159,17 +172,6 @@ func (x *Context) Free() {
 	clib.XMLXPathFreeContext(x)
 }
 
-// EvalXPathExpr evaluates the given compiled XPath expression, and
-// returns the result as an object.
-func (x *Context) EvalXPathExpr(expr types.XPathExpression) (types.XPathResult, error) {
-	res, err := clib.XMLEvalXPath(x, expr)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Object{ptr: res}, nil
-}
-
 // Find evaluates the expression s against the nodes registered
 // in x. It returns the resulting data evaluated to an Result.
 //
@@ -192,12 +194,12 @@ func (x *Context) Find(s string) (types.XPathResult, error) {
 //
 // You MUST call Free() on the Result, or you will leak memory
 func (x *Context) FindExpr(expr types.XPathExpression) (types.XPathResult, error) {
-	o, err := x.EvalXPathExpr(expr)
+	res, err := clib.XMLEvalXPath(x, expr)
 	if err != nil {
 		return nil, err
 	}
-	//	res.ForceLiteral = true
-	return o, err
+
+	return &Object{ptr: res}, nil
 }
 
 // LookupNamespaceURI looksup the namespace URI associated with prefix
