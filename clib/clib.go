@@ -1447,10 +1447,15 @@ func XMLElementGetAttributeNode(n PtrSource, name string) (uintptr, error) {
 	defer C.free(unsafe.Pointer(cname))
 
 	prop := C.xmlHasNsProp(nptr, cname, nil)
-	debug.Printf("prop = %v", prop)
+	if debug.Enabled {
+		debug.Printf("prop = %v", prop)
+	}
+
 	if prop == nil {
 		prefix, local := SplitPrefixLocal(name)
-		debug.Printf("prefix = %s, local = %s", prefix, local)
+		if debug.Enabled {
+			debug.Printf("prefix = %s, local = %s", prefix, local)
+		}
 		if local != "" {
 			cprefix := stringToXMLChar(prefix)
 			defer C.free(unsafe.Pointer(cprefix))
