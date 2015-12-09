@@ -132,16 +132,17 @@ func BenchmarkLibxml2DOM(b *testing.B) {
 	}
 	for i := 0; i < b.N; i++ {
 		d := dom.CreateDocument()
-		defer d.Free()
 
 		root, err := d.CreateElementNS(nsuri, "foo:foo")
 		if err != nil {
+			d.Free()
 			panic(err)
 		}
 		d.SetDocumentElement(root)
 
 		f1xml, err := d.CreateElement("Field1")
 		if err != nil {
+			d.Free()
 			panic(err)
 		}
 		root.AddChild(f1xml)
@@ -149,5 +150,6 @@ func BenchmarkLibxml2DOM(b *testing.B) {
 		f1xml.AppendText(f.Field1)
 		buf.Reset()
 		buf.WriteString(d.Dump(false))
+		d.Free()
 	}
 }

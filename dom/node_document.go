@@ -15,7 +15,7 @@ func CreateDocument() *Document {
 // NewDocument creates a new document
 func NewDocument(version, encoding string) *Document {
 	ptr := clib.XMLCreateDocument(version, encoding)
-	return &Document{ptr: ptr}
+	return WrapDocument(ptr)
 }
 
 // Pointer returns the pointer to the underlying C struct
@@ -253,6 +253,7 @@ func (d *Document) Encoding() string {
 func (d *Document) Free() {
 	clib.XMLFreeDoc(d)
 	d.ptr = 0
+	docPool.Put(*d)
 }
 
 // String formats the document, always without formatting.

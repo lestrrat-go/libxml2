@@ -2,18 +2,24 @@ package dom
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/types"
 	"github.com/lestrrat/go-libxml2/xpath"
 )
 
+var docPool sync.Pool
 func init() {
 	xpath.WrapNodeFunc = WrapNode
+	docPool = sync.Pool{}
+	docPool.New = func() interface {} {
+		return Document{}
+	}
 }
 
 func WrapDocument(n uintptr) *Document {
-	doc := Document{}
+	doc := docPool.Get().(Document)
 	doc.ptr = n
 	return &doc
 }
