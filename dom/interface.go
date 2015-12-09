@@ -44,19 +44,19 @@ type XMLNode struct {
 }
 
 type Attribute struct {
-	*XMLNode
+	XMLNode
 }
 
 type CDataSection struct {
-	*XMLNode
+	XMLNode
 }
 
 type Comment struct {
-	*XMLNode
+	XMLNode
 }
 
 type Element struct {
-	*XMLNode
+	XMLNode
 }
 
 type Document struct {
@@ -65,11 +65,11 @@ type Document struct {
 }
 
 type Text struct {
-	*XMLNode
+	XMLNode
 }
 
 type Namespace struct {
-	*XMLNode
+	XMLNode
 }
 
 type Serializer interface {

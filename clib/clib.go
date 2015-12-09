@@ -1023,9 +1023,9 @@ func XMLToString(n PtrSource, format int, docencoding bool) string {
 		return ""
 	}
 
-	// TODO: Implement htis in C
 	buffer := C.xmlBufferCreate()
 	defer C.xmlBufferFree(buffer)
+
 	if format <= 0 {
 		C.xmlNodeDump(buffer, nptr.doc, nptr, 0, 0)
 	} else {

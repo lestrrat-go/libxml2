@@ -13,47 +13,45 @@ func init() {
 }
 
 func WrapDocument(n uintptr) *Document {
-	return &Document{
-		ptr: n,
-	}
+	doc := Document{}
+	doc.ptr = n
+	return &doc
 }
 
 func wrapNamespace(n uintptr) *Namespace {
-	return &Namespace{
-		XMLNode: wrapXMLNode(n),
-	}
+	ns := Namespace{}
+	ns.ptr = n
+	return &ns
 }
 
 func wrapAttribute(n uintptr) *Attribute {
-	return &Attribute{
-		XMLNode: wrapXMLNode(n),
-	}
+	attr := Attribute{}
+	attr.ptr = n
+	return &attr
 }
 
 func wrapCDataSection(n uintptr) *CDataSection {
-	return &CDataSection{
-		XMLNode: wrapXMLNode(n),
-	}
+	cdata := CDataSection{}
+	cdata.ptr = n
+	return &cdata
 }
 
 func wrapComment(n uintptr) *Comment {
-	return &Comment{
-		XMLNode: wrapXMLNode(n),
-	}
+	comment := Comment{}
+	comment.ptr = n
+	return &comment
 }
 
 func wrapElement(n uintptr) *Element {
-	return &Element{
-		XMLNode: wrapXMLNode(n),
-	}
+	el := Element{}
+	el.ptr = n
+	return &el
 }
 
 func wrapText(n uintptr) *Text {
-	return &Text{wrapXMLNode(n)}
-}
-
-func wrapXMLNode(n uintptr) *XMLNode {
-	return &XMLNode{ptr: n}
+	txt := Text{}
+	txt.ptr = n
+	return &txt
 }
 
 // WrapNode is a function created with the sole purpose of allowing
