@@ -110,12 +110,14 @@ func BenchmarkLibxml2Xmlpath(b *testing.B) {
 type Foo struct {
 	XMLName xml.Name `xml:"https://github.com/lestrrat/go-libxml2/foo foo:foo"`
 	Field1  string
+	Field2  string `xml:",attr"`
 }
 
 func BenchmarkEncodingXMLDOM(b *testing.B) {
 	var buf bytes.Buffer
 	f := Foo{
 		Field1: "Hello, World!",
+		Field2: "Hello, Attribute!",
 	}
 	for i := 0; i < b.N; i++ {
 		buf.Reset()
@@ -129,6 +131,7 @@ func BenchmarkLibxml2DOM(b *testing.B) {
 	const nsuri = `https://github.com/lestrrat/go-libxml2/foo`
 	f := Foo{
 		Field1: "Hello, World!",
+		Field2: "Hello, Attribute!",
 	}
 	for i := 0; i < b.N; i++ {
 		d := dom.CreateDocument()
@@ -146,6 +149,8 @@ func BenchmarkLibxml2DOM(b *testing.B) {
 			panic(err)
 		}
 		root.AddChild(f1xml)
+
+		f1xml.SetAttribute("Field2", f.Field2)
 
 		f1xml.AppendText(f.Field1)
 		buf.Reset()

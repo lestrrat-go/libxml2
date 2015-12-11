@@ -2,6 +2,15 @@ package clib
 
 import "errors"
 
+const (
+	MaxEncodingLength        = 256
+	MaxAttributeNameLength   = 1024
+	MaxElementNameLength     = 1024
+	MaxNamespaceURILength    = 4096
+	MaxValueBufferSize       = 4096
+	MaxXPathExpressionLength = 4096
+)
+
 // C14NMode represents the C14N mode supported by libxml2
 type C14NMode int
 
@@ -45,6 +54,11 @@ const (
 )
 
 var (
+	ErrAttributeNameTooLong   = errors.New("attribute name too long")
+	ErrElementNameTooLong     = errors.New("element name too long")
+	ErrNamespaceURITooLong    = errors.New("namespace uri too long")
+	ErrValueTooLong           = errors.New("value too long")
+	ErrXPathExpressionTooLong = errors.New("xpath expression too long")
 	// ErrInvalidAttribute is returned when the Attribute struct (probably
 	// the pointer to the underlying C struct is not valid)
 	ErrInvalidAttribute = errors.New("invalid attribute")
