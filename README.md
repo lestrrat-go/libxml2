@@ -196,11 +196,11 @@ For now my closest contender was [xmlpath](https://github.com/go-xmlpath/xmlpath
 ```
 shoebill% go test -v -run=none -benchmem -benchtime=5s -bench .
 PASS
-BenchmarkXmlpathXmlpath-4     500000         11380 ns/op         721 B/op          6 allocs/op
-BenchmarkLibxml2Xmlpath-4    1000000          7829 ns/op         368 B/op         15 allocs/op
-BenchmarkEncodingXMLDOM-4    3000000          3249 ns/op        4496 B/op          8 allocs/op
-BenchmarkLibxml2DOM-4         500000         16520 ns/op         279 B/op          6 allocs/op
-ok      github.com/lestrrat/go-libxml2  34.976s
+BenchmarkXmlpathXmlpath-4     500000         11737 ns/op         721 B/op          6 allocs/op
+BenchmarkLibxml2Xmlpath-4    1000000          7627 ns/op         368 B/op         15 allocs/op
+BenchmarkEncodingXMLDOM-4    2000000          4079 ns/op        4560 B/op          9 allocs/op
+BenchmarkLibxml2DOM-4        1000000         11454 ns/op         264 B/op          7 allocs/op
+ok      github.com/lestrrat/go-libxml2  37.597s
 ```
 
 ## See Also
