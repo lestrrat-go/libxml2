@@ -20,6 +20,7 @@ func init() {
 
 func WrapDocument(n uintptr) *Document {
 	doc := docPool.Get().(Document)
+	doc.mortal = false
 	doc.ptr = n
 	return &doc
 }
