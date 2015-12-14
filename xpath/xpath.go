@@ -1,3 +1,25 @@
+/*
+
+Package xpath contains tools to handle XPath evaluation.
+
+Because of a very quirky dependency between this package and the
+github.com/lestrrat/libxml2/dom package, you MUST import both
+packages to properly use it.
+
+	import (
+		"github.com/lestrrat/go-libxml2/dom"
+		"github.com/lestrrat/go-libxml2/xpath"
+	)
+
+Or, if you have no use for dom package in your program, and you
+don't want to use the magical "_" import, you can do the initialization
+yourself just to appease the compiler:
+
+	func init() {
+		dom.SetupXPathCallback()
+	}
+
+*/
 package xpath
 
 import (
@@ -33,9 +55,9 @@ func (x Object) Bool() bool {
 // package ("github.com/lestrrat/go-libxml2/dom"), and said package
 // uses this package... Yes, a circular dependency.
 //
-// Normally this usually means that both pacckages should live under
-// the same unified package, but in this case they are independent
-// enought that we have decided they warrant to be separated.
+// Normally this means that both pacckages should live under the same
+// unified package, but in this case they are independent enough that
+// we have decided they warrant to be separated.
 //
 // So this WrapNodeFunc is our workaround for this problem: when
 // github.com/lestrrat/go-libxml2/dom is loaded, it automatically
@@ -211,4 +233,3 @@ func (x *Context) LookupNamespaceURI(prefix string) (string, error) {
 func (x *Context) RegisterNS(name, nsuri string) error {
 	return clib.XMLXPathRegisterNS(x, name, nsuri)
 }
-

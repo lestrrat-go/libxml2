@@ -11,11 +11,15 @@ import (
 
 var docPool sync.Pool
 func init() {
-	xpath.WrapNodeFunc = WrapNode
+	SetupXPathCallback()
 	docPool = sync.Pool{}
 	docPool.New = func() interface {} {
 		return Document{}
 	}
+}
+
+func SetupXPathCallback() {
+	xpath.WrapNodeFunc = WrapNode
 }
 
 func WrapDocument(n uintptr) *Document {
