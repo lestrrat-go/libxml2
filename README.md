@@ -69,7 +69,7 @@ import (
   "github.com/lestrrat/go-libxml2/xpath"
 )
 
-func ExmapleXML() {
+func ExampleXML() {
   res, err := http.Get("http://blog.golang.org/feed.atom")
   if err != nil {
     panic("failed to get blog.golang.org: " + err.Error())
