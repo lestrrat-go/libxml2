@@ -89,7 +89,13 @@ func ExampleXML() {
     return nil
   })
 
-  ctx, err := xpath.NewContext(doc.DocumentElement())
+  root, err := doc.DocumentElement()
+  if err != nil {
+    log.Printf("Failed to fetch document element: %s", err)
+    return
+  }
+
+  ctx, err := xpath.NewContext(root)
   if err != nil {
     log.Printf("Failed to create xpath context: %s", err)
     return
