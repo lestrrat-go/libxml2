@@ -866,9 +866,9 @@ func XMLNodeValue(n PtrSource) (string, error) {
 
 	var s string
 	switch XMLNodeType(nptr._type) {
-	case AttributeNode, ElementNode, TextNode, CommentNode, CDataSectionNode, PiNode, EntityRefNode:
+	case AttributeNode, ElementNode, TextNode, CommentNode, PiNode, EntityRefNode:
 		s = xmlCharToString(C.xmlXPathCastNodeToString(nptr))
-	case EntityDecl:
+	case CDataSectionNode, EntityDecl:
 		if nptr.content != nil {
 			s = xmlCharToString(C.xmlStrdup(nptr.content))
 		}

@@ -1,5 +1,5 @@
 /*
-Package types exist to provide with common types that are used 
+Package types exist to provide with common types that are used
 through out in go-libxml2. This package contains mainly interfaces
 to things that are implemented else. It is in its own package
 so that any package can refer to these interfaces without introducing

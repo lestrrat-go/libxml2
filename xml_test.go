@@ -113,11 +113,14 @@ func TestNamespacedReconciliation(t *testing.T) {
 }
 
 func TestRegressionGH7(t *testing.T) {
-	doc, err := ParseHTMLString(`<html>
+	doc, err := ParseHTMLString(`<!DOCTYPE html>
+<html>
 <body>
-	<div>
-		<div>Hello, World!</div>
-	</div>
+<div>
+<style>
+</style>
+    1234
+</div>
 </body>
 </html>`)
 
@@ -125,7 +128,7 @@ func TestRegressionGH7(t *testing.T) {
 		return
 	}
 
-	nodes := xpath.NodeList(doc.Find(`./body/div/div`))
+	nodes := xpath.NodeList(doc.Find(`./body/div`))
 	if !assert.NotEmpty(t, nodes, "Find should succeed") {
 		return
 	}
