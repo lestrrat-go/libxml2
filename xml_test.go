@@ -8,6 +8,7 @@ import (
 	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/lestrrat/go-libxml2/parser"
 	"github.com/lestrrat/go-libxml2/types"
+	"github.com/lestrrat/go-libxml2/xpath"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -109,4 +110,35 @@ func TestNamespacedReconciliation(t *testing.T) {
 	*/
 
 	t.Logf("%s", d.String())
+}
+
+func TestRegressionGH7(t *testing.T) {
+	doc, err := ParseHTMLString(`<!DOCTYPE html>
+<html>
+<body>
+<div>
+<style>
+</style>
+    1234
+</div>
+</body>
+</html>`)
+
+	if !assert.NoError(t, err, "ParseHTMLString should succeed") {
+		return
+	}
+
+	nodes := xpath.NodeList(doc.Find(`./body/div`))
+	if !assert.NotEmpty(t, nodes, "Find should succeed") {
+		return
+	}
+
+	v, err := nodes.Literal()
+	if !assert.NoError(t, err, "Literal() should succeed") {
+		return
+	}
+	if !assert.NotEmpty(t, v, "Literal() should return some string") {
+		return
+	}
+	t.Logf("v = '%s'", v)
 }

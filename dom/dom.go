@@ -1,7 +1,7 @@
 package dom
 
 import (
-	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/lestrrat/go-libxml2/clib"
@@ -10,10 +10,11 @@ import (
 )
 
 var docPool sync.Pool
+
 func init() {
 	SetupXPathCallback()
 	docPool = sync.Pool{}
-	docPool.New = func() interface {} {
+	docPool.New = func() interface{} {
 		return Document{}
 	}
 }
@@ -69,14 +70,16 @@ func wrapText(n uintptr) *Text {
 // go-libxml2 consumers that can generate a C.xmlNode pointer to
 // create libxml2.Node types, e.g. go-xmlsec.
 func WrapNode(n uintptr) (types.Node, error) {
-	switch clib.XMLGetNodeTypeRaw(n) {
+	switch typ := clib.XMLGetNodeTypeRaw(n); typ {
 	case clib.AttributeNode:
 		return wrapAttribute(n), nil
 	case clib.ElementNode:
 		return wrapElement(n), nil
 	case clib.TextNode:
 		return wrapText(n), nil
+	case clib.CDataSectionNode:
+		return wrapCDataSection(n), nil
 	default:
-		return nil, errors.New("unknown node")
+		return nil, fmt.Errorf("unknown node: %d", typ)
 	}
 }
