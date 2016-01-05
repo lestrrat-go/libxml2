@@ -6,6 +6,10 @@
 
 Interface to libxml2, with DOM interface.
 
+## Why?
+
+I needed to write [go-xmlsec](https://github.com/lestrrat/go-xmlsec). This means we need to build trees using libxml2, and then muck with it in xmlsec: Two separate packages in Go means we cannot (safely) pass around `C.xmlFooPtr` objects (also, you pay a penalty for pointer types). This package carefully avoid references to `C.xmlFooPtr` types and uses uintptr to pass data around, so other libraries that needs to interact with libxml2 can safely interact with it.
+
 ## Status
 
 * This library should be considered alpha grade. API may still change.
