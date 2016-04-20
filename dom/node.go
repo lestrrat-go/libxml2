@@ -164,6 +164,9 @@ func (n *XMLNode) NextSibling() (types.Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	if ptr == 0 {
+		return nil, nil
+	}
 	return WrapNode(ptr)
 }
 
