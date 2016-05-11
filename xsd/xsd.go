@@ -19,6 +19,7 @@ package xsd
 import (
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/types"
+	"github.com/pkg/errors"
 )
 
 // Parse is used to parse an XML Schema Document to produce a
@@ -27,7 +28,7 @@ import (
 func Parse(buf []byte) (*Schema, error) {
 	sptr, err := clib.XMLSchemaParse(buf)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to parse input")
 	}
 
 	return &Schema{ptr: sptr}, nil

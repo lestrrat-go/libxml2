@@ -2,12 +2,12 @@ package parser
 
 import (
 	"bytes"
-	"errors"
 	"io"
 
-	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/lestrrat/go-libxml2/clib"
+	"github.com/lestrrat/go-libxml2/dom"
 	"github.com/lestrrat/go-libxml2/types"
+	"github.com/pkg/errors"
 )
 
 const _OptionName = "RecoverNoEntDTDLoadDTDAttrDTDValidNoErrorNoWarningPedanticNoBlanksSAX1XIncludeNoNetNoDictNscleanNoCDATANoXIncNodeCompactOld10NoBaseFixHugeOldSAXIgnoreEncBigLines"
@@ -95,21 +95,21 @@ func (p *Parser) Parse(buf []byte) (types.Document, error) {
 func (p *Parser) ParseString(s string) (types.Document, error) {
 	ctx, err := NewCtxt(s, p.Options)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create parse context")
 	}
 	defer ctx.Free()
 
 	if err := ctx.Parse(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create parse input")
 	}
 
 	if ctx.WellFormed() {
-		return nil, ErrMalformedXML
+		return nil, errors.Wrap(ErrMalformedXML, "malformed input")
 	}
 
 	doc, err := ctx.Document()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get document")
 	}
 	return doc, nil
 }
@@ -118,7 +118,7 @@ func (p *Parser) ParseString(s string) (types.Document, error) {
 func (p *Parser) ParseReader(in io.Reader) (types.Document, error) {
 	buf := &bytes.Buffer{}
 	if _, err := buf.ReadFrom(in); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to read from reader")
 	}
 
 	return p.ParseString(buf.String())
@@ -128,7 +128,7 @@ func (p *Parser) ParseReader(in io.Reader) (types.Document, error) {
 func NewCtxt(s string, o Option) (*Ctxt, error) {
 	ctxptr, err := clib.XMLCreateMemoryParserCtxt(s, int(o))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to execute XMLXreateMemoryParser")
 	}
 	return &Ctxt{ptr: ctxptr}, nil
 }
@@ -146,7 +146,7 @@ func (ctx Ctxt) Parse() error {
 // Free releases the underlying C struct
 func (ctx *Ctxt) Free() error {
 	if err := clib.XMLFreeParserCtxt(ctx); err != nil {
-		return err
+		return errors.Wrap(err, "failed to free parser context")
 	}
 
 	ctx.ptr = 0

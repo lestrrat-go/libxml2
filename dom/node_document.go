@@ -1,10 +1,9 @@
 package dom
 
 import (
-	"errors"
-
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/types"
+	"github.com/pkg/errors"
 )
 
 // CreateDocument creates a new document with version="1.0", and no encoding
@@ -56,7 +55,7 @@ func (d *Document) HasChildNodes() bool {
 func (d *Document) FirstChild() (types.Node, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get document element")
 	}
 
 	return root, nil
@@ -66,7 +65,7 @@ func (d *Document) FirstChild() (types.Node, error) {
 func (d *Document) LastChild() (types.Node, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get document element")
 	}
 
 	return root, nil
@@ -89,7 +88,7 @@ func (d *Document) NodeName() string {
 
 // SetNodeName is a no op for document
 func (d *Document) SetNodeName(s string) {
-//	return errors.New("cannot set node name on a document")
+	//	return errors.New("cannot set node name on a document")
 }
 
 // NodeValue always returns an empty string for Document
@@ -99,7 +98,7 @@ func (d *Document) NodeValue() string {
 
 // SetNodeValue is a no op for document
 func (d *Document) SetNodeValue(s string) {
-//	return errors.New("cannot set node value on a document")
+	//	return errors.New("cannot set node value on a document")
 }
 
 // OwnerDocument always returns the document itself
@@ -141,7 +140,7 @@ func (d *Document) ToString(x int, b bool) string {
 func (d *Document) ChildNodes() (types.NodeList, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get document element")
 	}
 
 	return []types.Node{root}, nil
@@ -162,7 +161,7 @@ func (d *Document) AddChild(n types.Node) error {
 func (d *Document) CreateAttribute(k, v string) (*Attribute, error) {
 	attr, err := clib.XMLNewDocProp(d, k, v)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get document property")
 	}
 	return wrapAttribute(attr), nil
 }
@@ -175,7 +174,7 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 
 	ptr, err := clib.XMLCreateAttributeNS(d, nsuri, k, v)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create attribute")
 	}
 	return wrapAttribute(ptr), nil
 }
@@ -184,7 +183,7 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
 	cdata, err := clib.XMLNewCDataBlock(d, txt)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create CDATA block")
 	}
 	return wrapCDataSection(cdata), nil
 }
@@ -193,7 +192,7 @@ func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
 func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
 	ptr, err := clib.XMLNewComment(txt)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create comment")
 	}
 	return wrapComment(ptr), nil
 }
@@ -202,7 +201,7 @@ func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
 func (d *Document) CreateElement(name string) (types.Element, error) {
 	ptr, err := clib.XMLCreateElement(d, name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create element")
 	}
 	return wrapElement(ptr), nil
 }
@@ -211,7 +210,7 @@ func (d *Document) CreateElement(name string) (types.Element, error) {
 func (d *Document) CreateElementNS(nsuri, name string) (types.Element, error) {
 	ptr, err := clib.XMLCreateElementNS(d, nsuri, name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create element")
 	}
 	return wrapElement(ptr), nil
 }
@@ -220,7 +219,7 @@ func (d *Document) CreateElementNS(nsuri, name string) (types.Element, error) {
 func (d *Document) CreateTextNode(txt string) (*Text, error) {
 	ptr, err := clib.XMLNewText(txt)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create text node")
 	}
 	return wrapText(ptr), nil
 }
@@ -229,7 +228,7 @@ func (d *Document) CreateTextNode(txt string) (*Text, error) {
 func (d *Document) DocumentElement() (types.Node, error) {
 	n, err := clib.XMLDocumentElement(d)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get document element")
 	}
 	return WrapNode(n)
 }
@@ -239,7 +238,7 @@ func (d *Document) DocumentElement() (types.Node, error) {
 func (d *Document) Find(xpath string) (types.XPathResult, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get document element")
 	}
 	return root.Find(xpath)
 }
@@ -315,7 +314,7 @@ func (d *Document) Version() string {
 func (d *Document) Walk(fn func(types.Node) error) error {
 	root, err := d.DocumentElement()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to get document element")
 	}
 	walk(root, fn)
 	return nil
@@ -326,7 +325,8 @@ func (d *Document) Walk(fn func(types.Node) error) error {
 func (d *Document) LookupNamespacePrefix(href string) (string, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "failed to get document element")
+
 	}
 
 	return root.LookupNamespacePrefix(href)
@@ -337,7 +337,7 @@ func (d *Document) LookupNamespacePrefix(href string) (string, error) {
 func (d *Document) LookupNamespaceURI(prefix string) (string, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "failed to get document element")
 	}
 
 	return root.LookupNamespaceURI(prefix)

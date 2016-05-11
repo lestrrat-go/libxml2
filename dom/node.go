@@ -4,20 +4,21 @@ import (
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/types"
 	"github.com/lestrrat/go-libxml2/xpath"
+	"github.com/pkg/errors"
 )
 
 // ChildNodes returns the child nodes
 func (n *XMLNode) ChildNodes() (types.NodeList, error) {
 	list, err := clib.XMLChildNodes(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get child node pointers")
 	}
 
 	ret := make(types.NodeList, len(list))
 	for i, x := range list {
 		ret[i], err = WrapNode(x)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to wrap node pointer")
 		}
 	}
 	return ret, nil
@@ -37,11 +38,11 @@ func (n *XMLNode) String() string {
 func (n *XMLNode) OwnerDocument() (types.Document, error) {
 	ptr, err := clib.XMLOwnerDocument(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid owner document")
 	}
 
 	if ptr == 0 {
-		return nil, clib.ErrInvalidDocument
+		return nil, errors.Wrap(clib.ErrInvalidDocument, "failed to get valid owner document")
 	}
 	return WrapDocument(ptr), nil
 }
@@ -78,11 +79,11 @@ func (n *XMLNode) IsSameNode(other types.Node) bool {
 func (n *XMLNode) Copy() (types.Node, error) {
 	doc, err := n.OwnerDocument()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get owner document")
 	}
 	nptr, err := clib.XMLDocCopyNode(n, doc, 1)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to copy document nodes")
 	}
 	return WrapNode(nptr)
 }
@@ -98,7 +99,7 @@ func (n *XMLNode) SetDocument(d types.Document) error {
 func (n *XMLNode) ParseInContext(s string, o int) (types.Node, error) {
 	nptr, err := clib.XMLParseInNodeContext(n, s, o)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to parse input")
 	}
 	return WrapNode(nptr)
 }
@@ -107,7 +108,7 @@ func (n *XMLNode) ParseInContext(s string, o int) (types.Node, error) {
 func (n *XMLNode) Find(expr string) (types.XPathResult, error) {
 	ctx, err := xpath.NewContext(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create new XPath context")
 	}
 	defer ctx.Free()
 
@@ -118,7 +119,7 @@ func (n *XMLNode) Find(expr string) (types.XPathResult, error) {
 func (n *XMLNode) FindExpr(expr *xpath.Expression) (types.XPathResult, error) {
 	ctx, err := xpath.NewContext(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create new XPath context")
 	}
 	defer ctx.Free()
 
@@ -134,7 +135,7 @@ func (n *XMLNode) HasChildNodes() bool {
 func (n *XMLNode) FirstChild() (types.Node, error) {
 	ptr, err := clib.XMLFirstChild(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid pointer to first child")
 	}
 	return WrapNode(ptr)
 }
@@ -143,7 +144,7 @@ func (n *XMLNode) FirstChild() (types.Node, error) {
 func (n *XMLNode) LastChild() (types.Node, error) {
 	ptr, err := clib.XMLFirstChild(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid pointer to first child")
 	}
 	return WrapNode(ptr)
 }
@@ -162,7 +163,7 @@ func (n *XMLNode) NamespaceURI() string {
 func (n *XMLNode) NextSibling() (types.Node, error) {
 	ptr, err := clib.XMLNextSibling(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid pointer to next child")
 	}
 	if ptr == 0 {
 		return nil, nil
@@ -174,7 +175,7 @@ func (n *XMLNode) NextSibling() (types.Node, error) {
 func (n *XMLNode) ParentNode() (types.Node, error) {
 	ptr, err := clib.XMLParentNode(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid pointer to parent node")
 	}
 
 	return WrapNode(ptr)
@@ -189,7 +190,7 @@ func (n *XMLNode) Prefix() string {
 func (n *XMLNode) PreviousSibling() (types.Node, error) {
 	ptr, err := clib.XMLPreviousSibling(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid pointer to previous child")
 	}
 
 	return WrapNode(ptr)
@@ -257,15 +258,15 @@ func (n *XMLNode) Free() {
 
 func walk(n types.Node, fn func(types.Node) error) error {
 	if err := fn(n); err != nil {
-		return err
+		return errors.Wrap(err, "failed to call callback")
 	}
 	children, err := n.ChildNodes()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to fetch child nodes")
 	}
 	for _, c := range children {
 		if err := walk(c, fn); err != nil {
-			return err
+			return errors.Wrap(err, "failed to walk to child nodes")
 		}
 	}
 	return nil

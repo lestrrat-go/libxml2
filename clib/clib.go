@@ -329,7 +329,6 @@ MY_setErrWarnAccumulator(xmlSchemaValidCtxtPtr ctxt, go_libxml2_errwarn_accumula
 */
 import "C"
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -338,6 +337,7 @@ import (
 	"unsafe"
 
 	"github.com/lestrrat/go-libxml2/internal/debug"
+	"github.com/pkg/errors"
 )
 
 const _XPathObjectTypeName = "XPathUndefinedXPathNodeSetXPathBooleanXPathNumberXPathStringXPathPointXPathRangeXPathLocationSetXPathUSersXPathXsltTree"
@@ -1124,7 +1124,7 @@ func XMLGetNodeType(n PtrSource) XMLNodeType {
 func XMLChildNodes(n PtrSource) ([]uintptr, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return nil, ErrInvalidNode
+		return nil, errors.Wrap(err, "failed to get valid node for XMLChildNodes")
 	}
 
 	ret := []uintptr(nil)
@@ -1482,7 +1482,7 @@ func XMLSetProp(n PtrSource, name, value string) error {
 func XMLElementAttributes(n PtrSource) ([]uintptr, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid node for XMLElementAttributes")
 	}
 
 	attrs := []uintptr{}
@@ -1495,7 +1495,7 @@ func XMLElementAttributes(n PtrSource) ([]uintptr, error) {
 func XMLElementNamespaces(n PtrSource) ([]uintptr, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid node for XMLElementNamespaces")
 	}
 
 	ret := []uintptr{}
@@ -1918,16 +1918,16 @@ func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {
 	// Probably needs NodeList iterator
 	xptr, err := validXPathObjectPtr(x)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid xpath object for XMLXPathObjectNodeList")
 	}
 
 	nodeset := xptr.nodesetval
 	if nodeset == nil {
-		return nil, ErrInvalidNode
+		return nil, errors.Wrap(ErrInvalidNode, "failed to get valid node for XMLXPathObjectNodeList")
 	}
 
 	if nodeset.nodeNr == 0 {
-		return nil, ErrInvalidNode
+		return nil, errors.Wrap(ErrInvalidNode, "failed to get valid node for XMLXPathObjectNodeList")
 	}
 
 	hdr := reflect.SliceHeader{

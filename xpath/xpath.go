@@ -27,6 +27,7 @@ import (
 
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/types"
+	"github.com/pkg/errors"
 )
 
 // Pointer returns the underlying C struct
@@ -127,7 +128,7 @@ func (x *Object) Free() {
 func NewExpression(s string) (*Expression, error) {
 	ptr, err := clib.XMLXPathCompile(s)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to compile expression")
 	}
 
 	return &Expression{ptr: ptr, expr: s}, nil
@@ -161,7 +162,7 @@ func NewContext(n ...types.Node) (*Context, error) {
 
 	ctxptr, err := clib.XMLXPathNewContext(node)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get valid xpath context")
 	}
 
 	return &Context{ptr: ctxptr}, nil
@@ -204,7 +205,7 @@ func (x *Context) Free() {
 func (x *Context) Find(s string) (types.XPathResult, error) {
 	expr, err := NewExpression(s)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to compile expression")
 	}
 	defer expr.Free()
 
@@ -218,7 +219,7 @@ func (x *Context) Find(s string) (types.XPathResult, error) {
 func (x *Context) FindExpr(expr types.XPathExpression) (types.XPathResult, error) {
 	res, err := clib.XMLEvalXPath(x, expr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to evaluate expression")
 	}
 
 	return &Object{ptr: res}, nil
