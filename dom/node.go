@@ -142,7 +142,7 @@ func (n *XMLNode) FirstChild() (types.Node, error) {
 
 // LastChild returns the last child node
 func (n *XMLNode) LastChild() (types.Node, error) {
-	ptr, err := clib.XMLFirstChild(n)
+	ptr, err := clib.XMLLastChild(n)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get valid pointer to first child")
 	}
