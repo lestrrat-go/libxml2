@@ -96,6 +96,7 @@ type Node interface {
 	NodeValue() string
 	ParentNode() (Node, error)
 	PreviousSibling() (Node, error)
+	RemoveChild(Node) error
 	SetDocument(d Document) error
 	SetNodeName(string)
 	SetNodeValue(string)

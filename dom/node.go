@@ -24,6 +24,10 @@ func (n *XMLNode) ChildNodes() (types.NodeList, error) {
 	return ret, nil
 }
 
+func (n *XMLNode) RemoveChild(t types.Node) error {
+	return clib.XMLRemoveChild(n, t)
+}
+
 // Pointer returns the pointer to the underlying C struct
 func (n *XMLNode) Pointer() uintptr {
 	return n.ptr

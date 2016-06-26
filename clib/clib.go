@@ -379,11 +379,12 @@ func validNodePtr(n PtrSource) (*C.xmlNode, error) {
 		return nil, ErrInvalidNode
 	}
 
-	if nptr := n.Pointer(); nptr != 0 {
-		return (*C.xmlNode)(unsafe.Pointer(nptr)), nil
+	nptr := n.Pointer()
+	if nptr == 0 {
+		return nil, ErrInvalidNode
 	}
 
-	return nil, ErrInvalidNode
+	return (*C.xmlNode)(unsafe.Pointer(nptr)), nil
 }
 
 func validAttributePtr(n PtrSource) (*C.xmlAttr, error) {
@@ -1132,6 +1133,150 @@ func XMLChildNodes(n PtrSource) ([]uintptr, error) {
 		ret = append(ret, uintptr(unsafe.Pointer(chld)))
 	}
 	return ret, nil
+}
+
+type stringer interface {
+	String() string
+}
+
+func XMLRemoveChild(n PtrSource, t PtrSource) error {
+	nptr, err := validNodePtr(n)
+	if err != nil {
+		return errors.Wrap(err, "failed to get valid node for XMLRemoveChild")
+	}
+
+	tptr, err := validNodePtr(t)
+	if err != nil {
+		return errors.Wrap(err, "failed to get valid node for XMLRemoveChild")
+	}
+
+	switch XMLNodeType(tptr._type) {
+	case AttributeNode, NamespaceDecl:
+		return nil
+	}
+
+	if tptr.parent != nptr {
+		return nil /* not a child! */
+	}
+
+	unlinkNode(tptr)
+	if XMLNodeType(tptr._type) == ElementNode {
+		reconcileNs(tptr)
+	}
+
+	return nil
+}
+
+func unlinkNode(nptr *C.xmlNode) {
+	if nptr == nil || (nptr.prev == nil && nptr.next == nil && nptr.parent == nil) {
+		return
+	}
+
+	if XMLNodeType(nptr._type) == DTDNode {
+		/* This clears the doc->intSubset pointer. */
+		C.xmlUnlinkNode(nptr)
+		return
+	}
+
+	if nptr.prev != nil {
+		nptr.prev.next = nptr.next
+	}
+
+	if nptr.next != nil {
+		nptr.next.prev = nptr.prev
+	}
+
+	if nptr.parent != nil {
+		if nptr == nptr.parent.last {
+			nptr.parent.last = nptr.prev
+		}
+
+		if nptr == nptr.parent.children {
+			nptr.parent.children = nptr.next
+		}
+	}
+
+	nptr.prev = nil
+	nptr.next = nil
+	nptr.parent = nil
+}
+
+func reconcileNs(tree *C.xmlNode) {
+	var unused *C.xmlNs
+	reconcileNsSave(tree, &unused)
+	if unused != nil {
+		C.xmlFreeNsList(unused)
+	}
+}
+
+func addNsChain(n *C.xmlNs, ns *C.xmlNs) *C.xmlNs {
+	if n == nil {
+		return ns
+	}
+
+	for i := n; i != nil && i != ns; i = i.next {
+		if i == nil {
+			ns.next = n
+			return ns
+		}
+	}
+
+	return n
+}
+
+func addNsDef(tree *C.xmlNode, ns *C.xmlNs) {
+	i := tree.nsDef
+	for ; i != nil && i != ns; i = i.next {
+	}
+
+	if i == nil {
+		ns.next = tree.nsDef
+		tree.nsDef = ns
+	}
+}
+
+func removeNsDef(tree *C.xmlNode, ns *C.xmlNs) bool {
+	if ns == tree.nsDef {
+		tree.nsDef = tree.nsDef.next
+		ns.next = nil
+		return true
+	}
+
+	for i := tree.nsDef; i != nil; i = i.next {
+		if i.next == ns {
+			i.next = ns.next
+			ns.next = nil
+			return true
+		}
+	}
+
+	return false
+}
+
+func reconcileNsSave(tree *C.xmlNode, unused **C.xmlNs) {
+	if tree.ns != nil && (XMLNodeType(tree._type) == ElementNode || XMLNodeType(tree._type) == AttributeNode) {
+		ns := C.xmlSearchNs(tree.doc, tree.parent, tree.ns.prefix)
+		if ns != nil && ns.href != nil && tree.ns.href != nil && C.xmlStrcmp(ns.href, tree.ns.href) == 0 {
+			/* Remove the declaration (if present) */
+			if removeNsDef(tree, tree.ns) {
+				/* Queue the namespace for freeing */
+
+				*unused = addNsChain(*unused, tree.ns)
+			}
+			/* Replace the namespace with the one found */
+
+			tree.ns = ns
+		} else {
+			/* If the declaration is here, we don't need to do anything */
+			if removeNsDef(tree, tree.ns) {
+				addNsDef(tree, tree.ns)
+			} else {
+				/* Restart the namespace at this point */
+				tree.ns = C.xmlCopyNamespace(tree.ns)
+				addNsDef(tree, tree.ns)
+			}
+		}
+	}
 }
 
 func SplitPrefixLocal(s string) (string, string) {
