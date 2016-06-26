@@ -342,3 +342,11 @@ func (d *Document) LookupNamespaceURI(prefix string) (string, error) {
 
 	return root.LookupNamespaceURI(prefix)
 }
+
+func (d *Document) RemoveChild(n types.Node) error {
+	root, err := d.DocumentElement()
+	if err != nil {
+		return errors.Wrap(err, "failed to get document element")
+	}
+	return root.RemoveChild(n)
+}

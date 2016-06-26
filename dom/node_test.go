@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/lestrrat/go-libxml2/clib"
+	"github.com/lestrrat/go-libxml2/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -123,24 +124,36 @@ func TestDOM(t *testing.T) {
 	}
 
 	doc.SetDocumentElement(root)
+	var toRemove types.Node
 	for i := 1; i <= 3; i++ {
 		child, err := doc.CreateElement(fmt.Sprintf("child%d", i))
-		if err != nil {
-			t.Errorf("Failed to create child node: %s", err)
+		if !assert.NoError(t, err, "dom.CreateElement(child%d) should succeed", i) {
+
 			return
 		}
 		child.AppendText(fmt.Sprintf("text%d", i))
 		root.AddChild(child)
+
+		if i == 2 {
+			toRemove = child
+		}
 	}
 
 	// Temporary test
 	expected := `<?xml version="1.0" encoding="utf-8"?>
 <root><child1>text1</child1><child2>text2</child2><child3>text3</child3></root>
 `
-	if doc.String() != expected {
-		t.Errorf("Failed to create XML document")
-		t.Logf("Expected\n%s", expected)
-		t.Logf("Got\n%s", doc.String())
+	if !assert.Equal(t, expected, doc.String(), "Failed to create XML document") {
+		return
+	}
+
+	if !assert.NoError(t, root.RemoveChild(toRemove), "RemoveChild should succeed") {
+		return
+	}
+	expected = `<?xml version="1.0" encoding="utf-8"?>
+<root><child1>text1</child1><child3>text3</child3></root>
+`
+	if !assert.Equal(t, expected, doc.String(), "XML should match") {
 		return
 	}
 }
