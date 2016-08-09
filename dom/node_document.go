@@ -133,7 +133,7 @@ func (d *Document) TextContent() string {
 
 // ToString is currently just an alias to Dump(false)
 func (d *Document) ToString(x int, b bool) string {
-	return d.Dump(false)
+	return d.Dump(b)
 }
 
 // ChildNodes returns the document element
