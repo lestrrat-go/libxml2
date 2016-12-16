@@ -264,3 +264,17 @@ func TestOptionsShouldCombine(t *testing.T) {
 		assert.Equal(t, expected, p.Options)
 	}
 }
+
+func TestGHIssue23(t *testing.T) {
+	const src = `<?xml version=1.0?>
+<rootnode>
+    <greeting>Hello</greeting>
+    <goodbye>Goodbye!</goodbye>
+</rootnode>`
+
+	doc, err := ParseString(src, parser.XMLParseRecover, parser.XMLParseNoWarning, parser.XMLParseNoError)
+	if !assert.NoError(t, err, "should pass") {
+		return
+	}
+	doc.Free()
+}

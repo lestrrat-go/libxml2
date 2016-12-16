@@ -503,27 +503,6 @@ func XMLFreeParserCtxt(ctx PtrSource) error {
 	return nil
 }
 
-func XMLParserCtxtWellFormed(ctx PtrSource) bool {
-	ctxptr, err := validParserCtxtPtr(ctx)
-	if err != nil {
-		return false
-	}
-
-	return ctxptr.wellFormed == C.int(0)
-}
-
-func XMLParserCtxtDocument(ctx PtrSource) uintptr {
-	ctxptr, err := validParserCtxtPtr(ctx)
-	if err != nil {
-		return 0
-	}
-
-	if ctxptr.myDoc == nil {
-		return 0
-	}
-	return uintptr(unsafe.Pointer(ctxptr.myDoc))
-}
-
 func HTMLReadDoc(content, url, encoding string, opts int) (uintptr, error) {
 	// TODO: use htmlCtxReadDoc later, so we can get the error
 	ccontent := C.CString(content)
@@ -1861,7 +1840,9 @@ func XMLParseInNodeContext(n PtrSource, data string, o int) (uintptr, error) {
 	}
 
 	var ret C.xmlNodePtr
-	if C.xmlParseInNodeContext(nptr, C.CString(data), C.int(len(data)), C.int(o), &ret) != 0 {
+	cdata := C.CString(data)
+	defer C.free(unsafe.Pointer(cdata))
+	if C.xmlParseInNodeContext(nptr, cdata, C.int(len(data)), C.int(o), &ret) != 0 {
 		return 0, errors.New("XXX PLACE HOLDER XXX")
 	}
 
@@ -2169,4 +2150,33 @@ func XMLSchemaFree(s PtrSource) error {
 
 	C.xmlSchemaFree(sptr)
 	return nil
+}
+
+func XMLCtxtReadMemory(ctx PtrSource, file string, baseURL string, encoding string, options int) (uintptr, error) {
+	ctxptr, err := validParserCtxtPtr(ctx)
+	if err != nil {
+		return 0, errors.Wrap(err, "not a valid pointer")
+	}
+
+	var cfile, cbaseURL, cencoding *C.char
+	if file != "" {
+		cfile = C.CString(file)
+		defer C.free(unsafe.Pointer(cfile))
+	}
+
+	if baseURL != "" {
+		cbaseURL = C.CString(baseURL)
+		defer C.free(unsafe.Pointer(cbaseURL))
+	}
+
+	if encoding != "" {
+		cencoding = C.CString(encoding)
+		defer C.free(unsafe.Pointer(cencoding))
+	}
+
+	doc := C.xmlCtxtReadMemory(ctxptr, cfile, C.int(len(file)), cbaseURL, cencoding, C.int(options))
+	if doc == nil {
+		return 0, errors.New("failed to document")
+	}
+	return uintptr(unsafe.Pointer(doc)), nil
 }
