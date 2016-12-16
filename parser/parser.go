@@ -78,9 +78,11 @@ func (o Option) String() string {
 // New creates a new Parser with the given options.
 func New(opts ...Option) *Parser {
 	var o Option
-	if len(opts) > 0 {
-		o = opts[0]
+
+	for _, opt := range opts {
+		o = o | opt
 	}
+
 	return &Parser{
 		Options: o,
 	}

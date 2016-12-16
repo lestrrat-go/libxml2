@@ -252,3 +252,15 @@ func TestRoundtripNoBlanks(t *testing.T) {
 		return
 	}
 }
+
+func TestOptionsShouldCombine(t *testing.T) {
+	opts := map[parser.Option][]parser.Option{
+		parser.Option(64): []parser.Option{parser.XMLParseNoWarning},
+		parser.Option(96): []parser.Option{parser.XMLParseNoWarning, parser.XMLParseNoError},
+	}
+
+	for expected, options := range opts {
+		p := parser.New(options...)
+		assert.Equal(t, expected, p.Options)
+	}
+}
