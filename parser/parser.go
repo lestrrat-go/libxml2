@@ -78,9 +78,11 @@ func (o Option) String() string {
 // New creates a new Parser with the given options.
 func New(opts ...Option) *Parser {
 	var o Option
-	if len(opts) > 0 {
-		o = opts[0]
+
+	for _, opt := range opts {
+		o = o | opt
 	}
+
 	return &Parser{
 		Options: o,
 	}
@@ -99,19 +101,15 @@ func (p *Parser) ParseString(s string) (types.Document, error) {
 	}
 	defer ctx.Free()
 
-	if err := ctx.Parse(); err != nil {
+	docptr, err := clib.XMLCtxtReadMemory(ctx, s, "", "", int(p.Options))
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to create parse input")
 	}
 
-	if ctx.WellFormed() {
-		return nil, errors.Wrap(ErrMalformedXML, "malformed input")
+	if docptr != 0 {
+		return dom.WrapDocument(docptr), nil
 	}
-
-	doc, err := ctx.Document()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get document")
-	}
-	return doc, nil
+	return nil, errors.New("failed to generate document pointer")
 }
 
 // ParseReader parses XML from the given io.Reader
@@ -151,18 +149,4 @@ func (ctx *Ctxt) Free() error {
 
 	ctx.ptr = 0
 	return nil
-}
-
-// WellFormed returns true if the resulting document after parsing
-func (ctx Ctxt) WellFormed() bool {
-	return clib.XMLParserCtxtWellFormed(ctx)
-}
-
-// Document returns the resulting document after parsing
-func (ctx Ctxt) Document() (types.Document, error) {
-	docptr := clib.XMLParserCtxtDocument(ctx)
-	if docptr != 0 {
-		return dom.WrapDocument(docptr), nil
-	}
-	return nil, errors.New("no document available")
 }
