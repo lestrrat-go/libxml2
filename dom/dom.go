@@ -79,6 +79,8 @@ func WrapNode(n uintptr) (types.Node, error) {
 		return wrapText(n), nil
 	case clib.CDataSectionNode:
 		return wrapCDataSection(n), nil
+	case clib.CommentNode:
+		return wrapComment(n), nil
 	default:
 		return nil, fmt.Errorf("unknown node: %d", typ)
 	}
