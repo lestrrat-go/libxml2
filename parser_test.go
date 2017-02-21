@@ -278,3 +278,28 @@ func TestGHIssue23(t *testing.T) {
 	}
 	doc.Free()
 }
+
+func TestCommentWrapNodeIssue(t *testing.T) {
+
+	// should wrap comment node
+	const testHTML = "<p><!-- test --></p><!-- test --><p><!-- test --></p>"
+
+	doc, err := ParseHTMLString(testHTML, parser.HTMLParseRecover)
+	if err != nil {
+		t.Fatalf("Got error when parsing HTML: %v", err)
+	}
+
+	bodyRes, err := doc.Find("//body")
+	if err != nil {
+		t.Fatalf("Got error when grabbing body: %v", err)
+	}
+
+	bodyChildren, err := bodyRes.NodeList().First().ChildNodes()
+	if err != nil {
+		t.Fatalf("Got error when grabbing body's children: %v", err)
+	}
+
+	if str := bodyChildren.String(); str != testHTML {
+		t.Fatalf("HTML did not convert back correctly, expected: %v, got: %v.", testHTML, str)
+	}
+}
