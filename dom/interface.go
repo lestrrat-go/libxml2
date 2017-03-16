@@ -51,6 +51,10 @@ type CDataSection struct {
 	XMLNode
 }
 
+type Pi struct {
+	XMLNode
+}
+
 type Comment struct {
 	XMLNode
 }

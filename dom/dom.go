@@ -66,6 +66,12 @@ func wrapText(n uintptr) *Text {
 	return &txt
 }
 
+func wrapPiNode(n uintptr) *Pi {
+	txt := Pi{}
+	txt.ptr = n
+	return &txt
+}
+
 // WrapNode is a function created with the sole purpose of allowing
 // go-libxml2 consumers that can generate a C.xmlNode pointer to
 // create libxml2.Node types, e.g. go-xmlsec.
@@ -79,6 +85,8 @@ func WrapNode(n uintptr) (types.Node, error) {
 		return wrapText(n), nil
 	case clib.CDataSectionNode:
 		return wrapCDataSection(n), nil
+	case clib.PiNode:
+		return wrapPiNode(n), nil
 	case clib.CommentNode:
 		return wrapComment(n), nil
 	default:
