@@ -163,7 +163,7 @@ func (d *Document) CreateAttribute(k, v string) (*Attribute, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get document property")
 	}
-	return wrapAttribute(attr), nil
+	return wrapAttributeNode(attr), nil
 }
 
 // CreateAttributeNS creates a new attribute with the given XML namespace
@@ -176,7 +176,7 @@ func (d *Document) CreateAttributeNS(nsuri, k, v string) (*Attribute, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create attribute")
 	}
-	return wrapAttribute(ptr), nil
+	return wrapAttributeNode(ptr), nil
 }
 
 // CreateCDataSection creates a new CDATA section node
@@ -185,7 +185,7 @@ func (d *Document) CreateCDataSection(txt string) (*CDataSection, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create CDATA block")
 	}
-	return wrapCDataSection(cdata), nil
+	return wrapCDataSectionNode(cdata), nil
 }
 
 // CreateCommentNode creates a new comment node
@@ -194,7 +194,7 @@ func (d *Document) CreateCommentNode(txt string) (*Comment, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create comment")
 	}
-	return wrapComment(ptr), nil
+	return wrapCommentNode(ptr), nil
 }
 
 // CreateElement creates a new element node
@@ -203,7 +203,7 @@ func (d *Document) CreateElement(name string) (types.Element, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create element")
 	}
-	return wrapElement(ptr), nil
+	return wrapElementNode(ptr), nil
 }
 
 // CreateElementNS creates a new element node in the given XML namespace
@@ -212,7 +212,7 @@ func (d *Document) CreateElementNS(nsuri, name string) (types.Element, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create element")
 	}
-	return wrapElement(ptr), nil
+	return wrapElementNode(ptr), nil
 }
 
 // CreateTextNode creates a new text node
@@ -221,7 +221,7 @@ func (d *Document) CreateTextNode(txt string) (*Text, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create text node")
 	}
-	return wrapText(ptr), nil
+	return wrapTextNode(ptr), nil
 }
 
 // DocumentElement returns the root node of the document
