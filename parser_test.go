@@ -303,3 +303,30 @@ func TestCommentWrapNodeIssue(t *testing.T) {
 		t.Fatalf("HTML did not convert back correctly, expected: %v, got: %v.", testHTML, str)
 	}
 }
+
+func TestPiWrapNodeIssue(t *testing.T) {
+
+	// should wrap Pi node
+	const textXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<a>test <?test?></a>\n"
+	doc, err := ParseString(textXML)
+	if err != nil {
+		t.Fatalf("Got error when parsing xml: %v", err)
+	}
+
+	nodes, err := doc.ChildNodes()
+	if err != nil {
+		t.Fatalf("Got error when getting childnodes: %v", err)
+	}
+
+	for _, node := range nodes {
+		if node.HasChildNodes() {
+			if _, err := node.ChildNodes(); err != nil {
+				t.Fatalf("Got error when getting childnodes of childnodes: %v", err)
+			}
+		}
+	}
+
+	if str := doc.String(); str != textXML {
+		t.Fatalf("XML did not convert back correctly, expected: %v, got: %v", textXML, str)
+	}
+}
