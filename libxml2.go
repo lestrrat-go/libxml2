@@ -1,3 +1,4 @@
+//go:generate go run internal/cmd/genwrapnode/genwrapnode.go -- dom/node_wrap.go
 /*
 
 Package libxml2 is an interface to libxml2 library, providing XML and HTML parsers

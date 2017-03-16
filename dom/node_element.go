@@ -32,7 +32,7 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 			return err
 		}
 
-		ns := wrapNamespace(nsptr)
+		ns := wrapNamespaceNode(nsptr)
 		if ns.URI() != "" {
 			if activateflag {
 				clib.XMLSetNs(n, nil)
@@ -54,7 +54,7 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 	}
 
 	if activateflag {
-		if err := clib.XMLSetNs(n, wrapNamespace(ns)); err != nil {
+		if err := clib.XMLSetNs(n, wrapNamespaceNode(ns)); err != nil {
 			return err
 		}
 	}
@@ -77,7 +77,7 @@ func (n *Element) GetAttribute(name string) (types.Attribute, error) {
 	if err != nil {
 		return nil, err
 	}
-	return wrapAttribute(attrNode), nil
+	return wrapAttributeNode(attrNode), nil
 }
 
 // Attributes returns a list of attributes on a node
@@ -88,7 +88,7 @@ func (n *Element) Attributes() ([]types.Attribute, error) {
 	}
 	ret := make([]types.Attribute, len(attrs))
 	for i, attr := range attrs {
-		ret[i] = wrapAttribute(attr)
+		ret[i] = wrapAttributeNode(attr)
 	}
 	return ret, nil
 }
@@ -110,7 +110,7 @@ func (n *Element) RemoveAttribute(name string) error {
 		return ErrAttributeNotFound
 	}
 
-	return clib.XMLUnsetNsProp(n, wrapNamespace(ns), name)
+	return clib.XMLUnsetNsProp(n, wrapNamespaceNode(ns), name)
 }
 
 // GetNamespaces returns Namespace objects associated with this
@@ -125,7 +125,7 @@ func (n *Element) GetNamespaces() ([]types.Namespace, error) {
 	}
 	ret := make([]types.Namespace, len(list))
 	for i, nsptr := range list {
-		ret[i] = wrapNamespace(nsptr)
+		ret[i] = wrapNamespaceNode(nsptr)
 	}
 	return ret, nil
 }
