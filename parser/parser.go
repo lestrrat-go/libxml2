@@ -126,7 +126,7 @@ func (p *Parser) ParseReader(in io.Reader) (types.Document, error) {
 func NewCtxt(s string, o Option) (*Ctxt, error) {
 	ctxptr, err := clib.XMLCreateMemoryParserCtxt(s, int(o))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to execute XMLXreateMemoryParser")
+		return nil, errors.Wrap(err, "failed to execute XMLCreateMemoryParserCtxt")
 	}
 	return &Ctxt{ptr: ctxptr}, nil
 }
