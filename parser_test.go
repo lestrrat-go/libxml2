@@ -4,6 +4,9 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/lestrrat/go-libxml2/dom"
+	"github.com/lestrrat/go-libxml2/types"
+
 	"github.com/lestrrat/go-libxml2/clib"
 	"github.com/lestrrat/go-libxml2/parser"
 	"github.com/stretchr/testify/assert"
@@ -328,5 +331,29 @@ func TestPiWrapNodeIssue(t *testing.T) {
 
 	if str := doc.String(); str != textXML {
 		t.Fatalf("XML did not convert back correctly, expected: %v, got: %v", textXML, str)
+	}
+}
+
+func TestGetNonexistentAttributeReturnsRecoverableError(t *testing.T) {
+	const src = `<?xml version="1.0"?><rootnode/>`
+	doc, err := ParseString(src)
+	if !assert.NoError(t, err, "Should parse") {
+		return
+	}
+	defer doc.Free()
+
+	rootNode, err := doc.DocumentElement()
+	if !assert.NoError(t, err, "Should find root element") {
+		return
+	}
+
+	el, ok := rootNode.(types.Element)
+	if !ok {
+		t.Fatalf("Root node was not an element")
+	}
+
+	_, err = el.GetAttribute("non-existant")
+	if err != dom.ErrAttributeNotFound {
+		t.Fatalf("GetAttribute() error not comparable to existing library")
 	}
 }

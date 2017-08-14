@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrAttributeNotFound = errors.New("attribute not found")
+	ErrAttributeNotFound = clib.ErrAttributeNotFound
 	ErrInvalidNodeType   = errors.New("invalid node type")
 )
 
