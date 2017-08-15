@@ -54,6 +54,7 @@ const (
 )
 
 var (
+	ErrAttributeNotFound      = errors.New("attribute not found")
 	ErrAttributeNameTooLong   = errors.New("attribute name too long")
 	ErrElementNameTooLong     = errors.New("element name too long")
 	ErrNamespaceURITooLong    = errors.New("namespace uri too long")

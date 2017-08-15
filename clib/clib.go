@@ -1684,7 +1684,7 @@ func XMLElementGetAttributeNode(n PtrSource, name string) (uintptr, error) {
 	}
 
 	if prop == nil || XMLNodeType(prop._type) != AttributeNode {
-		return 0, errors.New("attribute not found")
+		return 0, ErrAttributeNotFound
 	}
 
 	return uintptr(unsafe.Pointer(prop)), nil
