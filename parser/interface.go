@@ -28,6 +28,8 @@ const (
 	HTMLParseNoNet = 1 << 11
 	// HTMLParseNoImplied disables implied html/body elements
 	HTMLParseNoImplied = 1 << 13
+	// HTMLParseNoCDATA merges CDATA as text nodes
+	HTMLParseNoCDATA = 1 << 14
 	// HTMLParseCompact enables compaction of small text nodes
 	HTMLParseCompact = 1 << 16
 	// HTMLParseIgnoreEnc ignores internal document encoding hints
