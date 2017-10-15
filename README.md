@@ -181,7 +181,7 @@ func ExampleXSD() {
   }
 
   if err := s.Validate(d); err != nil {
-    for _, e := range err.(SchemaValidationErr).Errors() {
+    for _, e := range err.(xsd.SchemaValidationError).Errors() {
       log.Printf("error: %s", e.Error())
     }
     return
