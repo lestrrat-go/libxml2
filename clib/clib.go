@@ -735,10 +735,14 @@ func XMLNewNs(n PtrSource, nsuri, prefix string) (uintptr, error) {
 		return 0, err
 	}
 
+	var cprefix *C.xmlChar
+
 	cnsuri := stringToXMLChar(nsuri)
-	cprefix := stringToXMLChar(prefix)
+	if prefix != "" {
+		cprefix = stringToXMLChar(prefix)
+		defer C.free(unsafe.Pointer(cprefix))
+	}
 	defer C.free(unsafe.Pointer(cnsuri))
-	defer C.free(unsafe.Pointer(cprefix))
 
 	nsptr := C.xmlNewNs(nptr, cnsuri, cprefix)
 	if nsptr == nil {
