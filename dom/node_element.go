@@ -44,9 +44,6 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 	if uri == "" {
 		return errors.New("missing uri for SetNamespace")
 	}
-	if prefix == "" {
-		return errors.New("missing prefix for SetNamespace")
-	}
 
 	ns, err := clib.XMLNewNs(n, uri, prefix)
 	if err != nil {
