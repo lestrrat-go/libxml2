@@ -115,7 +115,7 @@ func (x Object) String() string {
 		}
 		return nl.NodeValue()
 	default:
-		return fmt.Sprintf("%v", x)
+		return fmt.Sprintf("%T", x)
 	}
 }
 
