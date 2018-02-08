@@ -142,3 +142,18 @@ func TestRegressionGH7(t *testing.T) {
 	}
 	t.Logf("v = '%s'", v)
 }
+
+func TestGHIssue43(t *testing.T) {
+	d := dom.CreateDocument()
+	r, _ := d.CreateElement("root")
+	r.SetNamespace("http://some.uri", "pfx", true)
+	d.SetDocumentElement(r)
+	e, _ := d.CreateElement("elem")
+	e.SetNamespace("http://other.uri", "", true)
+	r.AddChild(e)
+	s := d.ToString(1, true)
+
+	if !assert.Contains(t, s, `<elem xmlns="http://other.uri"`, `default namespace works`) {
+		return
+	}
+}
