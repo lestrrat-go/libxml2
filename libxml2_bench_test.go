@@ -31,7 +31,7 @@ func BenchmarkXmlpathXmlpath(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		p, err := xmlpath.Compile(`//entry`)
 		if err != nil {
-			b.Fatal("%s", err)
+			b.Fatalf("%s", err)
 		}
 		it := p.Iter(root)
 		for it.Next() {
@@ -90,12 +90,12 @@ func BenchmarkLibxml2Xmlpath(b *testing.B) {
 
 	doc, err := libxml2.ParseReader(f)
 	if err != nil {
-		b.Fatal("%s", err)
+		b.Fatalf("%s", err)
 	}
 
 	xpc, err := xpath.NewContext(doc)
 	if err != nil {
-		b.Fatal("%s", err)
+		b.Fatalf("%s", err)
 	}
 	xpc.RegisterNS("atom", "http://www.w3.org/2005/Atom")
 	for i := 0; i < b.N; i++ {
