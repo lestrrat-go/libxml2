@@ -69,6 +69,6 @@ func WrapNode(n uintptr) (types.Node, error) {
 	case clib.PiNode:
 		return wrapPiNode(n), nil
 	default:
-		return nil, fmt.Errorf("unknown node: %%d", typ)
+		return nil, fmt.Errorf("unknown node: %d", typ)
 	}
 }
