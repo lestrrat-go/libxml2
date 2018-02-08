@@ -847,10 +847,14 @@ func XMLNodeValue(n PtrSource) (string, error) {
 	var s string
 	switch XMLNodeType(nptr._type) {
 	case AttributeNode, ElementNode, TextNode, CommentNode, PiNode, EntityRefNode:
-		s = xmlCharToString(C.xmlXPathCastNodeToString(nptr))
+		xc := C.xmlXPathCastNodeToString(nptr)
+		s = xmlCharToString(xc)
+		C.MY_xmlFree(unsafe.Pointer(xc))
 	case CDataSectionNode, EntityDecl:
 		if nptr.content != nil {
-			s = xmlCharToString(C.xmlStrdup(nptr.content))
+			xc := C.xmlStrdup(nptr.content)
+			s = xmlCharToString(xc)
+			C.MY_xmlFree(unsafe.Pointer(xc))
 		}
 	default:
 		panic("unimplmented")
@@ -1503,6 +1507,7 @@ func XMLDocumentString(doc PtrSource, encoding string, format bool) string {
 	var xc *C.xmlChar
 	C.xmlDocDumpFormatMemoryEnc(dptr, &xc, &i, (*C.char)(unsafe.Pointer(xcencodingptr)), intformat)
 
+	defer C.MY_xmlFree(unsafe.Pointer(xc))
 	return xmlCharToString(xc)
 }
 
