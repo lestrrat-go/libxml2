@@ -1,14 +1,15 @@
-# go-libxml2
-
-[![Build Status](https://travis-ci.org/lestrrat/go-libxml2.svg?branch=master)](https://travis-ci.org/lestrrat/go-libxml2)
-
-[![GoDoc](https://godoc.org/github.com/lestrrat/go-libxml2?status.svg)](https://godoc.org/github.com/lestrrat/go-libxml2)
+# libxml2
 
 Interface to libxml2, with DOM interface.
 
+[![Build Status](https://travis-ci.org/lestrrat-go/libxml2.svg?branch=master)](https://travis-ci.org/lestrrat-go/libxml2)
+
+[![GoDoc](https://godoc.org/github.com/lestrrat-go/libxml2?status.svg)](https://godoc.org/github.com/lestrrat-go/libxml2)
+
+
 ## Why?
 
-I needed to write [go-xmlsec](https://github.com/lestrrat/go-xmlsec). This means we need to build trees using libxml2, and then muck with it in xmlsec: Two separate packages in Go means we cannot (safely) pass around `C.xmlFooPtr` objects (also, you pay a penalty for pointer types). This package carefully avoid references to `C.xmlFooPtr` types and uses uintptr to pass data around, so other libraries that needs to interact with libxml2 can safely interact with it.
+I needed to write [go-xmlsec](https://github.com/lestrrat-go/xmlsec). This means we need to build trees using libxml2, and then muck with it in xmlsec: Two separate packages in Go means we cannot (safely) pass around `C.xmlFooPtr` objects (also, you pay a penalty for pointer types). This package carefully avoid references to `C.xmlFooPtr` types and uses uintptr to pass data around, so other libraries that needs to interact with libxml2 can safely interact with it.
 
 ## Status
 
@@ -67,10 +68,10 @@ import (
   "log"
   "net/http"
 
-  "github.com/lestrrat/go-libxml2"
-  "github.com/lestrrat/go-libxml2/parser"
-  "github.com/lestrrat/go-libxml2/types"
-  "github.com/lestrrat/go-libxml2/xpath"
+  "github.com/lestrrat-go/libxml2"
+  "github.com/lestrrat-go/libxml2/parser"
+  "github.com/lestrrat-go/libxml2/types"
+  "github.com/lestrrat-go/libxml2/xpath"
 )
 
 func ExampleXML() {
@@ -148,8 +149,8 @@ import (
   "os"
   "path/filepath"
 
-  "github.com/lestrrat/go-libxml2"
-  "github.com/lestrrat/go-libxml2/xsd"
+  "github.com/lestrrat-go/libxml2"
+  "github.com/lestrrat-go/libxml2/xsd"
 )
 
 func ExampleXSD() {
@@ -206,12 +207,12 @@ BenchmarkXmlpathXmlpath-4     500000         11737 ns/op         721 B/op       
 BenchmarkLibxml2Xmlpath-4    1000000          7627 ns/op         368 B/op         15 allocs/op
 BenchmarkEncodingXMLDOM-4    2000000          4079 ns/op        4560 B/op          9 allocs/op
 BenchmarkLibxml2DOM-4        1000000         11454 ns/op         264 B/op          7 allocs/op
-ok      github.com/lestrrat/go-libxml2  37.597s
+ok      github.com/lestrrat-go/libxml2  37.597s
 ```
 
 ## See Also
 
-* https://github.com/lestrrat/go-xmlsec
+* https://github.com/lestrrat-go/xmlsec
 
 ## Credits
 

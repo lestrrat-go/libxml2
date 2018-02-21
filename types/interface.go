@@ -1,6 +1,6 @@
 package types
 
-import "github.com/lestrrat/go-libxml2/clib"
+import "github.com/lestrrat-go/libxml2/clib"
 
 // PtrSource defines the interface for things that is backed by
 // a C backend

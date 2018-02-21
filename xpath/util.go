@@ -1,6 +1,6 @@
 package xpath
 
-import "github.com/lestrrat/go-libxml2/types"
+import "github.com/lestrrat-go/libxml2/types"
 
 // String returns the string component of the result, and as a side effect
 // releases the Result by calling Free() on it. Use this if you do not

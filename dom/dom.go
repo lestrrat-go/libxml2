@@ -3,7 +3,7 @@ package dom
 import (
 	"sync"
 
-	"github.com/lestrrat/go-libxml2/xpath"
+	"github.com/lestrrat-go/libxml2/xpath"
 )
 
 var docPool sync.Pool

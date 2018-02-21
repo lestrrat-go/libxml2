@@ -3,7 +3,7 @@ package dom
 import (
 	"errors"
 
-	"github.com/lestrrat/go-libxml2/clib"
+	"github.com/lestrrat-go/libxml2/clib"
 )
 
 var (

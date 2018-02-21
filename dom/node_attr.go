@@ -1,7 +1,7 @@
 package dom
 
 import (
-	"github.com/lestrrat/go-libxml2/clib"
+	"github.com/lestrrat-go/libxml2/clib"
 )
 
 // Free releases the underlying C struct
