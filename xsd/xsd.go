@@ -34,6 +34,17 @@ func Parse(buf []byte) (*Schema, error) {
 	return &Schema{ptr: sptr}, nil
 }
 
+// ParseFromFile is used to parse an XML schema using only the file path.
+// Make sure to call Free() on the instance when you are done with it.
+func ParseFromFile(path string) (*Schema, error) {
+	sptr, err := clib.XMLSchemaParseFromFile(path)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse input from file")
+	}
+
+	return &Schema{ptr: sptr}, nil
+}
+
 // Pointer returns the underlying C struct
 func (s *Schema) Pointer() uintptr {
 	return s.ptr

@@ -469,6 +469,21 @@ func stringToXMLChar(s string) *C.xmlChar {
 	return (*C.xmlChar)(unsafe.Pointer(C.CString(s)))
 }
 
+func XMLSchemaParseFromFile(path string) (uintptr, error) {
+	parserCtx := C.xmlSchemaNewParserCtxt(C.CString(path))
+	if parserCtx == nil {
+		return 0, errors.New("failed to create parser")
+	}
+	defer C.xmlSchemaFreeParserCtxt(parserCtx)
+
+	s := C.xmlSchemaParse(parserCtx)
+	if s == nil {
+		return 0, errors.New("failed to parse schema")
+	}
+
+	return uintptr(unsafe.Pointer(s)), nil
+}
+
 func XMLCreateMemoryParserCtxt(s string, o int) (uintptr, error) {
 	cs := C.CString(s)
 	defer C.free(unsafe.Pointer(cs))
