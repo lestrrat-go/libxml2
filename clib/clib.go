@@ -61,6 +61,12 @@ static inline xmlError* MY_xmlLastError() {
 	return xmlGetLastError();
 }
 
+// Macro wrapper function. cgo cannot detect function-like macros,
+// so this is how we avoid it
+static inline xmlError* MY_xmlCtxtLastError(void *ctx) {
+	return xmlCtxtGetLastError(ctx);
+}
+
 // Change xmlIndentTreeOutput global, return old value, so caller can
 // change it back to old value later
 static inline int MY_setXmlIndentTreeOutput(int i) {
@@ -458,6 +464,12 @@ func ReportErrors(b bool) {
 	}
 }
 
+func xmlCtxtLastError(ctx PtrSource) error {
+	e := C.MY_xmlCtxtLastError(unsafe.Pointer(ctx.Pointer()))
+	msg := strings.TrimSuffix(C.GoString(e.message), "\n")
+	return errors.Errorf("Entity: line %v: parser error : %v", e.line, msg)
+}
+
 func xmlCharToString(s *C.xmlChar) string {
 	return C.GoString((*C.char)(unsafe.Pointer(s)))
 }
@@ -503,7 +515,7 @@ func XMLParseDocument(ctx PtrSource) error {
 	}
 
 	if C.xmlParseDocument(ctxptr) != C.int(0) {
-		return errors.New("parse failed")
+		return errors.Errorf("parse failed: %v", xmlCtxtLastError(ctx))
 	}
 	return nil
 }
@@ -2200,7 +2212,7 @@ func XMLCtxtReadMemory(ctx PtrSource, file string, baseURL string, encoding stri
 
 	doc := C.xmlCtxtReadMemory(ctxptr, cfile, C.int(len(file)), cbaseURL, cencoding, C.int(options))
 	if doc == nil {
-		return 0, errors.New("failed to document")
+		return 0, errors.Errorf("failed to document: %v", xmlCtxtLastError(ctx))
 	}
 	return uintptr(unsafe.Pointer(doc)), nil
 }
