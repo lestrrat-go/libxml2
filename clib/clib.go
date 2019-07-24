@@ -2212,7 +2212,7 @@ func XMLCtxtReadMemory(ctx PtrSource, file string, baseURL string, encoding stri
 
 	doc := C.xmlCtxtReadMemory(ctxptr, cfile, C.int(len(file)), cbaseURL, cencoding, C.int(options))
 	if doc == nil {
-		return 0, errors.Errorf("failed to document: %v", xmlCtxtLastError(ctx))
+		return 0, errors.Errorf("failed to read document from memory: %v", xmlCtxtLastError(ctx))
 	}
 	return uintptr(unsafe.Pointer(doc)), nil
 }
