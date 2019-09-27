@@ -180,6 +180,7 @@ func ExampleXSD() {
     log.Printf("failed to parse XML: %s", err)
     return
   }
+  defer d.Free()
 
   if err := s.Validate(d); err != nil {
     for _, e := range err.(xsd.SchemaValidationError).Errors() {
