@@ -1812,6 +1812,7 @@ func XMLC14NDocDumpMemory(d PtrSource, mode int, withComments bool) (string, err
 		e := C.MY_xmlLastError()
 		return "", errors.New("c14n dump failed: " + C.GoString(e.message))
 	}
+	defer C.MY_xmlFree(unsafe.Pointer(result))
 	return xmlCharToString(result), nil
 }
 
