@@ -254,13 +254,16 @@ about it, not this repository.
 
 3. Your pkg-config files are not in the search path
 
-If you don't understand pkg-config does, this is where you should either look 
-for your local sysadmin friend, or study how these things work
+If you don't understand what pkg-config does, this is where you should either 
+look for your local sysadmin friend, or study how these things work
 before filing an issue on this repository.
 
 pkg-config provides metadata about a installed components, such as build flags
-that are required. However, pkg-config is merely a thin frontend to extract
-information from file(s) that each component provided upon installation.
+that are required. Go uses it to figure out how to build and link Go programs
+that needs to interact with things written in C.
+
+However, pkg-config is merely a thin frontend to extract information from 
+file(s) that each component provided upon installation. 
 pkg-config itself needs to know where to find these files.
 
 Make sure that the output of the following command contains `libxml-2.0`.
