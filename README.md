@@ -226,7 +226,7 @@ more than Go alone.
 
 Having said that, the most common causes for build errors are:
 
-1. You have not installed libxml2 / You installed it incorrectly
+1. **You have not installed libxml2 / You installed it incorrectly**
 
 The first one is obvious, but I get this a lot. You have to install libxml2.
 If you are installing via some sort of package manager like apt/apk, remember
@@ -237,7 +237,7 @@ The second is more subtle, and tends to happen when you install your libxml2
 in a non-standard location. This causes problems for other tools such as
 your C compiler or pkg-config. See more below
 
-2. Your header files are not in the search path
+2. **Your header files are not in the search path**
 
 If you don't understand what header files are or how they work, this is where
 you should either look for your local C-guru, or study how these things work
@@ -252,7 +252,7 @@ How to configure them depends greatly on your environment, and again, if you
 don't understand how you can fix it, you should consult your local C-guru
 about it, not this repository.
 
-3. Your pkg-config files are not in the search path
+3. **Your pkg-config files are not in the search path**
 
 If you don't understand what pkg-config does, this is where you should either 
 look for your local sysadmin friend, or study how these things work
