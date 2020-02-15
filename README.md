@@ -8,8 +8,8 @@ Interface to libxml2, with DOM interface.
 
 # Index
 
-* [Why?][#why]
-* [FAQ][#faq]
+* [Why?](#why)
+* [FAQ](#faq)
 
 ## Why?
 
