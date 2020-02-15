@@ -6,6 +6,10 @@ Interface to libxml2, with DOM interface.
 
 [![GoDoc](https://godoc.org/github.com/lestrrat-go/libxml2?status.svg)](https://godoc.org/github.com/lestrrat-go/libxml2)
 
+# Index
+
+* [Why?][#why]
+* [FAQ][#faq]
 
 ## Why?
 
@@ -210,6 +214,70 @@ BenchmarkEncodingXMLDOM-4    2000000          4079 ns/op        4560 B/op       
 BenchmarkLibxml2DOM-4        1000000         11454 ns/op         264 B/op          7 allocs/op
 ok      github.com/lestrrat-go/libxml2  37.597s
 ```
+
+## FAQ
+
+### "It won't build"
+
+The very first thing you need to be aware is that this is a _C binding_ to
+libxml2. You should understand how to build C programs, how to debug them,
+or at least be able to ask the right questions and deal with a great deal
+more than Go alone.
+
+Having said that, the most common causes for build errors are:
+
+1. You have not installed libxml2 / You installed it incorrectly
+
+The first one is obvious, but I get this a lot. You have to install libxml2.
+If you are installing via some sort of package manager like apt/apk, remember
+that you need to install the "development" files as well. The name of the
+package differs in each environment, but it's usually something like "libxml2-dev".
+
+The second is more subtle, and tends to happen when you install your libxml2
+in a non-standard location. This causes problems for other tools such as
+your C compiler or pkg-config. See more below
+
+2. Your header files are not in the search path
+
+If you don't understand what header files are or how they work, this is where
+you should either look for your local C-guru, or study how these things work
+before filing an issue on this repository.
+
+Your C compiler, which is invoked via Go, needs to be able to find the libxml2
+header files. If you installed them in a non-standard location, for example,
+such as outside of /usr/include and /usr/local/include, you _may_ have to
+configure them yourself.
+
+How to configure them depends greatly on your environment, and again, if you
+don't understand how you can fix it, you should consult your local C-guru
+about it, not this repository.
+
+3. Your pkg-config files are not in the search path
+
+If you don't understand pkg-config does, this is where you should either look 
+for your local sysadmin friend, or study how these things work
+before filing an issue on this repository.
+
+pkg-config provides metadata about a installed components, such as build flags
+that are required. However, pkg-config is merely a thin frontend to extract
+information from file(s) that each component provided upon installation.
+pkg-config itself needs to know where to find these files.
+
+Make sure that the output of the following command contains `libxml-2.0`.
+If not, and you don't understand how to fix this yourself, you should consult
+your local sysadmin friend about it, not this repository
+
+```
+pkg-config --list-all
+```
+
+### "Fatal error: 'libxml/HTMLparser.h' file not found"
+
+See the first FAQ entry.
+
+### I can't build this library statically
+
+See prior discussion: https://github.com/lestrrat-go/libxml2/issues/62
 
 ## See Also
 
