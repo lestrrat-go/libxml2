@@ -226,7 +226,7 @@ more than Go alone.
 
 Having said that, the most common causes for build errors are:
 
-1. You have not installed libxml2 / You installed it incorrectly
+1. **You have not installed libxml2 / You installed it incorrectly**
 
 The first one is obvious, but I get this a lot. You have to install libxml2.
 If you are installing via some sort of package manager like apt/apk, remember
