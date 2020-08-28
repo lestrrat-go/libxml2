@@ -114,3 +114,51 @@ BrIVC58W3ydbkK+Ri4OKbaRZlYeRA==
 		}
 	}()
 }
+
+func TestXSDDefaultValue(t *testing.T) {
+	const schemasrc = `<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+elementFormDefault="qualified">
+  <xs:element name="config">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element ref="attribute"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="attribute">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="linguistic">
+          <xs:complexType>
+            <xs:attribute name="item" default="US"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>`
+	const docsrc = `<config>
+    <attribute>
+        <linguistic></linguistic>
+    </attribute>
+</config>`
+
+	schema, err := xsd.Parse([]byte(schemasrc))
+	if !assert.NoError(t, err, `xsd.Parse should succeed`) {
+		return
+	}
+	defer schema.Free()
+
+	doc, err := libxml2.ParseString(docsrc)
+	if !assert.NoError(t, err, "parsing XML") {
+		return
+	}
+	defer doc.Free()
+	if !assert.NoError(t, schema.Validate(doc, xsd.ValueVCCreate), `schema.Validate should succeed`) {
+		return
+	}
+
+	t.Logf("%s", doc.String())
+
+}

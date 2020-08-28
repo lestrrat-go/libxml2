@@ -2134,7 +2134,7 @@ func XMLSchemaParse(buf []byte) (uintptr, error) {
 	return uintptr(unsafe.Pointer(s)), nil
 }
 
-func XMLSchemaValidateDocument(schema PtrSource, document PtrSource) []error {
+func XMLSchemaValidateDocument(schema PtrSource, document PtrSource, options ...int) []error {
 	sptr, err := validSchemaPtr(schema)
 	if err != nil {
 		return []error{err}
@@ -2155,6 +2155,10 @@ func XMLSchemaValidateDocument(schema PtrSource, document PtrSource) []error {
 	defer C.MY_freeErrWarnAccumulator(accum)
 
 	C.MY_setErrWarnAccumulator(ctx, accum)
+
+	for _, option := range options {
+		C.xmlSchemaSetValidOptions(ctx, C.int(option))
+	}
 
 	if C.xmlSchemaValidateDoc(ctx, dptr) == 0 {
 		return nil

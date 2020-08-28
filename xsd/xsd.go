@@ -22,6 +22,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const ValueVCCreate = 1
+
 // Parse is used to parse an XML Schema Document to produce a
 // Schema instance. Make sure to call Free() on the instance
 // when you are done with it.
@@ -61,8 +63,8 @@ func (s *Schema) Free() {
 // Validate takes in a XML document and validates it against
 // the schema. If there are any problems, and error is
 // returned.
-func (s *Schema) Validate(d types.Document) error {
-	errs := clib.XMLSchemaValidateDocument(s, d)
+func (s *Schema) Validate(d types.Document, options ...int) error {
+	errs := clib.XMLSchemaValidateDocument(s, d, options...)
 	if errs == nil {
 		return nil
 	}
