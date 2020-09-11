@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <xs:include schemaLocation="./std.xsd"/>
+    <xs:include schemaLocation="./net.xsd"/>
+    <xs:include schemaLocation="./unix.xsd"/>
+
+    <xs:simpleType name="t_cksum_algo">
+        <!-- Geared towards python. -->
+        <!-- tuple(sorted(list(hashlib.algorithms_available.union(set(('adler32', 'crc32')))))) -->
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="adler32"/>
+            <xs:enumeration value="blake2b"/>
+            <xs:enumeration value="blake2s"/>
+            <xs:enumeration value="crc32"/>
+            <xs:enumeration value="md4"/>
+            <xs:enumeration value="md5"/>
+            <xs:enumeration value="md5-sha1"/>
+            <xs:enumeration value="mdc2"/>
+            <xs:enumeration value="ripemd160"/>
+            <xs:enumeration value="sha1"/>
+            <xs:enumeration value="sha224"/>
+            <xs:enumeration value="sha256"/>
+            <xs:enumeration value="sha384"/>
+            <xs:enumeration value="sha3_224"/>
+            <xs:enumeration value="sha3_256"/>
+            <xs:enumeration value="sha3_384"/>
+            <xs:enumeration value="sha3_512"/>
+            <xs:enumeration value="sha512"/>
+            <xs:enumeration value="sha512_224"/>
+            <xs:enumeration value="sha512_256"/>
+            <xs:enumeration value="shake_128"/>
+            <xs:enumeration value="shake_256"/>
+            <xs:enumeration value="sm3"/>
+            <xs:enumeration value="whirlpool"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="t_cksum_file">
+        <xs:simpleContent>
+            <xs:extension base="t_net_generic_resource">
+                <xs:attribute name="hashType" use="required" type="t_cksum_algo"/>
+                <xs:attribute name="fileType" use="required" type="t_cksum_file_filetype"/>
+                <xs:attribute name="filePath" use="optional" type="t_unix_filepath"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="t_cksum_file_filetype">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="gnu"/>
+            <xs:enumeration value="bsd"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="t_cksum_hash">
+        <xs:simpleContent>
+            <xs:extension base="t_std_nonempty">
+                <xs:attribute name="hashType" use="required" type="t_cksum_algo"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="t_cksum_verify">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="checksum" minOccurs="0" maxOccurs="unbounded" type="t_cksum_hash">
+            </xs:element>
+            <xs:element name="checksumFile" minOccurs="0" maxOccurs="unbounded" type="t_cksum_file"/>
+        </xs:choice>
+    </xs:complexType>
+
+</xs:schema>

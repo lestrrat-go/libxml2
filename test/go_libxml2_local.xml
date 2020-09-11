@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<libxml2 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://xmlsoft.org/"
+         xsi:schemaLocation="http://xmlsoft.org/ ./schema/projects/go_libxml2_local.xsd">
+
+  <sub attrReq="foo" attrOpt="bar">
+    <nestedInclude hashType="sha1">4cfcf843c66979eb1df2bd0c52817edb753a52ba</nestedInclude>
+  </sub>
+  <sub attrReq="foo2">
+    <sub2>this is a test string only.</sub2>
+    <nestedInclude hashType="sha512">be218408a748759fb98363593b8f544eb054171bced856ca98bd972823dec0b07b205453fc3c46f23c934d0959f1e05b609c011b6ada84a7050ad7c910b24bf1</nestedInclude>
+  </sub>
+  <sub attrReq="foo3" attrBoolNoDef="false">
+    <sub2>foobar</sub2>
+    <nestedInclude hashType="md5">f7b34871a562283ee92bbda00485eb45</nestedInclude>
+  </sub>
+
+</libxml2>
