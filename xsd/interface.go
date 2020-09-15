@@ -1,5 +1,7 @@
 package xsd
 
+import "github.com/lestrrat-go/libxml2/internal/option"
+
 // Schema represents an XML schema.
 type Schema struct {
 	ptr uintptr // *C.xmlSchema
@@ -11,3 +13,5 @@ type Schema struct {
 type SchemaValidationError struct {
 	errors []error
 }
+
+type Option = option.Interface

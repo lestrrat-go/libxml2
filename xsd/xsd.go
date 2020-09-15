@@ -27,8 +27,11 @@ const ValueVCCreate = 1
 // Parse is used to parse an XML Schema Document to produce a
 // Schema instance. Make sure to call Free() on the instance
 // when you are done with it.
-func Parse(buf []byte) (*Schema, error) {
-	sptr, err := clib.XMLSchemaParse(buf)
+
+
+func Parse(buf []byte, options ...Option) (*Schema, error) {
+	// xsd.WithURI(...)
+	sptr, err := clib.XMLSchemaParse(buf, options...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse input")
 	}

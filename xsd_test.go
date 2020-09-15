@@ -2,6 +2,8 @@ package libxml2_test
 
 import (
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -161,4 +163,83 @@ elementFormDefault="qualified">
 
 	t.Logf("%s", doc.String())
 
+}
+
+func TestGHIssue67(t *testing.T) {
+	t.Run("Local validation", func(t *testing.T) {
+		const schemafile = "test/schema/projects/go_libxml2_local.xsd"
+		const docfile = "test/go_libxml2_local.xml"
+
+		schemasrc, err := ioutil.ReadFile(schemafile)
+		if !assert.NoError(t, err, `failed to read xsd file`) {
+			return
+		}
+
+		docsrc, err := ioutil.ReadFile(docfile)
+		if !assert.NoError(t, err, `failed to read xml file`) {
+			return
+		}
+
+		schema, err := xsd.Parse(schemasrc, xsd.WithPath(schemafile))
+		if !assert.NoError(t, err, `xsd.Parse should succeed`) {
+			return
+		}
+		defer schema.Free()
+
+		doc, err := libxml2.Parse(docsrc)
+		if !assert.NoError(t, err, "parsing XML") {
+			return
+		}
+		defer doc.Free()
+		if !assert.NoError(t, schema.Validate(doc, xsd.ValueVCCreate), `schema.Validate should succeed`) {
+			return
+		}
+
+		t.Logf("%s", doc.String())
+	})
+	t.Run("Remote validation", func(t *testing.T) {
+		curdir, err := os.Getwd()
+		if !assert.NoError(t, err, `os.Getwd failed`) {
+			return
+		}
+
+		srv := httptest.NewServer(http.FileServer(http.Dir(curdir)))
+		defer srv.Close()
+
+		var schemafile = srv.URL + "/test/schema/projects/go_libxml2_remote.xsd"
+		const docfile = "test/go_libxml2_remote.xml"
+
+		res, err := http.Get(schemafile)
+		if !assert.NoError(t, err, `failed to fetch xsd file`) {
+			return
+		}
+
+		schemasrc, err := ioutil.ReadAll(res.Body)
+		defer res.Body.Close()
+		if !assert.NoError(t, err, `failed to read xsd file`) {
+			return
+		}
+
+		docsrc, err := ioutil.ReadFile(docfile)
+		if !assert.NoError(t, err, `failed to read xml file`) {
+			return
+		}
+
+		schema, err := xsd.Parse(schemasrc, xsd.WithURI(schemafile))
+		if !assert.NoError(t, err, `xsd.Parse should succeed`) {
+			return
+		}
+		defer schema.Free()
+
+		doc, err := libxml2.Parse(docsrc)
+		if !assert.NoError(t, err, "parsing XML") {
+			return
+		}
+		defer doc.Free()
+		if !assert.NoError(t, schema.Validate(doc, xsd.ValueVCCreate), `schema.Validate should succeed`) {
+			return
+		}
+
+		t.Logf("%s", doc.String())
+	})
 }

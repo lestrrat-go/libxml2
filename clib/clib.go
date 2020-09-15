@@ -36,6 +36,7 @@ package clib
 #include <libxml/xpathInternals.h>
 #include <libxml/c14n.h>
 #include <libxml/xmlschemas.h>
+#include <libxml/schemasInternals.h>
 
 static inline void MY_nilErrorHandler(void *ctx, const char *msg, ...) {}
 
@@ -343,6 +344,7 @@ import (
 	"unsafe"
 
 	"github.com/lestrrat-go/libxml2/internal/debug"
+	"github.com/lestrrat-go/libxml2/internal/option"
 	"github.com/pkg/errors"
 )
 
@@ -465,7 +467,14 @@ func ReportErrors(b bool) {
 }
 
 func xmlCtxtLastError(ctx PtrSource) error {
-	e := C.MY_xmlCtxtLastError(unsafe.Pointer(ctx.Pointer()))
+	return xmlCtxtLastErrorRaw(ctx.Pointer())
+}
+
+func xmlCtxtLastErrorRaw(ctx uintptr) error {
+	e := C.MY_xmlCtxtLastError(unsafe.Pointer(ctx))
+	if e == nil {
+		return errors.New(`unknown error`)
+	}
 	msg := strings.TrimSuffix(C.GoString(e.message), "\n")
 	return errors.Errorf("Entity: line %v: parser error : %v", e.line, msg)
 }
@@ -2116,11 +2125,41 @@ func XMLTextData(n PtrSource) string {
 	return xmlCharToString(nptr.content)
 }
 
-func XMLSchemaParse(buf []byte) (uintptr, error) {
-	parserCtx := C.xmlSchemaNewMemParserCtxt(
-		(*C.char)(unsafe.Pointer(&buf[0])),
-		C.int(len(buf)),
-	)
+func XMLSchemaParse(buf []byte, options ...option.Interface) (uintptr, error) {
+	var uri string
+	var encoding string
+	var coptions int
+	for _, opt := range options {
+		switch opt.Name() {
+		case option.OptKeyWithURI:
+			uri = opt.Value().(string)
+		}
+	}
+
+	docctx := C.xmlCreateMemoryParserCtxt((*C.char)(unsafe.Pointer(&buf[0])), C.int(len(buf)))
+	if docctx == nil {
+		return 0, errors.New("error creating doc parser")
+	}
+
+	var curi *C.char
+	if uri != "" {
+		curi = C.CString(uri)
+		defer C.free(unsafe.Pointer(curi))
+	}
+
+	var cencoding *C.char
+	if encoding != "" {
+		cencoding = C.CString(encoding)
+		defer C.free(unsafe.Pointer(cencoding))
+	}
+
+	doc := C.xmlCtxtReadMemory(docctx, (*C.char)(unsafe.Pointer(&buf[0])), C.int(len(buf)), curi, cencoding, C.int(coptions))
+	if doc == nil {
+		return 0, errors.Errorf("failed to read schema from memory: %v",
+			xmlCtxtLastErrorRaw(uintptr(unsafe.Pointer(docctx))))
+	}
+
+	parserCtx := C.xmlSchemaNewDocParserCtxt((*C.xmlDoc)(unsafe.Pointer(doc)))
 	if parserCtx == nil {
 		return 0, errors.New("failed to create parser")
 	}
