@@ -26,7 +26,7 @@ func ParseHTMLString(content string, options ...parser.HTMLOption) (types.Docume
 	} else {
 		option = parser.DefaultHTMLOptions
 	}
-	docptr, err := clib.HTMLReadDoc(content, "", "", int(option))
+	docptr, err := clib.HTMLReadDoc(content, "", "utf8", int(option))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read document")
 	}
