@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema targetNamespace="http://xmlsoft.org/"
+           xmlns="http://xmlsoft.org/"
+           xmlns:libxml2="http://xmlsoft.org/"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+
+  <xs:include schemaLocation="../lib/types/cksum.xsd"/>
+  <xs:include schemaLocation="../lib/types/std.xsd"/>
+
+  <xs:element name="libxml2">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="sub">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="unbounded">
+              <xs:element name="sub2" type="xs:string" minOccurs="0"/>
+              <xs:element name="nestedInclude" type="t_cksum_hash" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="attrOpt" use="optional" default="none specified" type="xs:string"/>
+            <xs:attribute name="attrReq" use="required" type="t_std_nonempty"/>
+            <xs:attribute name="attrBoolNoDef" use="optional" type="xs:boolean"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

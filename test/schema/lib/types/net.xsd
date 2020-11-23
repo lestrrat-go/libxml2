@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <xs:include schemaLocation="./std.xsd"/>
+
+    <xs:simpleType name="t_net_addr_ip4">
+        <xs:restriction base="xs:string">
+            <!-- This is a REALLY LAZY regex. Matching IPv4 in regex is ugly as heck, so we do that in-code.
+                 This is just a gatekeeper. -->
+            <xs:pattern value="\s*[0-9.]{7,15}\s*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_addr_ip6">
+        <xs:restriction base="xs:string">
+            <!-- This is a REALLY LAZY regex. Matching IPv6 in regex is ugly as heck, so we do that in-code.
+                 This is just a gatekeeper. -->
+            <xs:pattern value="\s*[A-Za-z0-9:]+\s*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_authselect">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="basic"/>
+            <xs:enumeration value="digest"/>
+            <xs:enumeration value="none"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_auto_ip6">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="slaac"/>
+            <xs:enumeration value="dhcp6"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_both_addr">
+        <xs:union memberTypes="t_net_addr_ip4 t_net_addr_ip6"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_both_qualified_addr">
+        <xs:union memberTypes="t_net_qualified_addr_ip4 t_net_qualified_addr_ip6"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_email_addr">
+        <xs:restriction base="xs:string">
+            <!-- Thanks, my dude: https://stackoverflow.com/a/2147859/733214 -->
+            <!-- And turns out email local parts are WAY more permissive than I thought:
+                 https://stackoverflow.com/a/2049510/733214 -->
+            <xs:pattern value="[^@]+@[^\.]+\..+"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="t_net_ftp_resource">
+        <xs:simpleContent>
+            <xs:extension base="t_std_uri">
+                <xs:attribute name="user" type="t_std_nonempty" use="optional" default="anonymous"/>
+                <xs:attribute name="password" type="t_std_nonempty" use="optional"/>
+                <!-- This should be handled in-application by looking at the scheme in the URI itself. -->
+                <!-- <xs:attribute name="startTLS" type="xs:boolean" use="optional" default="false"/> -->
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="t_net_generic_resource">
+        <xs:simpleContent>
+            <xs:extension base="t_std_uri">
+                <xs:attribute name="user" type="t_std_nonempty" use="optional"/>
+                <xs:attribute name="password" type="t_std_nonempty" use="optional"/><!-- If FTP & none, "anonymous" -->
+                <!-- This should be handled in-application by looking at the scheme in the URI itself. -->
+                <!-- <xs:attribute name="startTLS" type="xs:boolean" use="optional" default="false"/> --><!-- FTP -->
+                <xs:attribute name="authType" type="t_net_authselect" use="optional" default="none"/><!-- HTTP(S) -->
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="t_net_http_resource">
+        <xs:simpleContent>
+            <xs:extension base="t_std_uri">
+                <xs:attribute name="user" type="t_std_nonempty" use="optional"/>
+                <xs:attribute name="password" type="t_std_nonempty" use="optional"/>
+                <xs:attribute name="authtype" type="t_net_authselect" use="optional" default="none"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="t_net_http_basic_uri">
+        <xs:restriction base="xs:anyURI">
+            <xs:pattern value="https?://.+/?"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_mac_addr">
+        <xs:restriction base="xs:token">
+            <!-- EUI48[RFC7043§3] (previously MAC48[RFC7042§2.1]) -->
+            <xs:pattern value="\s*([A-Fa-f0-9]{2}[:-]?){5}[A-Fa-f0-9]{2}\s*"/>
+            <!-- EUI64[RFC7043§4, RFC4291§2.5.1] -->
+            <xs:pattern value="\s*([A-Fa-f0-9]{2}[:-]?){3}[Ff]{3}[FfEe][:-]?([A-Fa-f0-9]{2}[:-]?){2}[A-Fa-f0-9]{2}\s*"/>
+            <xs:pattern
+                    value="\s*([A-Fa-f0-9]{2}[:-]?){3}[A-Fa-f0-9]{4}[:-]?([A-Fa-f0-9]{2}[:-]?){2}[A-Fa-f0-9]{2}\s*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_netproto">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ipv4"/>
+            <xs:enumeration value="ipv6"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="t_net_port">
+        <xs:restriction base="xs:positiveInteger">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="65535"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_proto">
+        <!-- TODO: expand? Remove gre? -->
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="tcp"/>
+            <xs:enumeration value="udp"/>
+            <xs:enumeration value="icmp"/>
+            <xs:enumeration value="gre"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_qualified_addr_ip4">
+        <!-- This is a REALLY LAZY regex. Matching IPv4 in regex is ugly as heck, so we do that in-code.
+             This is just a gatekeeper. -->
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\s*[0-9.]{7,15}/[0-9]{1,2}\s*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_net_qualified_addr_ip6">
+        <!-- This is a REALLY LAZY regex. Matching IPv6 in regex is ugly as heck, so we do that in-code.
+             This is just a gatekeeper. -->
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\s*[A-Za-z0-9:]+/[0-9]{1,3}\s*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- TODO: "enterprise" WPA2 (add'l details)?
+           WPA3?
+           EAP,
+           eduroam (https://github.com/rst0git/netctl-eduroam-config/blob/master/eduroam), etc. -->
+    <!-- wep64, wep128, wpa-psk:tkip, wpa-psk:aes, wpa2-psk:tkip, wpa2-psk:aes, wpa2-psk:tkip/aes -->
+    <xs:complexType name="t_net_wifi_crypto">
+        <xs:all>
+            <xs:element name="type" minOccurs="1" maxOccurs="1" default="wpa2">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <!-- <xs:enumeration value="wep"/> -->
+                        <xs:enumeration value="wpa"/>
+                        <xs:enumeration value="wpa2"/>
+                        <!-- <xs:enumeration value="wpa3"/> -->
+                        <xs:whiteSpace value="collapse"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <!-- Only valid for WPA/WPA2 (and maybe WPA3 once supported?) -->
+            <xs:element name="creds" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                    <xs:choice minOccurs="1" maxOccurs="1">
+                        <!-- "personal" -->
+                        <xs:element name="psk">
+                            <xs:complexType>
+                                <xs:simpleContent>
+                                    <xs:extension base="xs:string">
+                                        <!-- A key can be generated via "wpa_passphrase <ssid> <passphrase>" -->
+                                        <!-- or via genPSK.py in extras/ -->
+                                        <xs:attribute name="isKey" type="xs:boolean" use="optional" default="false"/>
+                                    </xs:extension>
+                                </xs:simpleContent>
+                            </xs:complexType>
+                        </xs:element>
+                        <!-- TODO -->
+                        <!-- <xs:element name="enterprise"></xs:element> -->
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
+    </xs:complexType>
+
+</xs:schema>

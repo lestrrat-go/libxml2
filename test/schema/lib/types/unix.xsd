@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+  <xs:include schemaLocation="./std.xsd"/>
+
+  <xs:complexType name="t_unix_arg">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="value" type="xs:string" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="t_unix_args">
+    <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="long" type="t_unix_arg"/>
+      <xs:element name="short" type="t_unix_arg"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- These were a pain to figure out. -->
+  <!-- wtf. doesn't seem to work?
+        dir: ^\s*(~?/[^/]*)+/?\s*$
+        file: ^\s*(~?/[^/]+)+\s*$
+        reldir: ^\s*[^/](([^/]*)+/?)+\s*$
+        relfile: ^\s*[^/]+(/|[^/]*)*[^/]+\s*$
+  -->
+  <!-- ABSOLUTE directory path -->
+  <xs:simpleType name="t_unix_dirpath">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\s*(~?/[^/]*)+/?\s*"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- RELATIVE directory path -->
+  <xs:simpleType name="t_unix_reldirpath">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\s*[^/](([^/]*)+/?)+\s*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ABSOLUTE file path -->
+  <xs:simpleType name="t_unix_filepath">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\s*(~?/[^/]+)+\s*"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- RELATIVE file path -->
+  <xs:simpleType name="t_unix_relfilepath">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\s*([^/]+)(/[^/]+)*([^/])*\s*"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ABSOLUTE path (file or directory) -->
+  <xs:simpleType name="t_unix_path">
+    <xs:union memberTypes="t_unix_dirpath t_unix_filepath"/>
+  </xs:simpleType>
+
+  <!-- RELATIVE path (file or directory) -->
+  <xs:simpleType name="t_unix_relpath">
+    <xs:union memberTypes="t_unix_reldirpath t_unix_relfilepath"/>
+  </xs:simpleType>
+
+  <!-- ANY valid value for the above types. -->
+  <xs:simpleType name="t_unix_anypath">
+    <xs:union memberTypes="t_unix_path t_unix_relpath"/>
+  </xs:simpleType>
+
+  <!-- RELATIVE or ABSOLUTE file path -->
+  <xs:simpleType name="t_unix_anyfile">
+    <xs:union memberTypes="t_unix_filepath t_unix_relfilepath"/>
+  </xs:simpleType>
+
+    <!-- RELATIVE or ABSOLUTE dir path -->
+  <xs:simpleType name="t_unix_anydir">
+    <xs:union memberTypes="t_unix_dirpath t_unix_reldirpath"/>
+  </xs:simpleType>
+  <!-- END of regex silliness. What an ugly annoyance. -->
+
+  <xs:complexType name="t_unix_nixpass">
+    <xs:choice minOccurs="1" maxOccurs="1">
+      <xs:element name="passwordPlain">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="hashType" use="optional" default="md5" type="t_unix_passwd_hashtypes"/>
+              <xs:attribute name="rounds" use="optional" default="5000" type="xs:positiveInteger"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="passwordHash">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="t_unix_shadowhash">
+              <xs:attribute name="hashType" use="optional" default="md5" type="t_unix_passwd_hashtypes"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+    <xs:attribute name="locked" use="optional" default="false" type="xs:boolean"/>
+  </xs:complexType>
+
+  <xs:simpleType name="t_unix_passwd_hashtypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="md5"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282 -->
+  <xs:simpleType name="t_unix_portablePosixFilename">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Za-z0-9._-]+"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="t_unix_posixUserGroup">
+    <!-- https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_437
+         https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282
+         https://unix.stackexchange.com/a/435120/284004 -->
+    <xs:restriction base="xs:token">
+      <xs:pattern value="\s*[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}$)\s*"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="t_unix_shadowhash">
+    <!-- http://man7.org/linux/man-pages/man3/crypt.3.html#NOTES -->
+    <xs:restriction base="xs:token">
+      <xs:pattern value="\s*($1)?($[a-zA-Z0-9./]{1,16})$[a-zA-Z0-9./]{22}\s*"/><!-- md5 -->
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="t_unix_user">
+    <xs:sequence>
+      <xs:element name="password" minOccurs="0" maxOccurs="1" type="t_unix_nixpass"/>
+      <xs:element name="xGroup" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="name" type="t_unix_posixUserGroup" use="required"/>
+          <xs:attribute name="create" type="xs:boolean" use="optional" default="false"/>
+          <xs:attribute name="gid" type="xs:positiveInteger" use="optional"/>
+        </xs:complexType>
+        <xs:unique name="uniq_unix_grp">
+          <xs:selector xpath="xGroup"/>
+          <xs:field xpath="@name"/>
+        </xs:unique>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="t_unix_posixUserGroup" use="required"/>
+    <xs:attribute name="home" type="t_unix_filepath" use="optional"/>
+    <xs:attribute name="uid" type="xs:positiveInteger" use="optional"/>
+    <xs:attribute name="group" type="t_unix_posixUserGroup" use="optional"/>
+    <xs:attribute name="gid" type="xs:positiveInteger" use="optional"/>
+    <xs:attribute name="comment" type="t_std_nonempty" use="optional"/>
+    <xs:attribute name="sudo" type="xs:boolean" use="optional" default="false"/>
+    <xs:attribute name="sudoPassword" type="xs:boolean" use="optional" default="true"/>
+    <xs:attribute name="shell" type="t_unix_filepath" use="optional" default="/bin/bash"/>
+    <!-- TODO: change the positiveIntegers to xs:duration? or union? -->
+    <!-- Might be pointless since the smallest increment is 1 day in
+         shadow(5). -->
+    <xs:attribute name="minAge" type="xs:positiveInteger" use="optional"/>
+    <xs:attribute name="maxAge" type="xs:positiveInteger" use="optional"/>
+    <xs:attribute name="warnDays" type="xs:positiveInteger" use="optional"/>
+    <xs:attribute name="inactiveDays" type="xs:positiveInteger" use="optional"/>
+    <xs:attribute name="expireDate" type="t_std_epoch_or_iso" use="optional"/>
+  </xs:complexType>
+
+</xs:schema>

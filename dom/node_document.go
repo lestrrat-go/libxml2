@@ -252,7 +252,7 @@ func (d *Document) Encoding() string {
 func (d *Document) Free() {
 	clib.XMLFreeDoc(d)
 	d.ptr = 0
-	docPool.Put(*d)
+	docPool.Put(d)
 }
 
 // String formats the document, always without formatting.

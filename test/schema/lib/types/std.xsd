@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <xs:simpleType name="t_std_UUID4">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="\s*[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}\s*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_std_base64">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="[A-Za-z0-9+/=]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="t_std_cmdopts">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" use="required" type="xs:token"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="t_std_envvar">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="env:[A-Za-z_]+[A-Za-z0-9_]*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_std_epoch_or_iso">
+        <!-- positiveInteger is used for UNIX Epoch. -->
+        <xs:union memberTypes="xs:dateTime xs:positiveInteger"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="t_std_list_comma">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^,]+(,[^,])*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_std_list_space">
+        <xs:list itemType="xs:token"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_std_nonempty">
+        <xs:restriction base="xs:token">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="t_std_uri">
+        <xs:restriction base="xs:anyURI">
+            <xs:pattern value="\s*(https?|ftps?|file)://.+\s*"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

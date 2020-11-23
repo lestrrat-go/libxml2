@@ -117,3 +117,8 @@ const (
 	XPathUsersType
 	XPathXSLTTreeType
 )
+
+type XMLCallback interface {
+	CanHandle(uri string) bool
+	GetData(uri string) []byte
+}
