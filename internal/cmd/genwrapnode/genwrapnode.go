@@ -66,7 +66,8 @@ func _main() error {
 	}
 
 	buf.WriteString("\ndefault:")
-	buf.WriteString("\nreturn nil, fmt.Errorf(\"unknown node: %%d\", typ)")
+	buf.WriteString("\nreturn nil, fmt.Errorf(\"unknown node: %d\", typ)")
+
 	buf.WriteString("\n}")
 	buf.WriteString("\n}")
 
