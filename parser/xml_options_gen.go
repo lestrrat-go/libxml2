@@ -13,7 +13,6 @@ type nativeXMLParseOption struct {
 	enabled bool
 }
 
-func (*nativeXMLParseOption) parseOption()    {}
 func (*nativeXMLParseOption) xmlParseOption() {}
 func (o *nativeXMLParseOption) Enabled() bool {
 	return o.enabled

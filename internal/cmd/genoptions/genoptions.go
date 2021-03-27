@@ -30,7 +30,6 @@ func _main() error {
 
 type optiondef struct {
 	name          string
-	typ           string
 	description   string
 	explicitShift bool
 	shift         int
@@ -49,7 +48,6 @@ func genInterface(dst io.Writer, mltyp string, options ...*optiondef) error {
 	fmt.Fprintf(dst, "\noption.Interface")
 	fmt.Fprintf(dst, "\nenabled bool")
 	fmt.Fprintf(dst, "\n}")
-	fmt.Fprintf(dst, "\nfunc (*native%sParseOption) parseOption() {}", strings.ToUpper(mltyp))
 	fmt.Fprintf(dst, "\nfunc (*native%sParseOption) %sParseOption() {}", strings.ToUpper(mltyp), mltyp)
 	fmt.Fprintf(dst, "\nfunc (o *native%sParseOption) Enabled() bool {", strings.ToUpper(mltyp))
 	fmt.Fprintf(dst, "\nreturn o.enabled")

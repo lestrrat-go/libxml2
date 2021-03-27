@@ -11,20 +11,16 @@ type nonNativeXMLParseOption struct {
 	enabled bool
 }
 
-func (*nonNativeXMLParseOption) parseOption()    {}
 func (*nonNativeXMLParseOption) xmlParseOption() {}
 func (o *nonNativeXMLParseOption) Enabled() bool {
 	return o.enabled
 }
-
-type optkeyWithHTMLEncoding struct {}
 
 type nonNativeHTMLParseOption struct {
 	option.Interface
 	enabled bool
 }
 
-func (*nonNativeHTMLParseOption) parseOption()    {}
 func (*nonNativeHTMLParseOption) htmlParseOption() {}
 func (o *nonNativeHTMLParseOption) Enabled() bool {
 	return o.enabled

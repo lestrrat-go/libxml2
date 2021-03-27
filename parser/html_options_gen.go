@@ -13,7 +13,6 @@ type nativeHTMLParseOption struct {
 	enabled bool
 }
 
-func (*nativeHTMLParseOption) parseOption()     {}
 func (*nativeHTMLParseOption) htmlParseOption() {}
 func (o *nativeHTMLParseOption) Enabled() bool {
 	return o.enabled

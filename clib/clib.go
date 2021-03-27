@@ -1149,10 +1149,6 @@ func XMLChildNodes(n PtrSource) ([]uintptr, error) {
 	return ret, nil
 }
 
-type stringer interface {
-	String() string
-}
-
 func XMLRemoveChild(n PtrSource, t PtrSource) error {
 	nptr, err := validNodePtr(n)
 	if err != nil {
