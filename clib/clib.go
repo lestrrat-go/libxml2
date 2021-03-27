@@ -534,10 +534,14 @@ func HTMLReadDoc(content, url, encoding string, opts int) (uintptr, error) {
 	// TODO: use htmlCtxReadDoc later, so we can get the error
 	ccontent := C.CString(content)
 	curl := C.CString(url)
-	cencoding := C.CString(encoding)
+
+	var cencoding *C.char
+	if len(encoding) > 0 {
+		cencoding = C.CString(encoding)
+		defer C.free(unsafe.Pointer(cencoding))
+	}
 	defer C.free(unsafe.Pointer(ccontent))
 	defer C.free(unsafe.Pointer(curl))
-	defer C.free(unsafe.Pointer(cencoding))
 
 	doc := C.htmlReadDoc(
 		(*C.xmlChar)(unsafe.Pointer(ccontent)),
