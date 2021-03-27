@@ -54,16 +54,16 @@ var (
 		stdXMLDecl,                              // only XML Declaration
 		"<!--ouch-->",                           // comment only is like an empty document
 		`<!DOCTYPE ouch [<!ENTITY foo "bar">]>`, // no good either ...
-		"<ouch>",                // single tag (tag mismatch)
-		"<ouch/>foo",            // trailing junk
-		"foo<ouch/>",            // leading junk
-		"<ouch foo=bar/>",       // bad attribute
-		`<ouch foo="bar/>`,      // bad attribute
-		"<ouch>&</ouch>",        // bad char
-		`<ouch>&//0x20;</ouch>`, // bad chart
-		"<foob<e4>r/>",          // bad encoding
-		"<ouch>&foo;</ouch>",    // undefind entity
-		"<ouch>&gt</ouch>",      // unterminated entity
+		"<ouch>",                                // single tag (tag mismatch)
+		"<ouch/>foo",                            // trailing junk
+		"foo<ouch/>",                            // leading junk
+		"<ouch foo=bar/>",                       // bad attribute
+		`<ouch foo="bar/>`,                      // bad attribute
+		"<ouch>&</ouch>",                        // bad char
+		`<ouch>&//0x20;</ouch>`,                 // bad chart
+		"<foob<e4>r/>",                          // bad encoding
+		"<ouch>&foo;</ouch>",                    // undefind entity
+		"<ouch>&gt</ouch>",                      // unterminated entity
 		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar">]><foobar &foo;="ouch"/>`,          // bad placed entity
 		stdXMLDecl + `<!DOCTYPE foobar [<!ENTITY foo "bar=&quot;foo&quot;">]><foobar &foo;/>`, // even worse
 		"<ouch><!---></ouch>",   // bad comment
@@ -355,5 +355,16 @@ func TestGetNonexistentAttributeReturnsRecoverableError(t *testing.T) {
 	_, err = el.GetAttribute("non-existant")
 	if err != dom.ErrAttributeNotFound {
 		t.Fatalf("GetAttribute() error not comparable to existing library")
+	}
+}
+
+func TestGHIssue56(t *testing.T) {
+	doc, err := ParseHTMLString(`<html><meta http-equiv="content-type" content="text/html; charset=utf-8" />可以呢</p>`)
+	if !assert.NoError(t, err, `ParseHTMLString should work`) {
+		return
+	}
+
+	if !assert.Equal(t, `utf-8`, doc.Encoding(), `deduce encoding from meta tags`) {
+		return
 	}
 }
