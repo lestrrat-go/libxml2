@@ -1,0 +1,37 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.15', '1.16' ]
+    name: Go ${{ matrix.go }} test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install libxml2-dev
+        run: sudo apt-get install libxml2-dev
+      - name: Install Go stable version
+        if: matrix.go != 'tip'
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Install Go tip
+        if: matrix.go == 'tip'
+        run: |
+          git clone --depth=1 https://go.googlesource.com/go $HOME/gotip
+          cd $HOME/gotip/src
+          ./make.bash
+          echo "::set-env name=GOROOT::$HOME/gotip"
+          echo "::add-path::$HOME/gotip/bin"
+          echo "::add-path::$(go env GOPATH)/bin"
+      - name: Test
+        run: go test -v -race ./...
+      - name: Upload code coverage to codecov
+        if: matrix.go == '1.16'
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.out
+

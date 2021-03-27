@@ -287,7 +287,7 @@ func TestCommentWrapNodeIssue(t *testing.T) {
 	// should wrap comment node
 	const testHTML = "<p><!-- test --></p><!-- test --><p><!-- test --></p>"
 
-	doc, err := ParseHTMLString(testHTML, parser.HTMLParseRecover)
+	doc, err := ParseHTMLString(testHTML, parser.WithHTMLParseRecover(true))
 	if err != nil {
 		t.Fatalf("Got error when parsing HTML: %v", err)
 	}

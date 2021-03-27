@@ -1,3 +1,4 @@
+//go:generate go run internal/cmd/genoptions/genoptions.go
 //go:generate go run internal/cmd/genwrapnode/genwrapnode.go -- dom/node_wrap.go
 
 /*
