@@ -99,95 +99,95 @@ type ParseOptionToString struct {
 
 func TestParseOptionStringer(t *testing.T) {
 	values := []ParseOptionToString{
-		ParseOptionToString{
+		{
 			v: parser.XMLParseRecover,
 			e: "Recover",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoEnt,
 			e: "NoEnt",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseDTDLoad,
 			e: "DTDLoad",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseDTDAttr,
 			e: "DTDAttr",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseDTDValid,
 			e: "DTDValid",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoError,
 			e: "NoError",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoWarning,
 			e: "NoWarning",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParsePedantic,
 			e: "Pedantic",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoBlanks,
 			e: "NoBlanks",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseSAX1,
 			e: "SAX1",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseXInclude,
 			e: "XInclude",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoNet,
 			e: "NoNet",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoDict,
 			e: "NoDict",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNsclean,
 			e: "Nsclean",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoCDATA,
 			e: "NoCDATA",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoXIncNode,
 			e: "NoXIncNode",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseCompact,
 			e: "Compact",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseOld10,
 			e: "Old10",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseNoBaseFix,
 			e: "NoBaseFix",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseHuge,
 			e: "Huge",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseOldSAX,
 			e: "OldSAX",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseIgnoreEnc,
 			e: "IgnoreEnc",
 		},
-		ParseOptionToString{
+		{
 			v: parser.XMLParseBigLines,
 			e: "BigLines",
 		},
@@ -258,8 +258,8 @@ func TestRoundtripNoBlanks(t *testing.T) {
 
 func TestOptionsShouldCombine(t *testing.T) {
 	opts := map[parser.Option][]parser.Option{
-		parser.Option(64): []parser.Option{parser.XMLParseNoWarning},
-		parser.Option(96): []parser.Option{parser.XMLParseNoWarning, parser.XMLParseNoError},
+		parser.Option(64): {parser.XMLParseNoWarning},
+		parser.Option(96): {parser.XMLParseNoWarning, parser.XMLParseNoError},
 	}
 
 	for expected, options := range opts {
@@ -283,7 +283,6 @@ func TestGHIssue23(t *testing.T) {
 }
 
 func TestCommentWrapNodeIssue(t *testing.T) {
-
 	// should wrap comment node
 	const testHTML = "<p><!-- test --></p><!-- test --><p><!-- test --></p>"
 
@@ -308,7 +307,6 @@ func TestCommentWrapNodeIssue(t *testing.T) {
 }
 
 func TestPiWrapNodeIssue(t *testing.T) {
-
 	// should wrap Pi node
 	const textXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<a>test <?test?></a>\n"
 	doc, err := ParseString(textXML)
@@ -352,7 +350,7 @@ func TestGetNonexistentAttributeReturnsRecoverableError(t *testing.T) {
 		t.Fatalf("Root node was not an element")
 	}
 
-	_, err = el.GetAttribute("non-existant")
+	_, err = el.GetAttribute("non-existent")
 	if err != dom.ErrAttributeNotFound {
 		t.Fatalf("GetAttribute() error not comparable to existing library")
 	}
@@ -370,7 +368,7 @@ func TestGHIssue56(t *testing.T) {
 }
 
 func TestGHIssue76(t *testing.T) {
-	doc, err := ParseHTMLString(`<html><body>可以呢</body></html>`)//, parser.WithHTMLEncoding(`utf-8`))
+	doc, err := ParseHTMLString(`<html><body>可以呢</body></html>`) //, parser.WithHTMLEncoding(`utf-8`))
 	if !assert.NoError(t, err, `ParseHTMLString should work`) {
 		return
 	}

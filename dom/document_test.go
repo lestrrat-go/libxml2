@@ -302,7 +302,7 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 	})
 
 	withDocument(func(d *dom.Document) {
-		attr, err := d.CreateAttributeNS("http://kungfoo", "kung:foo", "bar")
+		_, err := d.CreateAttributeNS("http://kungfoo", "kung:foo", "bar")
 		if err == nil {
 			t.Errorf("Creating Attribute node w/o root node should have failed")
 			return
@@ -315,7 +315,7 @@ func TestDocumentCreateAttributeNS(t *testing.T) {
 		}
 		d.SetDocumentElement(elem)
 
-		attr, err = d.CreateAttributeNS("http://kungfoo", "kung:foo", "bar")
+		attr, err := d.CreateAttributeNS("http://kungfoo", "kung:foo", "bar")
 		if err != nil {
 			t.Errorf("Failed to create Attribute node: %s", err)
 			return

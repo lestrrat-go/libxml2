@@ -4,11 +4,10 @@ import "github.com/lestrrat-go/option"
 
 // Non-standard (i.e. non-libxml2 native options) go here
 
-type optkeyWithEncoding struct {}
+type optkeyWithEncoding struct{}
 
 type nonNativeXMLParseOption struct {
 	option.Interface
-	enabled bool
 }
 
 func (*nonNativeXMLParseOption) xmlParseOption() {}
@@ -32,4 +31,3 @@ func WithHTMLEncoding(s string) HTMLParseOption {
 		Interface: option.New(optkeyWithEncoding{}, s),
 	}
 }
-

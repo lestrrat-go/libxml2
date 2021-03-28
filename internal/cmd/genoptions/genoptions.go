@@ -138,11 +138,11 @@ func genXMLParseOptions() error {
 		},
 		{
 			name:        "NoError",
-			description: "supress error reports",
+			description: "suppress error reports",
 		},
 		{
 			name:        "NoWarning",
-			description: "supress warning reports",
+			description: "suppress warning reports",
 		},
 		{
 			name:        "Pedantic",
@@ -236,44 +236,44 @@ func genHTMLParseOptions() error {
 			shift:       2,
 		},
 		{
-			name: "NoError",
+			name:        "NoError",
 			description: "suppress error reports",
-			shift: 5,
+			shift:       5,
 		},
 		{
-			name: "NoWarning",
+			name:        "NoWarning",
 			description: "suppress warnings reports",
-			shift: 6,
+			shift:       6,
 		},
 		{
-			name: "Pedantic",
+			name:        "Pedantic",
 			description: "enable pedantic error reporting",
-			shift: 7,
+			shift:       7,
 		},
 		{
-			name: "NoBlanks",
+			name:        "NoBlanks",
 			description: "removes blank nodes",
-			shift: 8,
+			shift:       8,
 		},
 		{
-			name: "NoNet",
+			name:        "NoNet",
 			description: "forbid network access during parsing",
-			shift: 11,
+			shift:       11,
 		},
 		{
-			name: "NoImplied",
+			name:        "NoImplied",
 			description: "disable implied html/body elements",
-			shift: 13,
+			shift:       13,
 		},
 		{
-			name: "Compact",
+			name:        "Compact",
 			description: "enable compaction of small text nodes",
-			shift: 16,
+			shift:       16,
 		},
 		{
-			name: "IgnoreEnc",
+			name:        "IgnoreEnc",
 			description: "ignore internal document encoding hints",
-			shift: 21,
+			shift:       21,
 		},
 	}
 

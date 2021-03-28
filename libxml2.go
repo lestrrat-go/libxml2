@@ -16,5 +16,3 @@ correctness will be used.
 Also, the return values are still shaky -- I'm still debating how to handle error cases gracefully.
 */
 package libxml2
-
-

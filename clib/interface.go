@@ -15,7 +15,7 @@ const (
 type C14NMode int
 
 // PtrSource is the single interface that connects the rest of
-// libxml2 package with this pacakge. The clib packages does not
+// libxml2 package with this package. The clib packages does not
 // really care what sort of object you pass to these low-level
 // functions, as long as the arguments fulfill this interface.
 //

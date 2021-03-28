@@ -1,6 +1,7 @@
 package libxml2_test
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -10,8 +11,17 @@ import (
 	"github.com/lestrrat-go/libxml2/xpath"
 )
 
+//nolint:govet
 func ExampleXML() {
-	res, err := http.Get("http://blog.golang.org/feed.atom")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://blog.golang.org/feed.atom", nil)
+	if err != nil {
+		panic("failed to create request: " + err.Error())
+	}
+
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic("failed to get blog.golang.org: " + err.Error())
 	}
@@ -26,7 +36,7 @@ func ExampleXML() {
 	defer doc.Free()
 
 	doc.Walk(func(n types.Node) error {
-		log.Printf(n.NodeName())
+		log.Println(n.NodeName())
 		return nil
 	})
 
@@ -36,20 +46,29 @@ func ExampleXML() {
 		return
 	}
 
-	ctx, err := xpath.NewContext(root)
+	xctx, err := xpath.NewContext(root)
 	if err != nil {
 		log.Printf("Failed to create xpath context: %s", err)
 		return
 	}
-	defer ctx.Free()
+	defer xctx.Free()
 
-	ctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
-	title := xpath.String(ctx.Find("/atom:feed/atom:title/text()"))
+	xctx.RegisterNS("atom", "http://www.w3.org/2005/Atom")
+	title := xpath.String(xctx.Find("/atom:feed/atom:title/text()"))
 	log.Printf("feed title = %s", title)
 }
 
+//nolint:govet
 func ExampleHTML() {
-	res, err := http.Get("http://golang.org")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://golang.org", nil)
+	if err != nil {
+		panic("failed to create request: " + err.Error())
+	}
+
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic("failed to get golang.org: " + err.Error())
 	}
@@ -58,10 +77,12 @@ func ExampleHTML() {
 	if err != nil {
 		panic("failed to parse HTML: " + err.Error())
 	}
+	defer res.Body.Close()
+
 	defer doc.Free()
 
 	doc.Walk(func(n types.Node) error {
-		log.Printf(n.NodeName())
+		log.Println(n.NodeName())
 		return nil
 	})
 

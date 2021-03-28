@@ -86,6 +86,7 @@ type Serializer interface {
 // C14NMode represents the C14N mode supported by libxml2
 type C14NMode int
 
+//nolint:golint,stylecheck
 const (
 	C14N1_0 C14NMode = iota
 	C14NExclusive1_0

@@ -1689,7 +1689,6 @@ func XMLElementGetAttributeNode(n PtrSource, name string) (uintptr, error) {
 
 				prop = C.xmlHasNsProp(nptr, clocal, ns.href)
 			}
-
 		}
 	}
 

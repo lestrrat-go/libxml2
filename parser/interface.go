@@ -52,9 +52,9 @@ const (
 	XMLParsePedantic                      /* pedantic error reporting */
 	XMLParseNoBlanks                      /* remove blank nodes */
 	XMLParseSAX1                          /* use the SAX1 interface internally */
-	XMLParseXInclude                      /* Implement XInclude substitition  */
+	XMLParseXInclude                      /* Implement XInclude substitution  */
 	XMLParseNoNet                         /* Forbid network access */
-	XMLParseNoDict                        /* Do not reuse the context dictionnary */
+	XMLParseNoDict                        /* Do not reuse the context dictionary */
 	XMLParseNsclean                       /* remove redundant namespaces declarations */
 	XMLParseNoCDATA                       /* merge CDATA as text nodes */
 	XMLParseNoXIncNode                    /* do not generate XINCLUDE START/END nodes */

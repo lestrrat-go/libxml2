@@ -252,7 +252,7 @@ func (d *Document) Encoding() string {
 func (d *Document) Free() {
 	clib.XMLFreeDoc(d)
 	d.ptr = 0
-	docPool.Put(*d)
+	docPool.Put(d)
 }
 
 // String formats the document, always without formatting.
@@ -326,9 +326,7 @@ func (d *Document) LookupNamespacePrefix(href string) (string, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get document element")
-
 	}
-
 	return root.LookupNamespacePrefix(href)
 }
 
@@ -339,7 +337,6 @@ func (d *Document) LookupNamespaceURI(prefix string) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get document element")
 	}
-
 	return root.LookupNamespaceURI(prefix)
 }
 
