@@ -260,14 +260,10 @@ func XMLOptionsToFlag(options ...XMLParseOption) int {
 		if !ok {
 			continue
 		}
-		var toggle bool
 		if option.Enabled() {
-			toggle = (flag & option.Value().(int)) == 1
+			flag |= option.Value().(int)
 		} else {
-			toggle = (flag & option.Value().(int)) == 0
-		}
-		if toggle {
-			flag ^= option.Value().(int)
+			flag &= ^(option.Value().(int))
 		}
 	}
 	return flag
