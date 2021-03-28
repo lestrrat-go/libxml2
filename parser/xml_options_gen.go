@@ -68,6 +68,7 @@ const (
 	optvalWithXMLParseIgnoreEnc
 	optvalWithXMLParseBigLines
 )
+const defaultXMLParseFlag = 0
 
 // WithXMLParseRecover specifies if the parser should recover on errors
 func WithXMLParseRecover(b bool) XMLParseOption {
@@ -254,7 +255,7 @@ func WithXMLParseBigLines(b bool) XMLParseOption {
 }
 
 func XMLOptionsToFlag(options ...XMLParseOption) int {
-	var flag int
+	flag := defaultXMLParseFlag
 	for _, rawopt := range options {
 		option, ok := rawopt.(*nativeXMLParseOption)
 		if !ok {

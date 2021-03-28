@@ -42,6 +42,7 @@ const (
 	optvalWithHTMLParseCompact   = 1 << 16
 	optvalWithHTMLParseIgnoreEnc = 1 << 21
 )
+const defaultHTMLParseFlag = optvalWithHTMLParseCompact | optvalWithHTMLParseNoBlanks | optvalWithHTMLParseNoError | HTMLParseNoWarning
 
 // WithHTMLParseRecover specifies if the parser should enable relaxed parsing
 func WithHTMLParseRecover(b bool) HTMLParseOption {
@@ -124,7 +125,7 @@ func WithHTMLParseIgnoreEnc(b bool) HTMLParseOption {
 }
 
 func HTMLOptionsToFlag(options ...HTMLParseOption) int {
-	var flag int
+	flag := defaultHTMLParseFlag
 	for _, rawopt := range options {
 		option, ok := rawopt.(*nativeHTMLParseOption)
 		if !ok {

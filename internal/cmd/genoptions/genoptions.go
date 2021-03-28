@@ -86,7 +86,7 @@ func genInterface(dst io.Writer, mltyp string, options ...*optiondef) error {
 	}
 
 	fmt.Fprintf(&bodySection, "\n\nfunc %[1]sOptionsToFlag(options ...%[1]sParseOption) int {", strings.ToUpper(mltyp))
-	fmt.Fprintf(&bodySection, "\nvar flag int")
+	fmt.Fprintf(&bodySection, "\nflag := default%sParseFlag", strings.ToUpper(mltyp))
 	fmt.Fprintf(&bodySection, "\nfor _, rawopt := range options {")
 	fmt.Fprintf(&bodySection, "\noption, ok := rawopt.(*native%sParseOption)", strings.ToUpper(mltyp))
 	fmt.Fprintf(&bodySection, "\nif !ok {")
@@ -102,6 +102,12 @@ func genInterface(dst io.Writer, mltyp string, options ...*optiondef) error {
 	fmt.Fprintf(&bodySection, "\n}")
 
 	fmt.Fprintf(&valueSection, "\n)")
+	switch mltyp {
+	case "xml":
+		fmt.Fprintf(&valueSection, "\nconst defaultXMLParseFlag = 0")
+	case "html":
+		fmt.Fprintf(&valueSection, "\nconst defaultHTMLParseFlag = optvalWithHTMLParseCompact | optvalWithHTMLParseNoBlanks | optvalWithHTMLParseNoError | HTMLParseNoWarning")
+	}
 
 	_, _ = keySection.WriteTo(dst)
 	_, _ = valueSection.WriteTo(dst)
