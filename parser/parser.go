@@ -169,7 +169,7 @@ func ParseHTMLString(content string, options ...HTMLParseOption) (types.Document
 	}
 
 	option := HTMLOptionsToFlag(options...)
-	docptr, err := clib.HTMLReadDoc(content, "", encoding, int(option))
+	docptr, err := clib.HTMLReadDoc(content, "", encoding, option)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read document")
 	}

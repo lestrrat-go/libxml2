@@ -3,12 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"go/format"
-	"io"
 	"log"
 	"os"
 	"strconv"
 
+	"github.com/lestrrat-go/codegen"
 	"github.com/pkg/errors"
 )
 
@@ -71,27 +70,10 @@ func _main() error {
 	buf.WriteString("\n}")
 	buf.WriteString("\n}")
 
-	src, err := format.Source(buf.Bytes())
-	if err != nil {
-		log.Printf("%s", buf.Bytes())
-		return err
+	srcbytes := buf.Bytes() // save so we can use in error reporting later
+	if err := codegen.WriteFile("dom/node_wrap.go", &buf, codegen.WithFormatCode(true)); err != nil {
+		_ = codegen.Write(os.Stdout, bytes.NewReader(srcbytes), codegen.WithLineNumber(true))
+		return errors.Wrap(err, `failed to format code`)
 	}
-
-	var out io.Writer = os.Stdout
-	args := os.Args
-	if len(args) > 2 && args[1] == "--" {
-		args = append(append([]string(nil), args[1:]...), args[2:]...)
-	}
-
-	if len(args) > 1 {
-		f, err := os.OpenFile(args[1], os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-		if err != nil {
-			return errors.Wrapf(err, `failed to open %s`, args[1])
-		}
-		defer f.Close()
-		out = f
-	}
-
-	out.Write(src)
 	return nil
 }

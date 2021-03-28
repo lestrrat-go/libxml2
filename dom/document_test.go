@@ -87,12 +87,16 @@ func withDocument(cb func(*dom.Document)) {
 
 func TestDocumentCreateElements(t *testing.T) {
 	withDocument(func(d *dom.Document) {
-		createElementAndCheck(t, d, "foo", "foo", "Simple Element")
+		if !createElementAndCheck(t, d, "foo", "foo", "Simple Element") {
+			t.Errorf(`failed to create element`)
+		}
 	})
 
 	withDocument(func(d *dom.Document) {
 		d.SetEncoding("iso-8859-1")
-		createElementAndCheck(t, d, "foo", "foo", "Create element with document with encoding")
+		if !createElementAndCheck(t, d, "foo", "foo", "Create element with document with encoding") {
+			t.Errorf(`failed to create element`)
+		}
 	})
 
 	withDocument(func(d *dom.Document) {

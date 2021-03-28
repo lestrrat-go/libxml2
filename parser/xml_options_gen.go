@@ -109,7 +109,7 @@ func WithXMLParseDTDValid(b bool) XMLParseOption {
 	}
 }
 
-// WithXMLParseNoError specifies if the parser should supress error reports
+// WithXMLParseNoError specifies if the parser should suppress error reports
 func WithXMLParseNoError(b bool) XMLParseOption {
 	return &nativeXMLParseOption{
 		enabled:   b,
@@ -117,7 +117,7 @@ func WithXMLParseNoError(b bool) XMLParseOption {
 	}
 }
 
-// WithXMLParseNoWarning specifies if the parser should supress warning reports
+// WithXMLParseNoWarning specifies if the parser should suppress warning reports
 func WithXMLParseNoWarning(b bool) XMLParseOption {
 	return &nativeXMLParseOption{
 		enabled:   b,
