@@ -6,7 +6,7 @@ import (
 
 // Free releases the underlying C struct
 func (n *Attribute) Free() {
-	clib.XMLFreeProp(n)
+	_ = clib.XMLFreeProp(n)
 }
 
 // HasChildNodes returns true if the node contains any child nodes.

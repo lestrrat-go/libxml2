@@ -99,7 +99,7 @@ func (p *Parser) ParseString(s string) (types.Document, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create parse context")
 	}
-	defer ctx.Free()
+	defer func() { _ = ctx.Free() }()
 
 	docptr, err := clib.XMLCtxtReadMemory(ctx, s, "", "", int(p.Options))
 	if err != nil {

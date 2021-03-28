@@ -250,7 +250,7 @@ func (d *Document) Encoding() string {
 
 // Free releases the underlying C struct
 func (d *Document) Free() {
-	clib.XMLFreeDoc(d)
+	_ = clib.XMLFreeDoc(d)
 	d.ptr = 0
 	docPool.Put(d)
 }
@@ -316,8 +316,7 @@ func (d *Document) Walk(fn func(types.Node) error) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get document element")
 	}
-	walk(root, fn)
-	return nil
+	return walk(root, fn)
 }
 
 // LookupNamespacePrefix looks for a namespace prefix that matches

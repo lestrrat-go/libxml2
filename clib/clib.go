@@ -573,7 +573,7 @@ func XMLCreateDocument(version, encoding string) uintptr {
 	return uintptr(unsafe.Pointer(doc))
 }
 
-func XMLEncodeEntitiesReentrant(docptr *C.xmlDoc, s string) (*C.xmlChar, error) {
+func xmlEncodeEntitiesReentrant(docptr *C.xmlDoc, s string) (*C.xmlChar, error) {
 	cent := stringToXMLChar(s)
 	defer C.free(unsafe.Pointer(cent))
 
@@ -668,7 +668,7 @@ func XMLNewDocProp(doc PtrSource, k, v string) (uintptr, error) {
 	cname := C.CString(k)
 	defer C.free(unsafe.Pointer(cname))
 
-	ent, err := XMLEncodeEntitiesReentrant(docptr, v)
+	ent, err := xmlEncodeEntitiesReentrant(docptr, v)
 	if err != nil {
 		return 0, err
 	}
@@ -2037,7 +2037,7 @@ func XMLXPathObjectBool(x PtrSource) bool {
 		return false
 	}
 
-	return C.int(xptr.boolval) == 1
+	return xptr.boolval == 1
 }
 
 func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {

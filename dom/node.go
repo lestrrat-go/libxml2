@@ -202,12 +202,12 @@ func (n *XMLNode) PreviousSibling() (types.Node, error) {
 
 // SetNodeName sets the node name
 func (n *XMLNode) SetNodeName(name string) {
-	clib.XMLSetNodeName(n, name)
+	_ = clib.XMLSetNodeName(n, name)
 }
 
 // SetNodeValue sets the node value
 func (n *XMLNode) SetNodeValue(value string) {
-	clib.XMLSetNodeValue(n, value)
+	_ = clib.XMLSetNodeValue(n, value)
 }
 
 // AddChild appends the node
@@ -256,7 +256,7 @@ func (n *XMLNode) MakePersistent() {
 
 // Free releases the underlying C struct
 func (n *XMLNode) Free() {
-	clib.XMLFreeNode(n)
+	_ = clib.XMLFreeNode(n)
 	n.ptr = 0
 }
 
@@ -278,8 +278,7 @@ func walk(n types.Node, fn func(types.Node) error) error {
 
 // Walk traverses through all of the nodes
 func (n *XMLNode) Walk(fn func(types.Node) error) error {
-	walk(n, fn)
-	return nil
+	return walk(n, fn)
 }
 
 // AutoFree allows you to free the underlying C resources. It is

@@ -2,11 +2,11 @@ package dom
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
+	"github.com/pkg/errors"
 )
 
 // SetNamespace sets up a new namespace on the given node.
@@ -35,7 +35,9 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		ns := wrapNamespaceNode(nsptr)
 		if ns.URI() != "" {
 			if activateflag {
-				clib.XMLSetNs(n, nil)
+				if err := clib.XMLSetNs(n, nil); err != nil {
+					return errors.Wrap(err, `failed to set namespace`)
+				}
 			}
 		}
 		return nil
