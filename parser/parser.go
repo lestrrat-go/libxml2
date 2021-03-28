@@ -150,3 +150,43 @@ func (ctx *Ctxt) Free() error {
 	ctx.ptr = 0
 	return nil
 }
+
+// ParseHTML parses an HTML document. You can omit the options
+// argument, or you can provide one bitwise-or'ed option
+func ParseHTML(content []byte, options ...HTMLParseOption) (types.Document, error) {
+	return ParseHTMLString(string(content), options...)
+}
+
+// ParseHTMLString parses an HTML document. You can omit the options
+// argument, or you can provide one bitwise-or'ed option
+func ParseHTMLString(content string, options ...HTMLParseOption) (types.Document, error) {
+	var encoding string
+	for _, option := range options {
+		switch option.Ident() {
+		case optkeyWithEncoding{}:
+			encoding = option.Value().(string)
+		}
+	}
+
+	option := HTMLOptionsToFlag(options...)
+	docptr, err := clib.HTMLReadDoc(content, "", encoding, int(option))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read document")
+	}
+
+	if docptr == 0 {
+		return nil, errors.Wrap(clib.ErrInvalidDocument, "failed to get valid document pointer")
+	}
+	return dom.WrapDocument(docptr), nil
+}
+
+// ParseHTMLReader parses an HTML document. You can omit the options
+// argument, or you can provide one bitwise-or'ed option
+func ParseHTMLReader(in io.Reader, options ...HTMLParseOption) (types.Document, error) {
+	buf := &bytes.Buffer{}
+	if _, err := buf.ReadFrom(in); err != nil {
+		return nil, errors.Wrap(err, "failed to rea from io.Reader")
+	}
+
+	return ParseHTMLString(buf.String(), options...)
+}

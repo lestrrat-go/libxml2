@@ -368,3 +368,11 @@ func TestGHIssue56(t *testing.T) {
 		return
 	}
 }
+
+func TestGHIssue76(t *testing.T) {
+	doc, err := ParseHTMLString(`<html><body>可以呢</body></html>`)//, parser.WithHTMLEncoding(`utf-8`))
+	if !assert.NoError(t, err, `ParseHTMLString should work`) {
+		return
+	}
+	_ = doc
+}

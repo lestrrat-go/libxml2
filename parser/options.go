@@ -12,19 +12,12 @@ type nonNativeXMLParseOption struct {
 }
 
 func (*nonNativeXMLParseOption) xmlParseOption() {}
-func (o *nonNativeXMLParseOption) Enabled() bool {
-	return o.enabled
-}
 
 type nonNativeHTMLParseOption struct {
 	option.Interface
-	enabled bool
 }
 
 func (*nonNativeHTMLParseOption) htmlParseOption() {}
-func (o *nonNativeHTMLParseOption) Enabled() bool {
-	return o.enabled
-}
 
 // Specifies the encoding when parsing documents.
 func WithXMLEncoding(s string) XMLParseOption {
