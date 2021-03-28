@@ -109,9 +109,12 @@ func TestDocumentCreateElements(t *testing.T) {
 
 		checkElement(t, e, "foo:bar", caseName)
 
+		//nolint:goconst
 		if e.Prefix() != "foo" {
 			t.Errorf("%s: Expected prefix '%s', got '%s'", caseName, "foo", e.Prefix())
 		}
+
+		//nolint:goconst
 		if e.LocalName() != "bar" {
 			t.Errorf("%s: Expected local name '%s', got '%s'", caseName, "bar", e.LocalName())
 		}

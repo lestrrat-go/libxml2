@@ -1224,14 +1224,8 @@ func addNsChain(n *C.xmlNs, ns *C.xmlNs) *C.xmlNs {
 		return ns
 	}
 
-	for i := n; i != nil && i != ns; i = i.next {
-		if i == nil {
-			ns.next = n
-			return ns
-		}
-	}
-
-	return n
+	ns.next = n
+	return ns
 }
 
 func addNsDef(tree *C.xmlNode, ns *C.xmlNs) {
@@ -1270,7 +1264,6 @@ func reconcileNsSave(tree *C.xmlNode, unused **C.xmlNs) {
 			/* Remove the declaration (if present) */
 			if removeNsDef(tree, tree.ns) {
 				/* Queue the namespace for freeing */
-
 				*unused = addNsChain(*unused, tree.ns)
 			}
 			/* Replace the namespace with the one found */
@@ -2061,6 +2054,7 @@ func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {
 		Len:  int(nodeset.nodeNr),
 		Cap:  int(nodeset.nodeNr),
 	}
+	//nolint:govet
 	nodes := *(*[]*C.xmlNode)(unsafe.Pointer(&hdr))
 
 	ret := make([]uintptr, nodeset.nodeNr)

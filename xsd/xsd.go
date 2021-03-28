@@ -63,6 +63,7 @@ func (s *Schema) Free() {
 // Validate takes in a XML document and validates it against
 // the schema. If there are any problems, and error is
 // returned.
+//nolint:interfacer
 func (s *Schema) Validate(d types.Document, options ...int) error {
 	errs := clib.XMLSchemaValidateDocument(s, d, options...)
 	if errs == nil {
