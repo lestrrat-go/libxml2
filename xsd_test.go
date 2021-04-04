@@ -243,3 +243,103 @@ func TestGHIssue67(t *testing.T) {
 		t.Logf("%s", doc.String())
 	})
 }
+
+func TestExternalLoader_ShouldPass(t *testing.T) {
+	sampleXSD := []byte(`<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema targetNamespace="http://xmlsoft.org/"
+           xmlns="http://xmlsoft.org/"
+           xmlns:libxml2="http://xmlsoft.org/"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+    <xs:include schemaLocation="dynamic_loading.xsd"/>
+    <xs:element name="libxml2">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="hash" type="t_cksum_hash"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>`)
+	includeXSDSample := []byte(`<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema targetNamespace="http://xmlsoft.org/"
+           xmlns="http://xmlsoft.org/"
+           xmlns:libxml2="http://xmlsoft.org/"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <xs:simpleType name="t_cksum_hash">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="[A-Za-z0-9+/=]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>`)
+
+	libxml2.RegisterInputCallback(libxml2.InMemoryCallback("dynamic_loading.xsd", includeXSDSample))
+	defer libxml2.RestoreDefaultInputCallback()
+	schema, err := xsd.Parse(sampleXSD)
+	if !assert.NoError(t, err, `error not expected`) {
+		return
+	}
+	if !assert.NotEmpty(t, schema, `scheme should not be empty`) {
+		return
+	}
+}
+
+func TestExternalLoader(t *testing.T) {
+	sampleXSD := []byte(`<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema targetNamespace="http://xmlsoft.org/"
+           xmlns="http://xmlsoft.org/"
+           xmlns:libxml2="http://xmlsoft.org/"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+    <xs:include schemaLocation="dynamic_loading.xsd"/>
+    <xs:element name="libxml2">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="hash" type="t_cksum_hash"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>`)
+	includeXSDSample := []byte(`<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema targetNamespace="http://xmlsoft.org/"
+           xmlns="http://xmlsoft.org/"
+           xmlns:libxml2="http://xmlsoft.org/"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <xs:simpleType name="t_cksum_hash">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="[A-Za-z0-9+/=]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>`)
+
+	t.Run("should pass when callback is registered", func(t *testing.T) {
+		libxml2.RegisterInputCallback(libxml2.InMemoryCallback("dynamic_loading.xsd", includeXSDSample))
+		defer libxml2.RestoreDefaultInputCallback()
+		schema, err := xsd.Parse(sampleXSD)
+		if !assert.NoError(t, err, `error not expected`) {
+			return
+		}
+		if !assert.NotEmpty(t, schema, `scheme should not be empty`) {
+			return
+		}
+	})
+
+	t.Run("should fail when callback is not registered", func(t *testing.T) {
+		libxml2.RegisterInputCallback(libxml2.InMemoryCallback("dynamic_loading.xsd", includeXSDSample))
+		libxml2.RestoreDefaultInputCallback()
+		schema, err := xsd.Parse(sampleXSD)
+		if !assert.Error(t, err, `error is expected`) {
+			return
+		}
+		if !assert.Empty(t, schema, `scheme should be empty`) {
+			return
+		}
+	})
+}

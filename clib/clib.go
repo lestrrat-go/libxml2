@@ -37,6 +37,7 @@ package clib
 #include <libxml/c14n.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/schemasInternals.h>
+#include <libxml/xmlIO.h>
 
 static inline void MY_nilErrorHandler(void *ctx, const char *msg, ...) {}
 
@@ -333,12 +334,79 @@ void
 MY_setErrWarnAccumulator(xmlSchemaValidCtxtPtr ctxt, go_libxml2_errwarn_accumulator *accum) {
 	xmlSchemaSetValidErrors(ctxt, MY_accumulateErr, NULL, accum);
 }
+
+typedef struct _callbackContext {
+	char *URI;
+	long length;
+	long offset;
+	char *buffer;
+} callbackContext;
+
+static inline int inputCallbackClose (void *ctx){
+	if (ctx == NULL){
+		return -1;
+	}
+	callbackContext *context = (callbackContext*)ctx;
+	free(context->buffer);
+	free(context->URI);
+	free(context);
+	return 0;
+}
+
+static inline int inputCallbackRead(void *ctx, char *buffer, int len) {
+	if (ctx == NULL || buffer == NULL){
+		return -1;
+	}
+	callbackContext *context = (callbackContext*)ctx;
+	int nCharsToRead;
+
+	nCharsToRead = len;
+	if (context->length < context->offset + len) {
+		nCharsToRead = context->length - context->offset;
+	}
+	memcpy(buffer, context->buffer + context->offset, nCharsToRead);
+	context->offset += nCharsToRead;
+	return nCharsToRead;
+}
+
+extern char* goCallbackOpenHandler(char *URI);
+static inline void* inputCallbackOpen(const char *URI) {
+	char* buffer;
+	callbackContext* context;
+
+	buffer = goCallbackOpenHandler((char *)URI);
+	if (buffer == NULL) {
+		return NULL;
+	}
+
+	context = (callbackContext*)malloc(sizeof(callbackContext));
+	if (context == NULL) {
+		printf("fail to create callback Context: %s", URI);
+		exit(1);
+	}
+	context->length = strlen(buffer);
+	context->offset = 0;
+	context->buffer = buffer;
+	context->URI    = strdup(URI);
+	return (void*)context;
+}
+
+extern int goCallbackMatchHandler (char *);
+static inline int inputCallbackMatch(const char *URI) {
+	return goCallbackMatchHandler((char *)URI);
+}
+
+static inline int registerXmlInputCallback() {
+	return xmlRegisterInputCallbacks(inputCallbackMatch, inputCallbackOpen, inputCallbackRead, inputCallbackClose);
+}
 */
 import "C"
 import (
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"strings"
+	"sync"
 	"unicode"
 	"unicode/utf8"
 	"unsafe"
@@ -2123,6 +2191,67 @@ func XMLTextData(n PtrSource) string {
 		return ""
 	}
 	return xmlCharToString(nptr.content)
+}
+
+//export goCallbackMatchHandler
+func goCallbackMatchHandler(URI *C.char) C.int {
+	uri := C.GoString(URI)
+	if findCallbackBy(uri) != nil {
+		return 1
+	}
+	return 0
+}
+
+//export goCallbackOpenHandler
+func goCallbackOpenHandler(URI *C.char) *C.char {
+	uri := C.GoString(URI)
+	callback := findCallbackBy(uri)
+	if callback == nil {
+		return nil
+	}
+
+	reader, err := callback.Open(uri)
+	if err != nil {
+		return nil
+	}
+	defer func() {
+		_ = reader.Close()
+	}()
+	data, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil
+	}
+	return C.CString(string(data))
+}
+
+var (
+	xmlCallbackSync sync.RWMutex
+	xmlCallbackList []Callback
+)
+
+func RegisterInputCallback(callbackList ...Callback) {
+	xmlCallbackSync.Lock()
+	defer xmlCallbackSync.Unlock()
+	xmlCallbackList = append(xmlCallbackList, callbackList...)
+	C.registerXmlInputCallback()
+}
+
+func RestoreDefaultInputCallback() {
+	xmlCallbackSync.Lock()
+	defer xmlCallbackSync.Unlock()
+	xmlCallbackList = xmlCallbackList[:0]
+	C.xmlRegisterDefaultInputCallbacks()
+}
+
+func findCallbackBy(uri string) Callback {
+	xmlCallbackSync.RLock()
+	defer xmlCallbackSync.RUnlock()
+	for _, callback := range xmlCallbackList {
+		if callback.Match(uri) {
+			return callback
+		}
+	}
+	return nil
 }
 
 func XMLSchemaParse(buf []byte, options ...option.Interface) (uintptr, error) {

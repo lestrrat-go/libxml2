@@ -1,6 +1,9 @@
 package clib
 
-import "errors"
+import (
+	"errors"
+	"io"
+)
 
 const (
 	MaxEncodingLength        = 256
@@ -117,3 +120,11 @@ const (
 	XPathUsersType
 	XPathXSLTTreeType
 )
+
+type CallbackMatcher interface {
+	Match(string) bool
+}
+type Callback interface {
+	Open(string) (io.ReadCloser, error)
+	CallbackMatcher
+}
