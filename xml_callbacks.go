@@ -1,56 +1,42 @@
 package libxml2
 
+import "C"
 import (
-	"strings"
-
+	"bytes"
 	"github.com/lestrrat-go/libxml2/clib"
+	"io"
+	"io/ioutil"
 )
 
-type XMLCallback struct {
+type inMemoryCallback struct {
 	uri         string
-	matchingFnc func(receivedURI, expectedURI string) bool
 	data        []byte
 }
 
-func (i XMLCallback) CanHandle(uri string) bool {
-	return i.matchingFnc(uri, i.uri)
+func (i *inMemoryCallback) Open(_ string) (io.ReadCloser, error) {
+	return ioutil.NopCloser(bytes.NewReader(i.data)), nil
 }
 
-func (i XMLCallback) GetData(_ string) []byte {
-	return i.data
+func (i *inMemoryCallback) Match(uri string) bool {
+	return i.uri == uri
 }
 
-var _ clib.XMLCallback = (*XMLCallback)(nil)
+var _ clib.Callback = (*inMemoryCallback)(nil)
 
-type Option func(*XMLCallback)
-
-func WithURIEquals() Option {
-	return func(callback *XMLCallback) {
-		callback.matchingFnc = func(receivedURI, expectedURI string) bool {
-			return receivedURI == expectedURI
-		}
-	}
-}
-
-func WithURIContains() Option {
-	return func(callback *XMLCallback) {
-		callback.matchingFnc = strings.Contains
-	}
-}
-
-func defaultOptions() []Option {
-	return []Option{
-		WithURIEquals(),
-	}
-}
-
-func InMemoryCallback(xmlURI string, data []byte, options ...Option) clib.XMLCallback {
-	callback := &XMLCallback{
+func InMemoryCallback(xmlURI string, data []byte) clib.Callback {
+	return &inMemoryCallback{
 		uri:  xmlURI,
 		data: data,
 	}
-	for _, opt := range append(defaultOptions(), options...) {
-		opt(callback)
+}
+
+func RegisterInputCallback(callbacks ...clib.Callback) {
+	if len(callbacks) == 0 {
+		return
 	}
-	return callback
+	clib.RegisterInputCallback(callbacks...)
+}
+
+func RestoreDefaultInputCallback() {
+	clib.RestoreDefaultInputCallback()
 }

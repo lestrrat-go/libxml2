@@ -1,6 +1,9 @@
 package clib
 
-import "errors"
+import (
+	"errors"
+	"io"
+)
 
 const (
 	MaxEncodingLength        = 256
@@ -118,7 +121,10 @@ const (
 	XPathXSLTTreeType
 )
 
-type XMLCallback interface {
-	CanHandle(uri string) bool
-	GetData(uri string) []byte
+type CallbackMatcher interface {
+	Match(string) bool
+}
+type Callback interface {
+	Open(string) (io.ReadCloser, error)
+	CallbackMatcher
 }

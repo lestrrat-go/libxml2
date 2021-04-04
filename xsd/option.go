@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/internal/option"
 )
 
@@ -39,8 +38,4 @@ func WithPath(path string) Option {
 
 func WithURI(v string) Option {
 	return option.New(option.OptKeyWithURI, v)
-}
-
-func WithCallback(callbacks clib.XMLCallback) Option {
-	return option.New(option.OptKeyWithXmlCallback, callbacks)
 }

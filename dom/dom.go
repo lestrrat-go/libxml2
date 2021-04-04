@@ -12,7 +12,7 @@ func init() {
 	SetupXPathCallback()
 	docPool = sync.Pool{}
 	docPool.New = func() interface{} {
-		return &Document{}
+		return Document{}
 	}
 }
 
@@ -21,8 +21,8 @@ func SetupXPathCallback() {
 }
 
 func WrapDocument(n uintptr) *Document {
-	doc := docPool.Get().(*Document)
+	doc := docPool.Get().(Document)
 	doc.mortal = false
 	doc.ptr = n
-	return doc
+	return &doc
 }

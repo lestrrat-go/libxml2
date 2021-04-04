@@ -403,6 +403,7 @@ static inline int registerXmlInputCallback() {
 import "C"
 import (
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"strings"
 	"sync"
@@ -1223,6 +1224,10 @@ func XMLChildNodes(n PtrSource) ([]uintptr, error) {
 		ret = append(ret, uintptr(unsafe.Pointer(chld)))
 	}
 	return ret, nil
+}
+
+type stringer interface {
+	String() string
 }
 
 func XMLRemoveChild(n PtrSource, t PtrSource) error {
@@ -2204,26 +2209,45 @@ func goCallbackOpenHandler(URI *C.char) *C.char {
 	if callback == nil {
 		return nil
 	}
-	data := callback.GetData(uri)
+
+	reader, err := callback.Open(uri)
+	if err != nil {
+		return nil
+	}
+	defer func() {
+		_ = reader.Close()
+	}()
+	data, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil
+	}
 	return C.CString(string(data))
 }
 
 var (
 	xmlCallbackSync sync.RWMutex
-	xmlCallbackList []XMLCallback
+	xmlCallbackList []Callback
 )
 
-func registerXmlCallback(callback XMLCallback) {
+func RegisterInputCallback(callbackList ...Callback) {
 	xmlCallbackSync.Lock()
 	defer xmlCallbackSync.Unlock()
-	xmlCallbackList = append(xmlCallbackList, callback)
+	xmlCallbackList = append(xmlCallbackList, callbackList...)
+	C.registerXmlInputCallback()
 }
 
-func findCallbackBy(uri string) XMLCallback {
+func RestoreDefaultInputCallback() {
+	xmlCallbackSync.Lock()
+	defer xmlCallbackSync.Unlock()
+	xmlCallbackList = xmlCallbackList[:0]
+	C.xmlRegisterDefaultInputCallbacks()
+}
+
+func findCallbackBy(uri string) Callback {
 	xmlCallbackSync.RLock()
 	defer xmlCallbackSync.RUnlock()
 	for _, callback := range xmlCallbackList {
-		if callback.CanHandle(uri) {
+		if callback.Match(uri) {
 			return callback
 		}
 	}
@@ -2234,22 +2258,11 @@ func XMLSchemaParse(buf []byte, options ...option.Interface) (uintptr, error) {
 	var uri string
 	var encoding string
 	var coptions int
-
-	callbacksRegistered := false
 	for _, opt := range options {
 		switch opt.Name() {
 		case option.OptKeyWithURI:
 			uri = opt.Value().(string)
-		case option.OptKeyWithXmlCallback:
-			if callback, ok := opt.Value().(XMLCallback); ok {
-				registerXmlCallback(callback)
-				callbacksRegistered = true
-			}
 		}
-	}
-	if callbacksRegistered {
-		C.registerXmlInputCallback()
-		defer C.xmlRegisterDefaultInputCallbacks()
 	}
 
 	docctx := C.xmlCreateMemoryParserCtxt((*C.char)(unsafe.Pointer(&buf[0])), C.int(len(buf)))
