@@ -56,7 +56,7 @@ func TestBenchmarkLibxml2Xmlpath(t *testing.T) {
 	if !assert.NoError(t, err, "xpath.NewContext succeeds") {
 		return
 	}
-	xpc.RegisterNS("atom", "http://www.w3.org/2005/Atom")
+	_ = xpc.RegisterNS("atom", "http://www.w3.org/2005/Atom")
 
 	res, err := xpc.Find(`//atom:entry`)
 	if !assert.NoError(t, err, "xpc.Find succeeds") {
@@ -97,7 +97,7 @@ func BenchmarkLibxml2Xmlpath(b *testing.B) {
 	if err != nil {
 		b.Fatalf("%s", err)
 	}
-	xpc.RegisterNS("atom", "http://www.w3.org/2005/Atom")
+	_ = xpc.RegisterNS("atom", "http://www.w3.org/2005/Atom")
 	for i := 0; i < b.N; i++ {
 		iter := xpath.NodeIter(xpc.Find(`//atom:entry`))
 		for iter.Next() {
@@ -123,7 +123,7 @@ func BenchmarkEncodingXMLDOM(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		buf.Reset()
 		enc := xml.NewEncoder(&buf)
-		enc.Encode(f)
+		_ = enc.Encode(f)
 	}
 }
 
@@ -142,18 +142,18 @@ func BenchmarkLibxml2DOM(b *testing.B) {
 			d.Free()
 			panic(err)
 		}
-		d.SetDocumentElement(root)
+		_ = d.SetDocumentElement(root)
 
 		f1xml, err := d.CreateElement("Field1")
 		if err != nil {
 			d.Free()
 			panic(err)
 		}
-		root.AddChild(f1xml)
+		_ = root.AddChild(f1xml)
 
-		f1xml.SetAttribute("Field2", f.Field2)
+		_ = f1xml.SetAttribute("Field2", f.Field2)
 
-		f1xml.AppendText(f.Field1)
+		_ = f1xml.AppendText(f.Field1)
 		buf.Reset()
 		buf.WriteString(d.Dump(false))
 		d.Free()

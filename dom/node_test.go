@@ -1,10 +1,11 @@
-package dom
+package dom_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/lestrrat-go/libxml2/clib"
+	. "github.com/lestrrat-go/libxml2/dom"
 	"github.com/lestrrat-go/libxml2/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -123,15 +124,15 @@ func TestDOM(t *testing.T) {
 		return
 	}
 
-	doc.SetDocumentElement(root)
+	_ = doc.SetDocumentElement(root)
 	var toRemove types.Node
 	for i := 1; i <= 3; i++ {
 		child, err := doc.CreateElement(fmt.Sprintf("child%d", i))
 		if !assert.NoError(t, err, "dom.CreateElement(child%d) should succeed", i) {
 			return
 		}
-		child.AppendText(fmt.Sprintf("text%d", i))
-		root.AddChild(child)
+		_ = child.AppendText(fmt.Sprintf("text%d", i))
+		_ = root.AddChild(child)
 
 		if i == 2 {
 			toRemove = child
@@ -218,19 +219,19 @@ func TestCreateElementNS(t *testing.T) {
 	if !assert.NoError(t, err, "CreateElementNS should succeed") {
 		return
 	}
-	doc.SetDocumentElement(root)
+	_ = doc.SetDocumentElement(root)
 
 	n1, err := doc.CreateElementNS("http://foo.bar.baz", "foo:n1")
 	if !assert.NoError(t, err, "CreateElementNS should succeed") {
 		return
 	}
-	root.AddChild(n1)
+	_ = root.AddChild(n1)
 
 	n2, err := doc.CreateElementNS("http://foo.bar.baz", "bar:n2")
 	if !assert.NoError(t, err, "CreateElementNS should succeed") {
 		return
 	}
-	root.AddChild(n2)
+	_ = root.AddChild(n2)
 
 	_, err = doc.CreateElementNS("http://foo.bar.baz.quux", "foo:n3")
 	if !assert.Error(t, err, "CreateElementNS should fail") {

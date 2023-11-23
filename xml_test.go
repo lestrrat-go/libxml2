@@ -1,10 +1,11 @@
-package libxml2
+package libxml2_test
 
 import (
 	"fmt"
 	"os"
 	"testing"
 
+	"github.com/lestrrat-go/libxml2"
 	"github.com/lestrrat-go/libxml2/dom"
 	"github.com/lestrrat-go/libxml2/parser"
 	"github.com/lestrrat-go/libxml2/types"
@@ -42,7 +43,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 	if !assert.NoError(t, err, "failed to create document") {
 		return
 	}
-	d.SetDocumentElement(root)
+	_ = d.SetDocumentElement(root)
 	if !assert.NoError(t, root.SetNamespace("http://default", "root"), "SetNamespace should succeed") {
 		return
 	}
@@ -55,7 +56,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 	if !assert.NoError(t, err, "CreateElementNS should succeed") {
 		return
 	}
-	root.AddChild(n)
+	_ = root.AddChild(n)
 
 	_, err = n.GetAttribute("xmlns")
 	if !assert.Error(t, err, "GetAttribute should fail with not found") ||
@@ -72,7 +73,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 		if name == "c" {
 			c = child
 		}
-		n.AddChild(child)
+		_ = n.AddChild(child)
 		_, err = n.GetAttribute("xmlns:child")
 		if !assert.Error(t, err, "GetAttribute should fail with not found") ||
 			!assert.Equal(t, "attribute not found", err.Error(), "error matches") {
@@ -96,7 +97,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 	if !assert.NoError(t, err, "creating element with default namespace") {
 		return
 	}
-	n.AddChild(child)
+	_ = n.AddChild(child)
 
 	// XXX This still fails
 	/*
@@ -113,7 +114,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 }
 
 func TestRegressionGH7(t *testing.T) {
-	doc, err := ParseHTMLString(`<!DOCTYPE html>
+	doc, err := libxml2.ParseHTMLString(`<!DOCTYPE html>
 <html>
 <body>
 <div>
@@ -146,11 +147,11 @@ func TestRegressionGH7(t *testing.T) {
 func TestGHIssue43(t *testing.T) {
 	d := dom.CreateDocument()
 	r, _ := d.CreateElement("root")
-	r.SetNamespace("http://some.uri", "pfx", true)
-	d.SetDocumentElement(r)
+	_ = r.SetNamespace("http://some.uri", "pfx", true)
+	_ = d.SetDocumentElement(r)
 	e, _ := d.CreateElement("elem")
-	e.SetNamespace("http://other.uri", "", true)
-	r.AddChild(e)
+	_ = e.SetNamespace("http://other.uri", "", true)
+	_ = r.AddChild(e)
 	s := d.ToString(1, true)
 
 	if !assert.Contains(t, s, `<elem xmlns="http://other.uri"`, `default namespace works`) {
