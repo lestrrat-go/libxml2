@@ -15,7 +15,7 @@ func (s C14NSerialize) Serialize(n types.Node) (string, error) {
 	 * Canonical form of an XML document could be created if and only if
 	 *  a) default attributes (if any) are added to all nodes
 	 *  b) all character and parsed entity references are resolved
-	 * In order to achive this in libxml2 the document MUST be loaded with
+	 * In order to achieve this in libxml2 the document MUST be loaded with
 	 * following global setings:
 	 *
 	 *    xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;

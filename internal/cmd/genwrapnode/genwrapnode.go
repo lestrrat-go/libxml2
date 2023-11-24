@@ -91,6 +91,6 @@ func _main() error {
 		out = f
 	}
 
-	out.Write(src)
+	_, _ = out.Write(src)
 	return nil
 }

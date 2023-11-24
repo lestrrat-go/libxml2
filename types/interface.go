@@ -48,6 +48,8 @@ type Attribute interface {
 }
 
 // Element defines the interface for XML element
+//
+//nolint:interfacebloat
 type Element interface {
 	Node
 	AppendText(string) error
@@ -70,6 +72,8 @@ type Namespace interface {
 }
 
 // Node defines the basic DOM interface
+//
+//nolint:interfacebloat
 type Node interface {
 	PtrSource
 

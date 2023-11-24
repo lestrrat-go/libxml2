@@ -10,7 +10,9 @@ import (
 	"github.com/lestrrat-go/libxml2/xpath"
 )
 
+//nolint:testableexamples
 func ExampleXML() {
+	//nolint:noctx
 	res, err := http.Get("http://blog.golang.org/feed.atom")
 	if err != nil {
 		panic("failed to get blog.golang.org: " + err.Error())
@@ -26,7 +28,7 @@ func ExampleXML() {
 	defer doc.Free()
 
 	doc.Walk(func(n types.Node) error {
-		log.Printf(n.NodeName())
+		log.Println(n.NodeName())
 		return nil
 	})
 
@@ -48,11 +50,14 @@ func ExampleXML() {
 	log.Printf("feed title = %s", title)
 }
 
+//nolint:testableexamples
 func ExampleHTML() {
+	//nolint:noctx
 	res, err := http.Get("http://golang.org")
 	if err != nil {
 		panic("failed to get golang.org: " + err.Error())
 	}
+	defer res.Body.Close()
 
 	doc, err := libxml2.ParseHTMLReader(res.Body)
 	if err != nil {
@@ -61,7 +66,7 @@ func ExampleHTML() {
 	defer doc.Free()
 
 	doc.Walk(func(n types.Node) error {
-		log.Printf(n.NodeName())
+		log.Println(n.NodeName())
 		return nil
 	})
 

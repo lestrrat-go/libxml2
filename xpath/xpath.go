@@ -1,5 +1,4 @@
 /*
-
 Package xpath contains tools to handle XPath evaluation.
 
 Because of a very quirky dependency between this package and the
@@ -18,7 +17,6 @@ yourself just to appease the compiler:
 	func init() {
 		dom.SetupXPathCallback()
 	}
-
 */
 package xpath
 
@@ -37,7 +35,7 @@ func (x Object) Pointer() uintptr {
 
 // Type returns the clib.XPathObjectType
 func (x Object) Type() clib.XPathObjectType {
-	return clib.XPathObjectType(clib.XMLXPathObjectType(x))
+	return clib.XMLXPathObjectType(x)
 }
 
 // Number returns the floatval component of the Object as float64
@@ -146,7 +144,7 @@ func (x Expression) String() string {
 
 // Free releases the underlying C structs in the Expression
 func (x *Expression) Free() {
-	clib.XMLXPathFreeCompExpr(x)
+	_ = clib.XMLXPathFreeCompExpr(x)
 }
 
 // NewContext creates a new Context, optionally providing
@@ -192,7 +190,7 @@ func (x *Context) Exists(xpath string) bool {
 
 // Free releases the underlying C structs in the XPath
 func (x *Context) Free() {
-	clib.XMLXPathFreeContext(x)
+	_ = clib.XMLXPathFreeContext(x)
 }
 
 // Find evaluates the expression s against the nodes registered

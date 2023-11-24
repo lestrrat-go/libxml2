@@ -20,87 +20,87 @@ type XMLNodeTypeToString struct {
 
 func TestXMLNodeTypeStringer(t *testing.T) {
 	values := []XMLNodeTypeToString{
-		XMLNodeTypeToString{
+		{
 			v: ElementNode,
 			e: "ElementNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: AttributeNode,
 			e: "AttributeNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: TextNode,
 			e: "TextNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: CDataSectionNode,
 			e: "CDataSectionNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: EntityRefNode,
 			e: "EntityRefNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: EntityNode,
 			e: "EntityNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: PiNode,
 			e: "PiNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: CommentNode,
 			e: "CommentNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: DocumentNode,
 			e: "DocumentNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: DocumentTypeNode,
 			e: "DocumentTypeNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: DocumentFragNode,
 			e: "DocumentFragNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: NotationNode,
 			e: "NotationNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: HTMLDocumentNode,
 			e: "HTMLDocumentNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: DTDNode,
 			e: "DTDNode",
 		},
-		XMLNodeTypeToString{
+		{
 			v: ElementDecl,
 			e: "ElementDecl",
 		},
-		XMLNodeTypeToString{
+		{
 			v: AttributeDecl,
 			e: "AttributeDecl",
 		},
-		XMLNodeTypeToString{
+		{
 			v: EntityDecl,
 			e: "EntityDecl",
 		},
-		XMLNodeTypeToString{
+		{
 			v: NamespaceDecl,
 			e: "NamespaceDecl",
 		},
-		XMLNodeTypeToString{
+		{
 			v: XIncludeStart,
 			e: "XIncludeStart",
 		},
-		XMLNodeTypeToString{
+		{
 			v: XIncludeEnd,
 			e: "XIncludeEnd",
 		},
-		XMLNodeTypeToString{
+		{
 			v: DocbDocumentNode,
 			e: "DocbDocumentNode",
 		},
@@ -128,7 +128,6 @@ func TestDOM(t *testing.T) {
 	for i := 1; i <= 3; i++ {
 		child, err := doc.CreateElement(fmt.Sprintf("child%d", i))
 		if !assert.NoError(t, err, "dom.CreateElement(child%d) should succeed", i) {
-
 			return
 		}
 		child.AppendText(fmt.Sprintf("text%d", i))

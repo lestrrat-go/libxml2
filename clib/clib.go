@@ -13,7 +13,7 @@ later... won't you?)
 
 Please DO NOT rely on this API and expect that it will keep backcompat.
 When the need arises, it WILL be changed, and if you are not ready
-for it, your code WILL break in horrible horrible ways. You have been
+for it, your code WILL break in horrible ways. You have been
 warned.
 */
 package clib
@@ -336,7 +336,6 @@ MY_setErrWarnAccumulator(xmlSchemaValidCtxtPtr ctxt, go_libxml2_errwarn_accumula
 import "C"
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -454,7 +453,7 @@ func (i XMLNodeType) String() string {
 
 // ReportErrors *globally* changes the behavior of reporting errors.
 // By default libxml2 spews out lots of data to stderr. When you call
-// this function with a `false` value, all those messages are surpressed.
+// this function with a `false` value, all those messages are suppressed.
 // When you call this function a `true` value, the default behavior is
 // restored
 func ReportErrors(b bool) {
@@ -684,7 +683,7 @@ func XMLNewDocProp(doc PtrSource, k, v string) (uintptr, error) {
 	return uintptr(unsafe.Pointer(attr)), nil
 }
 
-func XMLSearchNsByHref(doc PtrSource, n PtrSource, uri string) (uintptr, error) {
+func XMLSearchNsByHref(doc PtrSource, _ PtrSource, uri string) (uintptr, error) {
 	docptr, err := validDocumentPtr(doc)
 	if err != nil {
 		return 0, err
@@ -1072,7 +1071,7 @@ func XMLTextContent(n PtrSource) string {
 	return xmlCharToString(C.xmlXPathCastNodeToString(nptr))
 }
 
-func XMLToString(n PtrSource, format int, docencoding bool) string {
+func XMLToString(n PtrSource, format int, _ bool) string {
 	nptr, err := validNodePtr(n)
 	if err != nil {
 		return ""
@@ -1248,6 +1247,7 @@ func addNsChain(n *C.xmlNs, ns *C.xmlNs) *C.xmlNs {
 
 func addNsDef(tree *C.xmlNode, ns *C.xmlNs) {
 	i := tree.nsDef
+	//nolint:revive
 	for ; i != nil && i != ns; i = i.next {
 	}
 
@@ -1723,7 +1723,6 @@ func XMLElementGetAttributeNode(n PtrSource, name string) (uintptr, error) {
 
 				prop = C.xmlHasNsProp(nptr, clocal, ns.href)
 			}
-
 		}
 	}
 
@@ -2082,7 +2081,7 @@ func XMLXPathObjectBool(x PtrSource) bool {
 		return false
 	}
 
-	return C.int(xptr.boolval) == 1
+	return xptr.boolval == 1
 }
 
 func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {
@@ -2101,12 +2100,7 @@ func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {
 		return nil, errors.Wrap(ErrInvalidNode, "failed to get valid node for XMLXPathObjectNodeList")
 	}
 
-	hdr := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(nodeset.nodeTab)),
-		Len:  int(nodeset.nodeNr),
-		Cap:  int(nodeset.nodeNr),
-	}
-	nodes := *(*[]*C.xmlNode)(unsafe.Pointer(&hdr))
+	nodes := unsafe.Slice(nodeset.nodeTab, nodeset.nodeNr)
 
 	ret := make([]uintptr, nodeset.nodeNr)
 	for i := 0; i < int(nodeset.nodeNr); i++ {
@@ -2128,6 +2122,7 @@ func XMLSchemaParse(buf []byte, options ...option.Interface) (uintptr, error) {
 	var uri string
 	var encoding string
 	var coptions int
+	//nolint:forcetypeassert
 	for _, opt := range options {
 		switch opt.Name() {
 		case option.OptKeyWithURI:

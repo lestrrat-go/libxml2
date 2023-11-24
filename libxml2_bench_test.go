@@ -107,6 +107,7 @@ func BenchmarkLibxml2Xmlpath(b *testing.B) {
 	}
 }
 
+//nolint:musttag
 type Foo struct {
 	XMLName xml.Name `xml:"https://github.com/lestrrat-go/libxml2/foo foo:foo"`
 	Field1  string
