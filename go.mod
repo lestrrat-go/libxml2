@@ -1,6 +1,6 @@
 module github.com/lestrrat-go/libxml2
 
-go 1.21.3
+go 1.21
 
 require (
 	github.com/pkg/errors v0.9.1
