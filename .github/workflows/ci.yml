@@ -1,0 +1,34 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.21' ]
+    name: "Test [ Go ${{ matrix.go }} ]"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/.cache/bazel
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install Go stable version
+        if: matrix.go != 'tip'
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+      - name: Test 
+        run: go test ./...
