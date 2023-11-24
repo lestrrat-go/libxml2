@@ -1,7 +1,7 @@
 package libxml2_test
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -21,7 +21,7 @@ func TestXSD(t *testing.T) {
 	}
 	defer f.Close()
 
-	buf, err := ioutil.ReadAll(f)
+	buf, err := io.ReadAll(f)
 	if !assert.NoError(t, err, "reading from schema") {
 		return
 	}
@@ -162,7 +162,6 @@ elementFormDefault="qualified">
 	}
 
 	t.Logf("%s", doc.String())
-
 }
 
 func TestGHIssue67(t *testing.T) {
@@ -170,12 +169,12 @@ func TestGHIssue67(t *testing.T) {
 		const schemafile = "test/schema/projects/go_libxml2_local.xsd"
 		const docfile = "test/go_libxml2_local.xml"
 
-		schemasrc, err := ioutil.ReadFile(schemafile)
+		schemasrc, err := os.ReadFile(schemafile)
 		if !assert.NoError(t, err, `failed to read xsd file`) {
 			return
 		}
 
-		docsrc, err := ioutil.ReadFile(docfile)
+		docsrc, err := os.ReadFile(docfile)
 		if !assert.NoError(t, err, `failed to read xml file`) {
 			return
 		}
@@ -209,18 +208,19 @@ func TestGHIssue67(t *testing.T) {
 		var schemafile = srv.URL + "/test/schema/projects/go_libxml2_remote.xsd"
 		const docfile = "test/go_libxml2_remote.xml"
 
+		//nolint:noctx
 		res, err := http.Get(schemafile)
 		if !assert.NoError(t, err, `failed to fetch xsd file`) {
 			return
 		}
 
-		schemasrc, err := ioutil.ReadAll(res.Body)
+		schemasrc, err := io.ReadAll(res.Body)
 		defer res.Body.Close()
 		if !assert.NoError(t, err, `failed to read xsd file`) {
 			return
 		}
 
-		docsrc, err := ioutil.ReadFile(docfile)
+		docsrc, err := os.ReadFile(docfile)
 		if !assert.NoError(t, err, `failed to read xml file`) {
 			return
 		}

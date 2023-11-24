@@ -3,17 +3,16 @@
 //
 // This is basically all you need to do:
 //
-//    schema, err := xsd.Parse(xsdsrc)
-//    if err != nil {
-//        panic(err)
-//    }
-//    defer schema.Free()
-//    if err := schema.Validate(doc); err != nil{
-//        for _, e := range err.(SchemaValidationErr).Error() {
-//             println(e.Error())
-//        }
-//    }
-//
+//	schema, err := xsd.Parse(xsdsrc)
+//	if err != nil {
+//	    panic(err)
+//	}
+//	defer schema.Free()
+//	if err := schema.Validate(doc); err != nil{
+//	    for _, e := range err.(SchemaValidationErr).Error() {
+//	         println(e.Error())
+//	    }
+//	}
 package xsd
 
 import (
@@ -27,7 +26,6 @@ const ValueVCCreate = 1
 // Parse is used to parse an XML Schema Document to produce a
 // Schema instance. Make sure to call Free() on the instance
 // when you are done with it.
-
 
 func Parse(buf []byte, options ...Option) (*Schema, error) {
 	// xsd.WithURI(...)

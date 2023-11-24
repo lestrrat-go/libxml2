@@ -80,7 +80,7 @@ func TestNamespacedReconciliation(t *testing.T) {
 		}
 	}
 
-	if !assert.NoError(t, c.SetAttribute("xmlns:foo", "http://children"), "SetAttribute should succeeed") {
+	if !assert.NoError(t, c.SetAttribute("xmlns:foo", "http://children"), "SetAttribute should succeed") {
 		return
 	}
 

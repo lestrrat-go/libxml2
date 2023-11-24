@@ -19,4 +19,3 @@ func (n *Namespace) Free() {
 	clib.XMLNamespaceFree(n)
 	n.ptr = 0
 }
-

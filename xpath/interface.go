@@ -18,7 +18,7 @@ const (
 	XSLTTreeType    = clib.XPathXSLTTreeType
 )
 
-// Object is the concrete implementatin of Result (types.XPathResult).
+// Object is the concrete implementation of Result (types.XPathResult).
 // This struct contains the result of evaluating an XPath expression.
 type Object struct {
 	ptr uintptr // *C.xmlObject

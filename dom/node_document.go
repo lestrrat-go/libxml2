@@ -87,7 +87,7 @@ func (d *Document) NodeName() string {
 }
 
 // SetNodeName is a no op for document
-func (d *Document) SetNodeName(s string) {
+func (d *Document) SetNodeName(_ string) {
 	//	return errors.New("cannot set node name on a document")
 }
 
@@ -97,7 +97,7 @@ func (d *Document) NodeValue() string {
 }
 
 // SetNodeValue is a no op for document
-func (d *Document) SetNodeValue(s string) {
+func (d *Document) SetNodeValue(_ string) {
 	//	return errors.New("cannot set node value on a document")
 }
 
@@ -107,7 +107,7 @@ func (d *Document) OwnerDocument() (types.Document, error) {
 }
 
 // SetDocument always returns an error for a document
-func (d *Document) SetDocument(n types.Document) error {
+func (d *Document) SetDocument(_ types.Document) error {
 	return errors.New("cannot set document on a document")
 }
 
@@ -117,7 +117,7 @@ func (d *Document) ParentNode() (types.Node, error) {
 }
 
 // ParseInContext is currently unimplemented
-func (d *Document) ParseInContext(s string, n int) (types.Node, error) {
+func (d *Document) ParseInContext(_ string, _ int) (types.Node, error) {
 	return nil, errors.New("unimplemented")
 }
 
@@ -132,7 +132,7 @@ func (d *Document) TextContent() string {
 }
 
 // ToString is currently just an alias to Dump(false)
-func (d *Document) ToString(x int, b bool) string {
+func (d *Document) ToString(_ int, b bool) string {
 	return d.Dump(b)
 }
 
@@ -153,7 +153,7 @@ func (d *Document) Copy() (types.Node, error) {
 }
 
 // AddChild is a no op for Document
-func (d *Document) AddChild(n types.Node) error {
+func (d *Document) AddChild(_ types.Node) error {
 	return errors.New("method AddChild is not available for Document node")
 }
 
@@ -250,9 +250,9 @@ func (d *Document) Encoding() string {
 
 // Free releases the underlying C struct
 func (d *Document) Free() {
-	clib.XMLFreeDoc(d)
+	_ = clib.XMLFreeDoc(d)
 	d.ptr = 0
-	docPool.Put(*d)
+	docPool.Put(d)
 }
 
 // String formats the document, always without formatting.
@@ -316,8 +316,7 @@ func (d *Document) Walk(fn func(types.Node) error) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get document element")
 	}
-	walk(root, fn)
-	return nil
+	return walk(root, fn)
 }
 
 // LookupNamespacePrefix looks for a namespace prefix that matches
@@ -326,7 +325,6 @@ func (d *Document) LookupNamespacePrefix(href string) (string, error) {
 	root, err := d.DocumentElement()
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get document element")
-
 	}
 
 	return root.LookupNamespacePrefix(href)
