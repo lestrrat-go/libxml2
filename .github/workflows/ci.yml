@@ -5,7 +5,7 @@ on:
       - master
 
 jobs:
-  build:
+  ubuntu:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,4 +31,26 @@ jobs:
           go-version: ${{ matrix.go }}
           check-latest: true
       - name: Test 
+        run: go test ./...
+  archlinux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.21' ]
+    container:
+      image: archlinux:latest
+    name: "Test [ Arch Linux + Go ${{ matrix.go }} ]"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Up Arch Linux
+        run: |
+          pacman -Syy --noconfirm
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm base-devel 
+          pacman -S --noconfirm libxml2
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Test
         run: go test ./...
