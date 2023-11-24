@@ -21,8 +21,8 @@ The following is a set of guidelines that we ask you to follow when you contribu
 
 * 📕 Please read this Guideline in its entirety once, if at least to check the headings.
 * 🙋 Please be nice, and please be aware that we are not providing this software as a hobby.
-* 💬 Open-ended questions and inquiries go to [Discussions](https://github.com/lestrrat-go/jwx/discussions).
-* 🖥️ Actionable, specific technical questions go to [Issues](https://github.com/lestrrat-go/jwx/issues).
+* 💬 Open-ended questions and inquiries go to [Discussions](https://github.com/lestrrat-go/libxml2/discussions).
+* 🖥️ Actionable, specific technical questions go to [Issues](https://github.com/lestrrat-go/libxml2/issues).
 * 📝 Please always include (pseudo)code for any technical questions/issues.
 * 🔒 Issues, PR, and other posts may be closed or not addressed if you do not follow these guidelines
 
@@ -50,11 +50,11 @@ We are willing to help, but only as long as you are being nice to us.
 
 [Main source; this is a specialized version copied from the main source](https://github.com/lestrrat-go/contributions/blob/main/Contributions.md)
 
-This project uses [GitHub Issues](https://github.com/lestrrat-go/jwx/issues) to deal with technical issues
+This project uses [GitHub Issues](https://github.com/lestrrat-go/libxml2/issues) to deal with technical issues
 including bug reports, proposing new API, and otherwise issues that are directly actionable.
 
 Inquiries, questions about the usage, maintenance policies, and other open-ended
-questions/discussions should be posted to [GitHub Discussions](https://github.com/lestrrat-go/jwx/discussions).
+questions/discussions should be posted to [GitHub Discussions](https://github.com/lestrrat-go/libxml2/discussions).
 
 # Please Include (Pseudo)code for Any Technical Issues
 
