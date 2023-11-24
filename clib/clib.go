@@ -58,13 +58,13 @@ static inline void MY_xmlFree(void *p) {
 // Macro wrapper function. cgo cannot detect function-like macros,
 // so this is how we avoid it
 static inline xmlError* MY_xmlLastError() {
-	return xmlGetLastError();
+	return (xmlError*) xmlGetLastError();
 }
 
 // Macro wrapper function. cgo cannot detect function-like macros,
 // so this is how we avoid it
 static inline xmlError* MY_xmlCtxtLastError(void *ctx) {
-	return xmlCtxtGetLastError(ctx);
+	return (xmlError*) xmlCtxtGetLastError(ctx);
 }
 
 // Change xmlIndentTreeOutput global, return old value, so caller can
