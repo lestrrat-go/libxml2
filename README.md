@@ -278,9 +278,13 @@ pkg-config --list-all
 
 See the first FAQ entry.
 
-### I can't build this library statically
+### I can't statically link this module to libxml2
 
-See prior discussion: https://github.com/lestrrat-go/libxml2/issues/62
+Use the `static_build` tag when building this module, for example:
+
+```sh
+go build -tags static_build
+```
 
 ## See Also
 
