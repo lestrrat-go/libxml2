@@ -16,7 +16,7 @@ jobs:
           - type: static
             # On Ubuntu, libxml2 is compiled with GCC and is linked to libicu, which introduces a
             # stealth dependency on libstdc++ at link-time
-            goflags: "-ldflags '-extldflags \"-static -lstdc++\"' -tags 'osusergo netgo static_build'"
+            goflags: "-ldflags '-extldflags -lstdc++' -tags 'osusergo netgo static_build'"
     name: "Test [ Go ${{ matrix.go }}, ${{ matrix.link.type }} linking ]"
     env:
     steps:
