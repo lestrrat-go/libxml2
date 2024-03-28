@@ -18,7 +18,6 @@ jobs:
             # stealth dependency on libstdc++ at link-time
             goflags: "-ldflags '-extldflags -lstdc++' -tags 'osusergo netgo static_build'"
     name: "Test [ Go ${{ matrix.go }}, ${{ matrix.link.type }} linking ]"
-    env:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
