@@ -19,7 +19,6 @@ warned.
 package clib
 
 /*
-#cgo pkg-config: libxml-2.0
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>

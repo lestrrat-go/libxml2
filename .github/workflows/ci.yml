@@ -10,7 +10,14 @@ jobs:
     strategy:
       matrix:
         go: [ '1.21' ]
-    name: "Test [ Go ${{ matrix.go }} ]"
+        link:
+          - type: dynamic
+            goflags: ""
+          - type: static
+            # On Ubuntu, libxml2 is compiled with GCC and is linked to libicu, which introduces a
+            # stealth dependency on libstdc++ at link-time
+            goflags: "-ldflags '-extldflags -lstdc++' -tags 'osusergo netgo static_build'"
+    name: "Test [ Go ${{ matrix.go }}, ${{ matrix.link.type }} linking ]"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,8 +37,12 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
-      - name: Test 
-        run: go test ./...
+      - name: Run Go tests
+        run: go test ${{ matrix.link.goflags }} ./...
+      - name: Test linking capability
+        run: |
+          go build -o linktest ${{ matrix.link.goflags }} ./test/link
+          file linktest | grep '${{ matrix.link.type }}ally linked'
   archlinux:
     runs-on: ubuntu-latest
     strategy:
@@ -47,7 +58,7 @@ jobs:
           pacman -Syy --noconfirm
           pacman -Syu --noconfirm
           pacman -S --noconfirm base-devel 
-          pacman -S --noconfirm libxml2=2.12.0
+          pacman -S --noconfirm libxml2=2.12.6
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
