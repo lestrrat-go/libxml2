@@ -38,7 +38,7 @@ jobs:
           go-version: ${{ matrix.go }}
           check-latest: true
       - name: Run Go tests
-        run: go test ${{ matrix.link.goflags }} ./...
+        run: go test -race ${{ matrix.link.goflags }} ./...
       - name: Test linking capability
         run: |
           go build -o linktest ${{ matrix.link.goflags }} ./test/link
