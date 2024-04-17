@@ -16,6 +16,8 @@
 package xsd
 
 import (
+	"unsafe"
+
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
 	"github.com/pkg/errors"
@@ -49,7 +51,7 @@ func ParseFromFile(path string) (*Schema, error) {
 }
 
 // Pointer returns the underlying C struct
-func (s *Schema) Pointer() uintptr {
+func (s *Schema) Pointer() unsafe.Pointer {
 	return s.ptr
 }
 
@@ -58,7 +60,7 @@ func (s *Schema) Free() {
 	if err := clib.XMLSchemaFree(s); err != nil {
 		return
 	}
-	s.ptr = 0
+	s.ptr = nil
 }
 
 // Validate takes in a XML document and validates it against

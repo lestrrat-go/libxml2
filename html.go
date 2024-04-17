@@ -31,7 +31,7 @@ func ParseHTMLString(content string, options ...parser.HTMLOption) (types.Docume
 		return nil, errors.Wrap(err, "failed to read document")
 	}
 
-	if docptr == 0 {
+	if docptr == nil {
 		return nil, errors.Wrap(clib.ErrInvalidDocument, "failed to get valid document pointer")
 	}
 	return dom.WrapDocument(docptr), nil

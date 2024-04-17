@@ -3,6 +3,7 @@ package parser
 import (
 	"bytes"
 	"io"
+	"unsafe"
 
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/dom"
@@ -106,7 +107,7 @@ func (p *Parser) ParseString(s string) (types.Document, error) {
 		return nil, errors.Wrap(err, "failed to create parse input")
 	}
 
-	if docptr != 0 {
+	if docptr != nil {
 		return dom.WrapDocument(docptr), nil
 	}
 	return nil, errors.New("failed to generate document pointer")
@@ -132,7 +133,7 @@ func NewCtxt(s string, o Option) (*Ctxt, error) {
 }
 
 // Pointer returns the underlying C struct
-func (ctx Ctxt) Pointer() uintptr {
+func (ctx Ctxt) Pointer() unsafe.Pointer {
 	return ctx.ptr
 }
 
@@ -147,6 +148,6 @@ func (ctx *Ctxt) Free() error {
 		return errors.Wrap(err, "failed to free parser context")
 	}
 
-	ctx.ptr = 0
+	ctx.ptr = nil
 	return nil
 }

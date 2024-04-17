@@ -1,6 +1,8 @@
 package xpath
 
 import (
+	"unsafe"
+
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
 )
@@ -21,7 +23,7 @@ const (
 // Object is the concrete implementation of Result (types.XPathResult).
 // This struct contains the result of evaluating an XPath expression.
 type Object struct {
-	ptr uintptr // *C.xmlObject
+	ptr unsafe.Pointer // *C.xmlObject
 	// This flag controls if the StringValue should use the *contents* (literal value)
 	// of the nodeset instead of stringifying the node
 	ForceLiteral bool
@@ -30,12 +32,12 @@ type Object struct {
 // Context holds the current XPath context. You may register namespaces and
 // context nodes to evaluate your XPath expressions with it.
 type Context struct {
-	ptr uintptr // *C.xmlContext
+	ptr unsafe.Pointer // *C.xmlContext
 }
 
 // Expression is a compiled XPath expression
 type Expression struct {
-	ptr uintptr // *C.xmlCompExpr
+	ptr unsafe.Pointer // *C.xmlCompExpr
 	// This exists mainly for debugging purposes
 	expr string
 }

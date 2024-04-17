@@ -1,6 +1,8 @@
 package dom
 
 import (
+	"unsafe"
+
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
 	"github.com/pkg/errors"
@@ -18,7 +20,7 @@ func NewDocument(version, encoding string) *Document {
 }
 
 // Pointer returns the pointer to the underlying C struct
-func (d *Document) Pointer() uintptr {
+func (d *Document) Pointer() unsafe.Pointer {
 	return d.ptr
 }
 
@@ -251,7 +253,7 @@ func (d *Document) Encoding() string {
 // Free releases the underlying C struct
 func (d *Document) Free() {
 	_ = clib.XMLFreeDoc(d)
-	d.ptr = 0
+	d.ptr = nil
 	docPool.Put(d)
 }
 
