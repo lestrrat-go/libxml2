@@ -58,7 +58,7 @@ jobs:
           pacman -Syy --noconfirm
           pacman -Syu --noconfirm
           pacman -S --noconfirm base-devel 
-          pacman -S --noconfirm libxml2=2.12.6
+          pacman -S --noconfirm libxml2=2.12.7
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
