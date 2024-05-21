@@ -1,6 +1,9 @@
 package parser
 
-import "errors"
+import (
+	"errors"
+	"unsafe"
+)
 
 var (
 	// ErrMalformedXML is returned when the XML source is malformed
@@ -73,7 +76,7 @@ const (
 // Parser, but if you for some reason need to do more low-level
 // magic you will have to tinker with this struct
 type Ctxt struct {
-	ptr uintptr // *C.xmlParserCtxt
+	ptr unsafe.Pointer // *C.xmlParserCtxt
 }
 
 // Parser represents the high-level parser.

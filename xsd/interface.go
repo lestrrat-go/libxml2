@@ -1,10 +1,14 @@
 package xsd
 
-import "github.com/lestrrat-go/libxml2/internal/option"
+import (
+	"unsafe"
+
+	"github.com/lestrrat-go/libxml2/internal/option"
+)
 
 // Schema represents an XML schema.
 type Schema struct {
-	ptr uintptr // *C.xmlSchema
+	ptr unsafe.Pointer // *C.xmlSchema
 }
 
 // SchemaValidationError is returned when the Validate() function
