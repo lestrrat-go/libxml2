@@ -2,11 +2,13 @@ package dom
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -238,4 +240,22 @@ func TestCreateElementNS(t *testing.T) {
 	}
 
 	t.Logf("%s", doc.Dump(false))
+}
+
+func TestGH102(t *testing.T) {
+	root := CreateDocument()
+	doc, _ := root.CreateElement("Document")
+	_ = doc.SetNamespace("https://example.com", "ex")
+	_ = root.SetDocumentElement(doc)
+	test, _ := root.CreateElement("Test")
+	_ = test.SetNamespace("https://example.com", "ex")
+	_ = doc.AddChild(test)
+	test.SetNodeValue("test")
+
+	// root.Dump(true) should only contain one namespace declaration
+	// for the 'ex' prefix
+	dump := root.Dump(true)
+	count := strings.Count(dump, `xmlns:ex="https://example.com"`)
+	t.Logf("%s", dump)
+	require.Equal(t, 1, count, "expected only one namespace declaration for 'ex' prefix")
 }

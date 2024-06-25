@@ -10,9 +10,11 @@ import (
 )
 
 // SetNamespace sets up a new namespace on the given node.
-// An XML namespace declaration is explicitly created only if
-// the activate flag is enabled, and the namespace is not
-// declared in a previous tree hierarchy.
+// An XML namespace declaration is explicitly created, provided that
+// it is not already declared in the tree.
+//
+// The activate flag should be considered deprecated, and will probably
+// be removed in the future
 func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 	var activateflag bool
 	if len(activate) < 1 {
@@ -21,12 +23,12 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		activateflag = activate[0]
 	}
 
+	doc, err := n.OwnerDocument()
+	if err != nil {
+		return err
+	}
 	if uri == "" && prefix == "" {
 		// Empty namespace
-		doc, err := n.OwnerDocument()
-		if err != nil {
-			return err
-		}
 		nsptr, err := clib.XMLSearchNs(doc, n, "")
 		if err != nil {
 			return err
@@ -45,14 +47,21 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		return errors.New("missing uri for SetNamespace")
 	}
 
-	ns, err := clib.XMLNewNs(n, uri, prefix)
+	root, err := doc.DocumentElement()
 	if err != nil {
 		return err
 	}
-
-	if activateflag {
-		if err := clib.XMLSetNs(n, wrapNamespaceNode(ns)); err != nil {
+	if _, err := clib.XMLSearchNs(doc, root, prefix); err != nil {
+		// Namespace not found, create a new one
+		ns, err := clib.XMLNewNs(n, uri, prefix)
+		if err != nil {
 			return err
+		}
+
+		if activateflag {
+			if err := clib.XMLSetNs(n, wrapNamespaceNode(ns)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
