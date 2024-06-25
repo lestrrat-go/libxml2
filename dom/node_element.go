@@ -47,11 +47,7 @@ func (n *Element) SetNamespace(uri, prefix string, activate ...bool) error {
 		return errors.New("missing uri for SetNamespace")
 	}
 
-	root, err := doc.DocumentElement()
-	if err != nil {
-		return err
-	}
-	if _, err := clib.XMLSearchNs(doc, root, prefix); err != nil {
+	if oldNs, _ := clib.XMLSearchNs(doc, n, prefix); oldNs == 0 {
 		// Namespace not found, create a new one
 		ns, err := clib.XMLNewNs(n, uri, prefix)
 		if err != nil {
