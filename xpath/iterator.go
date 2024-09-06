@@ -1,6 +1,8 @@
 package xpath
 
 import (
+	"unsafe"
+
 	"github.com/lestrrat-go/libxml2/types"
 )
 
@@ -10,10 +12,10 @@ type NodeIterator struct {
 	cur     int
 	curnode types.Node
 	nlen    int
-	nodes   []uintptr
+	nodes   []unsafe.Pointer
 }
 
-func NewNodeIterator(nodes []uintptr) *NodeIterator {
+func NewNodeIterator(nodes []unsafe.Pointer) *NodeIterator {
 	return &NodeIterator{
 		cur:   -1,
 		nlen:  len(nodes),

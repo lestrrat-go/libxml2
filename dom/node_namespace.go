@@ -17,7 +17,7 @@ func (n *Namespace) Prefix() string {
 // Free releases the underlying C struct
 func (n *Namespace) Free() {
 	clib.XMLNamespaceFree(n)
-	n.ptr = 0
+	n.ptr = nil
 }
 
 // String returns the stringified Namespace

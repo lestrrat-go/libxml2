@@ -362,8 +362,8 @@ func validDocumentPtr(doc PtrSource) (*C.xmlDoc, error) {
 		return nil, ErrInvalidDocument
 	}
 
-	if dptr := doc.Pointer(); dptr != 0 {
-		return (*C.xmlDoc)(unsafe.Pointer(dptr)), nil
+	if dptr := doc.Pointer(); dptr != nil {
+		return (*C.xmlDoc)(dptr), nil
 	}
 	return nil, ErrInvalidDocument
 }
@@ -373,8 +373,8 @@ func validParserCtxtPtr(s PtrSource) (*C.xmlParserCtxt, error) {
 		return nil, ErrInvalidParser
 	}
 
-	if ptr := s.Pointer(); ptr != 0 {
-		return (*C.xmlParserCtxt)(unsafe.Pointer(ptr)), nil
+	if ptr := s.Pointer(); ptr != nil {
+		return (*C.xmlParserCtxt)(ptr), nil
 	}
 	return nil, ErrInvalidParser
 }
@@ -385,11 +385,11 @@ func validNodePtr(n PtrSource) (*C.xmlNode, error) {
 	}
 
 	nptr := n.Pointer()
-	if nptr == 0 {
+	if nptr == nil {
 		return nil, ErrInvalidNode
 	}
 
-	return (*C.xmlNode)(unsafe.Pointer(nptr)), nil
+	return (*C.xmlNode)(nptr), nil
 }
 
 func validAttributePtr(n PtrSource) (*C.xmlAttr, error) {
@@ -397,8 +397,8 @@ func validAttributePtr(n PtrSource) (*C.xmlAttr, error) {
 		return nil, ErrInvalidAttribute
 	}
 
-	if nptr := n.Pointer(); nptr != 0 {
-		return (*C.xmlAttr)(unsafe.Pointer(nptr)), nil
+	if nptr := n.Pointer(); nptr != nil {
+		return (*C.xmlAttr)(nptr), nil
 	}
 
 	return nil, ErrInvalidAttribute
@@ -409,8 +409,8 @@ func validXPathContextPtr(x PtrSource) (*C.xmlXPathContext, error) {
 		return nil, ErrInvalidXPathContext
 	}
 
-	if xptr := x.Pointer(); xptr != 0 {
-		return (*C.xmlXPathContext)(unsafe.Pointer(xptr)), nil
+	if xptr := x.Pointer(); xptr != nil {
+		return (*C.xmlXPathContext)(xptr), nil
 	}
 	return nil, ErrInvalidXPathContext
 }
@@ -420,8 +420,8 @@ func validXPathExpressionPtr(x PtrSource) (*C.xmlXPathCompExpr, error) {
 		return nil, ErrInvalidXPathExpression
 	}
 
-	if xptr := x.Pointer(); xptr != 0 {
-		return (*C.xmlXPathCompExpr)(unsafe.Pointer(xptr)), nil
+	if xptr := x.Pointer(); xptr != nil {
+		return (*C.xmlXPathCompExpr)(xptr), nil
 	}
 	return nil, ErrInvalidXPathExpression
 }
@@ -431,8 +431,8 @@ func validXPathObjectPtr(x PtrSource) (*C.xmlXPathObject, error) {
 		return nil, ErrInvalidXPathObject
 	}
 
-	if xptr := x.Pointer(); xptr != 0 {
-		return (*C.xmlXPathObject)(unsafe.Pointer(xptr)), nil
+	if xptr := x.Pointer(); xptr != nil {
+		return (*C.xmlXPathObject)(xptr), nil
 	}
 	return nil, ErrInvalidXPathObject
 }
@@ -467,8 +467,8 @@ func xmlCtxtLastError(ctx PtrSource) error {
 	return xmlCtxtLastErrorRaw(ctx.Pointer())
 }
 
-func xmlCtxtLastErrorRaw(ctx uintptr) error {
-	e := C.MY_xmlCtxtLastError(unsafe.Pointer(ctx))
+func xmlCtxtLastErrorRaw(ctx unsafe.Pointer) error {
+	e := C.MY_xmlCtxtLastError(ctx)
 	if e == nil {
 		return errors.New(`unknown error`)
 	}
@@ -487,31 +487,31 @@ func stringToXMLChar(s string) *C.xmlChar {
 	return (*C.xmlChar)(unsafe.Pointer(C.CString(s)))
 }
 
-func XMLSchemaParseFromFile(path string) (uintptr, error) {
+func XMLSchemaParseFromFile(path string) (unsafe.Pointer, error) {
 	parserCtx := C.xmlSchemaNewParserCtxt(C.CString(path))
 	if parserCtx == nil {
-		return 0, errors.New("failed to create parser")
+		return nil, errors.New("failed to create parser")
 	}
 	defer C.xmlSchemaFreeParserCtxt(parserCtx)
 
 	s := C.xmlSchemaParse(parserCtx)
 	if s == nil {
-		return 0, errors.New("failed to parse schema")
+		return nil, errors.New("failed to parse schema")
 	}
 
-	return uintptr(unsafe.Pointer(s)), nil
+	return unsafe.Pointer(s), nil
 }
 
-func XMLCreateMemoryParserCtxt(s string, o int) (uintptr, error) {
+func XMLCreateMemoryParserCtxt(s string, o int) (unsafe.Pointer, error) {
 	cs := C.CString(s)
 	defer C.free(unsafe.Pointer(cs))
 	ctx := C.xmlCreateMemoryParserCtxt(cs, C.int(len(s)))
 	if ctx == nil {
-		return 0, errors.New("error creating parser")
+		return nil, errors.New("error creating parser")
 	}
 	C.xmlCtxtUseOptions(ctx, C.int(o))
 
-	return uintptr(unsafe.Pointer(ctx)), nil
+	return unsafe.Pointer(ctx), nil
 }
 
 func XMLParseDocument(ctx PtrSource) error {
@@ -536,7 +536,7 @@ func XMLFreeParserCtxt(ctx PtrSource) error {
 	return nil
 }
 
-func HTMLReadDoc(content, url, encoding string, opts int) (uintptr, error) {
+func HTMLReadDoc(content, url, encoding string, opts int) (unsafe.Pointer, error) {
 	// TODO: use htmlCtxReadDoc later, so we can get the error
 	ccontent := C.CString(content)
 	curl := C.CString(url)
@@ -553,13 +553,13 @@ func HTMLReadDoc(content, url, encoding string, opts int) (uintptr, error) {
 	)
 
 	if doc == nil {
-		return 0, errors.New("failed to parse document")
+		return nil, errors.New("failed to parse document")
 	}
 
-	return uintptr(unsafe.Pointer(doc)), nil
+	return unsafe.Pointer(doc), nil
 }
 
-func XMLCreateDocument(version, encoding string) uintptr {
+func XMLCreateDocument(version, encoding string) unsafe.Pointer {
 	cver := stringToXMLChar(version)
 	defer C.free(unsafe.Pointer(cver))
 
@@ -570,7 +570,7 @@ func XMLCreateDocument(version, encoding string) uintptr {
 
 		doc.encoding = C.xmlStrdup(cenc)
 	}
-	return uintptr(unsafe.Pointer(doc))
+	return unsafe.Pointer(doc)
 }
 
 func XMLEncodeEntitiesReentrant(docptr *C.xmlDoc, s string) (*C.xmlChar, error) {
@@ -620,25 +620,25 @@ func validNamespacePtr(s PtrSource) (*C.xmlNs, error) {
 		return nil, ErrInvalidNamespace
 	}
 
-	if ptr := s.Pointer(); ptr != 0 {
-		return (*C.xmlNs)(unsafe.Pointer(ptr)), nil
+	if ptr := s.Pointer(); ptr != nil {
+		return (*C.xmlNs)(ptr), nil
 	}
 	return nil, ErrInvalidNamespace
 }
 
-func XMLNewNode(ns PtrSource, name string) (uintptr, error) {
+func XMLNewNode(ns PtrSource, name string) (unsafe.Pointer, error) {
 	nsptr, err := validNamespacePtr(ns)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if err := isSafeName(name); err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	var cname [MaxElementNameLength]C.xmlChar
 	if len(name) > MaxElementNameLength {
-		return 0, ErrElementNameTooLong
+		return nil, ErrElementNameTooLong
 	}
 	for i := 0; i < len(name); i++ {
 		cname[i] = C.xmlChar(name[i])
@@ -649,21 +649,21 @@ func XMLNewNode(ns PtrSource, name string) (uintptr, error) {
 		(*C.xmlNs)(unsafe.Pointer(nsptr)),
 		(*C.xmlChar)(cnameptr),
 	)
-	return uintptr(unsafe.Pointer(n)), nil
+	return unsafe.Pointer(n), nil
 }
 
-func XMLNewDocProp(doc PtrSource, k, v string) (uintptr, error) {
+func XMLNewDocProp(doc PtrSource, k, v string) (unsafe.Pointer, error) {
 	docptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if err := isSafeName(k); err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if len(k) > MaxAttributeNameLength {
-		return 0, ErrAttributeNameTooLong
+		return nil, ErrAttributeNameTooLong
 	}
 
 	var kx [MaxAttributeNameLength]C.xmlChar
@@ -676,25 +676,25 @@ func XMLNewDocProp(doc PtrSource, k, v string) (uintptr, error) {
 
 	ent, err := XMLEncodeEntitiesReentrant(docptr, v)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	attr := C.xmlNewDocProp(docptr, (*C.xmlChar)(kxptr), ent)
-	return uintptr(unsafe.Pointer(attr)), nil
+	return unsafe.Pointer(attr), nil
 }
 
-func XMLSearchNsByHref(doc PtrSource, _ PtrSource, uri string) (uintptr, error) {
+func XMLSearchNsByHref(doc PtrSource, _ PtrSource, uri string) (unsafe.Pointer, error) {
 	docptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	nptr, err := validNodePtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if len(uri) > MaxNamespaceURILength {
-		return 0, ErrNamespaceURITooLong
+		return nil, ErrNamespaceURITooLong
 	}
 
 	var xcuri [MaxNamespaceURILength]C.xmlChar
@@ -709,20 +709,20 @@ func XMLSearchNsByHref(doc PtrSource, _ PtrSource, uri string) (uintptr, error) 
 		(*C.xmlChar)(xcuriptr),
 	)
 	if ns == nil {
-		return 0, ErrNamespaceNotFound{Target: uri}
+		return nil, ErrNamespaceNotFound{Target: uri}
 	}
-	return uintptr(unsafe.Pointer(ns)), nil
+	return unsafe.Pointer(ns), nil
 }
 
-func XMLSearchNs(doc PtrSource, n PtrSource, prefix string) (uintptr, error) {
+func XMLSearchNs(doc PtrSource, n PtrSource, prefix string) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	docptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	cprefix := stringToXMLChar(prefix)
@@ -730,20 +730,20 @@ func XMLSearchNs(doc PtrSource, n PtrSource, prefix string) (uintptr, error) {
 
 	ns := C.xmlSearchNs(docptr, nptr, cprefix)
 	if ns == nil {
-		return 0, ErrNamespaceNotFound{Target: prefix}
+		return nil, ErrNamespaceNotFound{Target: prefix}
 	}
-	return uintptr(unsafe.Pointer(ns)), nil
+	return unsafe.Pointer(ns), nil
 }
 
-func XMLNewDocNode(doc PtrSource, ns PtrSource, local, content string) (uintptr, error) {
+func XMLNewDocNode(doc PtrSource, ns PtrSource, local, content string) (unsafe.Pointer, error) {
 	docptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	nsptr, err := validNamespacePtr(ns)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	var c *C.xmlChar
@@ -757,15 +757,15 @@ func XMLNewDocNode(doc PtrSource, ns PtrSource, local, content string) (uintptr,
 
 	ptr := C.xmlNewDocNode(docptr, nsptr, clocal, c)
 	if ptr == nil {
-		return 0, errors.New("failed to create node")
+		return nil, errors.New("failed to create node")
 	}
-	return uintptr(unsafe.Pointer(ptr)), nil
+	return unsafe.Pointer(ptr), nil
 }
 
-func XMLNewNs(n PtrSource, nsuri, prefix string) (uintptr, error) {
+func XMLNewNs(n PtrSource, nsuri, prefix string) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	var cprefix *C.xmlChar
@@ -779,9 +779,9 @@ func XMLNewNs(n PtrSource, nsuri, prefix string) (uintptr, error) {
 
 	nsptr := C.xmlNewNs(nptr, cnsuri, cprefix)
 	if nsptr == nil {
-		return 0, errors.New("failed to create namespace")
+		return nil, errors.New("failed to create namespace")
 	}
-	return uintptr(unsafe.Pointer(nsptr)), nil
+	return unsafe.Pointer(nsptr), nil
 }
 
 func XMLSetNs(n PtrSource, ns PtrSource) error {
@@ -799,41 +799,41 @@ func XMLSetNs(n PtrSource, ns PtrSource) error {
 	return nil
 }
 
-func XMLNewCDataBlock(doc PtrSource, txt string) (uintptr, error) {
+func XMLNewCDataBlock(doc PtrSource, txt string) (unsafe.Pointer, error) {
 	dptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	ctxt := stringToXMLChar(txt)
 	defer C.free(unsafe.Pointer(ctxt))
 
 	ptr := C.xmlNewCDataBlock(dptr, ctxt, C.int(len(txt)))
 	if ptr == nil {
-		return 0, errors.New("failed to create CDATA block")
+		return nil, errors.New("failed to create CDATA block")
 	}
-	return uintptr(unsafe.Pointer(ptr)), nil
+	return unsafe.Pointer(ptr), nil
 }
 
-func XMLNewComment(txt string) (uintptr, error) {
+func XMLNewComment(txt string) (unsafe.Pointer, error) {
 	ctxt := stringToXMLChar(txt)
 	defer C.free(unsafe.Pointer(ctxt))
 
 	ptr := C.xmlNewComment(ctxt)
 	if ptr == nil {
-		return 0, errors.New("failed to create comment node")
+		return nil, errors.New("failed to create comment node")
 	}
-	return uintptr(unsafe.Pointer(ptr)), nil
+	return unsafe.Pointer(ptr), nil
 }
 
-func XMLNewText(txt string) (uintptr, error) {
+func XMLNewText(txt string) (unsafe.Pointer, error) {
 	ctxt := stringToXMLChar(txt)
 	defer C.free(unsafe.Pointer(ctxt))
 
 	ptr := C.xmlNewText(ctxt)
 	if ptr == nil {
-		return 0, errors.New("failed to create text node")
+		return nil, errors.New("failed to create text node")
 	}
-	return uintptr(unsafe.Pointer(ptr)), nil
+	return unsafe.Pointer(ptr), nil
 }
 
 func XMLNodeName(n PtrSource) (string, error) {
@@ -917,29 +917,29 @@ func XMLAddChild(n PtrSource, child PtrSource) error {
 	return nil
 }
 
-func XMLOwnerDocument(n PtrSource) (uintptr, error) {
+func XMLOwnerDocument(n PtrSource) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if nptr.doc == nil {
-		return 0, ErrInvalidDocument
+		return nil, ErrInvalidDocument
 	}
-	return uintptr(unsafe.Pointer(nptr.doc)), nil
+	return unsafe.Pointer(nptr.doc), nil
 }
 
-func XMLFirstChild(n PtrSource) (uintptr, error) {
+func XMLFirstChild(n PtrSource) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if !XMLHasChildNodes(n) {
-		return 0, errors.New("no children")
+		return nil, errors.New("no children")
 	}
 
-	return uintptr(unsafe.Pointer(nptr.children)), nil
+	return unsafe.Pointer(nptr.children), nil
 }
 
 func XMLHasChildNodes(n PtrSource) bool {
@@ -950,12 +950,12 @@ func XMLHasChildNodes(n PtrSource) bool {
 	return nptr.children != nil
 }
 
-func XMLLastChild(n PtrSource) (uintptr, error) {
+func XMLLastChild(n PtrSource) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return uintptr(unsafe.Pointer(nptr.last)), nil
+	return unsafe.Pointer(nptr.last), nil
 }
 
 func XMLLocalName(n PtrSource) string {
@@ -986,20 +986,20 @@ func XMLNamespaceURI(n PtrSource) string {
 	return ""
 }
 
-func XMLNextSibling(n PtrSource) (uintptr, error) {
+func XMLNextSibling(n PtrSource) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return uintptr(unsafe.Pointer(nptr.next)), nil
+	return unsafe.Pointer(nptr.next), nil
 }
 
-func XMLParentNode(n PtrSource) (uintptr, error) {
+func XMLParentNode(n PtrSource) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return uintptr(unsafe.Pointer(nptr.parent)), nil
+	return unsafe.Pointer(nptr.parent), nil
 }
 
 func XMLPrefix(n PtrSource) string {
@@ -1017,12 +1017,12 @@ func XMLPrefix(n PtrSource) string {
 	return ""
 }
 
-func XMLPreviousSibling(n PtrSource) (uintptr, error) {
+func XMLPreviousSibling(n PtrSource) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return uintptr(unsafe.Pointer(nptr.prev)), nil
+	return unsafe.Pointer(nptr.prev), nil
 }
 
 func XMLSetNodeName(n PtrSource, name string) error {
@@ -1129,8 +1129,8 @@ func XMLLookupNamespaceURI(n PtrSource, prefix string) (string, error) {
 	return xmlCharToString(ns.href), nil
 }
 
-func XMLGetNodeTypeRaw(n uintptr) XMLNodeType {
-	nptr := (*C.xmlNode)(unsafe.Pointer(n))
+func XMLGetNodeTypeRaw(n unsafe.Pointer) XMLNodeType {
+	nptr := (*C.xmlNode)(n)
 	return XMLNodeType(nptr._type)
 }
 
@@ -1142,15 +1142,15 @@ func XMLGetNodeType(n PtrSource) XMLNodeType {
 	return XMLNodeType(nptr._type)
 }
 
-func XMLChildNodes(n PtrSource) ([]uintptr, error) {
+func XMLChildNodes(n PtrSource) ([]unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get valid node for XMLChildNodes")
 	}
 
-	ret := []uintptr(nil)
+	var ret []unsafe.Pointer
 	for chld := nptr.children; chld != nil; chld = chld.next {
-		ret = append(ret, uintptr(unsafe.Pointer(chld)))
+		ret = append(ret, unsafe.Pointer(chld))
 	}
 	return ret, nil
 }
@@ -1332,25 +1332,25 @@ func XMLNamespaceFree(n PtrSource) {
 	C.MY_xmlFree(unsafe.Pointer(nsptr))
 }
 
-func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
+func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (unsafe.Pointer, error) {
 	dptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	rootptr := C.xmlDocGetRootElement(dptr)
 	if rootptr == nil {
-		return 0, errors.New("no document element found")
+		return nil, errors.New("no document element found")
 	}
 
 	if err := isSafeName(k); err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	prefix, local := SplitPrefixLocal(k)
 
 	if len(uri) > MaxNamespaceURILength {
-		return 0, ErrNamespaceURITooLong
+		return nil, ErrNamespaceURITooLong
 	}
 
 	var xcuri [MaxNamespaceURILength]C.xmlChar
@@ -1366,7 +1366,7 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 	)
 	if ns == nil {
 		if len(prefix) > MaxAttributeNameLength {
-			return 0, ErrAttributeNameTooLong
+			return nil, ErrAttributeNameTooLong
 		}
 		var xcprefix [MaxAttributeNameLength]C.xmlChar
 		for i := 0; i < len(prefix); i++ {
@@ -1380,7 +1380,7 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 			(*C.xmlChar)(xcprefixptr),
 		)
 		if ns == nil {
-			return 0, errors.New("failed to create namespace")
+			return nil, errors.New("failed to create namespace")
 		}
 	}
 
@@ -1389,7 +1389,7 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 
 	ent := C.xmlEncodeEntitiesReentrant(dptr, xcv)
 	if ent == nil {
-		return 0, errors.New("failed to encode value")
+		return nil, errors.New("failed to encode value")
 	}
 
 	xclocal := stringToXMLChar(local)
@@ -1399,18 +1399,18 @@ func XMLCreateAttributeNS(doc PtrSource, uri, k, v string) (uintptr, error) {
 
 	C.xmlSetNs((*C.xmlNode)(unsafe.Pointer(attr)), ns)
 
-	return uintptr(unsafe.Pointer(attr)), nil
+	return unsafe.Pointer(attr), nil
 }
 
-func XMLCreateElement(d PtrSource, name string) (uintptr, error) {
+func XMLCreateElement(d PtrSource, name string) (unsafe.Pointer, error) {
 	dptr, err := validDocumentPtr(d)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	var xcname [MaxElementNameLength]C.xmlChar
 	if len(name) > MaxElementNameLength {
-		return 0, ErrElementNameTooLong
+		return nil, ErrElementNameTooLong
 	}
 	for i := 0; i < len(name); i++ {
 		xcname[i] = C.xmlChar(name[i])
@@ -1419,24 +1419,24 @@ func XMLCreateElement(d PtrSource, name string) (uintptr, error) {
 
 	nptr := C.MY_xmlCreateElement(dptr, (*C.xmlChar)(xcnameptr))
 	if nptr == nil {
-		return 0, errors.New("element creation failed")
+		return nil, errors.New("element creation failed")
 	}
 
-	return uintptr(unsafe.Pointer(nptr)), nil
+	return unsafe.Pointer(nptr), nil
 }
 
-func XMLCreateElementNS(doc PtrSource, nsuri, name string) (uintptr, error) {
+func XMLCreateElementNS(doc PtrSource, nsuri, name string) (unsafe.Pointer, error) {
 	if nsuri == "" {
 		return XMLCreateElement(doc, name)
 	}
 
 	dptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if len(nsuri) > MaxNamespaceURILength {
-		return 0, ErrNamespaceURITooLong
+		return nil, ErrNamespaceURITooLong
 	}
 
 	var xcnsuri [MaxNamespaceURILength]C.xmlChar
@@ -1457,10 +1457,10 @@ func XMLCreateElementNS(doc PtrSource, nsuri, name string) (uintptr, error) {
 		(*C.xmlChar)(xcnameptr),
 	)
 	if nptr == nil {
-		return 0, errors.New("failed to create element")
+		return nil, errors.New("failed to create element")
 	}
 
-	return uintptr(unsafe.Pointer(nptr)), nil
+	return unsafe.Pointer(nptr), nil
 }
 
 func XMLDocumentEncoding(doc PtrSource) string {
@@ -1495,17 +1495,17 @@ func XMLDocumentVersion(doc PtrSource) string {
 	return xmlCharToString(dptr.version)
 }
 
-func XMLDocumentElement(doc PtrSource) (uintptr, error) {
+func XMLDocumentElement(doc PtrSource) (unsafe.Pointer, error) {
 	dptr, err := validDocumentPtr(doc)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	ptr := C.xmlDocGetRootElement(dptr)
 	if ptr == nil {
-		return 0, errors.New("no document element found")
+		return nil, errors.New("no document element found")
 	}
-	return uintptr(unsafe.Pointer(ptr)), nil
+	return unsafe.Pointer(ptr), nil
 }
 
 func XMLFreeDoc(doc PtrSource) error {
@@ -1647,26 +1647,26 @@ func XMLSetProp(n PtrSource, name, value string) error {
 	return nil
 }
 
-func XMLElementAttributes(n PtrSource) ([]uintptr, error) {
+func XMLElementAttributes(n PtrSource) ([]unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get valid node for XMLElementAttributes")
 	}
 
-	attrs := []uintptr{}
+	attrs := []unsafe.Pointer{}
 	for attr := nptr.properties; attr != nil; attr = attr.next {
-		attrs = append(attrs, uintptr(unsafe.Pointer(attr)))
+		attrs = append(attrs, unsafe.Pointer(attr))
 	}
 	return attrs, nil
 }
 
-func XMLElementNamespaces(n PtrSource) ([]uintptr, error) {
+func XMLElementNamespaces(n PtrSource) ([]unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get valid node for XMLElementNamespaces")
 	}
 
-	ret := []uintptr{}
+	ret := []unsafe.Pointer{}
 	for ns := nptr.nsDef; ns != nil; ns = ns.next {
 		if ns.prefix == nil && ns.href == nil {
 			continue
@@ -1677,15 +1677,15 @@ func XMLElementNamespaces(n PtrSource) ([]uintptr, error) {
 			continue
 		}
 
-		ret = append(ret, uintptr(unsafe.Pointer(newns)))
+		ret = append(ret, unsafe.Pointer(newns))
 	}
 	return ret, nil
 }
 
-func XMLElementGetAttributeNode(n PtrSource, name string) (uintptr, error) {
+func XMLElementGetAttributeNode(n PtrSource, name string) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	// if this is "xmlns", look for the first namespace without
@@ -1727,10 +1727,10 @@ func XMLElementGetAttributeNode(n PtrSource, name string) (uintptr, error) {
 	}
 
 	if prop == nil || XMLNodeType(prop._type) != AttributeNode {
-		return 0, ErrAttributeNotFound
+		return nil, ErrAttributeNotFound
 	}
 
-	return uintptr(unsafe.Pointer(prop)), nil
+	return unsafe.Pointer(prop), nil
 }
 
 func XMLFreeProp(attr PtrSource) error {
@@ -1843,23 +1843,23 @@ func XMLAppendText(n PtrSource, s string) error {
 	return nil
 }
 
-func XMLDocCopyNode(n PtrSource, d PtrSource, extended int) (uintptr, error) {
+func XMLDocCopyNode(n PtrSource, d PtrSource, extended int) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	dptr, err := validDocumentPtr(d)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	ret := C.xmlDocCopyNode(nptr, dptr, C.int(extended))
 	if ret == nil {
-		return 0, errors.New("copy node failed")
+		return nil, errors.New("copy node failed")
 	}
 
-	return uintptr(unsafe.Pointer(ret)), nil
+	return unsafe.Pointer(ret), nil
 }
 
 func XMLSetTreeDoc(n PtrSource, d PtrSource) error {
@@ -1877,23 +1877,23 @@ func XMLSetTreeDoc(n PtrSource, d PtrSource) error {
 	return nil
 }
 
-func XMLParseInNodeContext(n PtrSource, data string, o int) (uintptr, error) {
+func XMLParseInNodeContext(n PtrSource, data string, o int) (unsafe.Pointer, error) {
 	nptr, err := validNodePtr(n)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	var ret C.xmlNodePtr
 	cdata := C.CString(data)
 	defer C.free(unsafe.Pointer(cdata))
 	if C.xmlParseInNodeContext(nptr, cdata, C.int(len(data)), C.int(o), &ret) != 0 {
-		return 0, errors.New("XXX PLACE HOLDER XXX")
+		return nil, errors.New("XXX PLACE HOLDER XXX")
 	}
 
-	return uintptr(unsafe.Pointer(ret)), nil
+	return unsafe.Pointer(ret), nil
 }
 
-func XMLXPathNewContext(n PtrSource) (uintptr, error) {
+func XMLXPathNewContext(n PtrSource) (unsafe.Pointer, error) {
 	ctx := C.xmlXPathNewContext(nil)
 	ctx.namespaces = nil
 
@@ -1902,7 +1902,7 @@ func XMLXPathNewContext(n PtrSource) (uintptr, error) {
 		ctx.node = (*C.xmlNode)(unsafe.Pointer(nptr))
 	}
 
-	return uintptr(unsafe.Pointer(ctx)), nil
+	return unsafe.Pointer(ctx), nil
 }
 
 func XMLXPathContextSetContextNode(x PtrSource, n PtrSource) error {
@@ -1920,9 +1920,9 @@ func XMLXPathContextSetContextNode(x PtrSource, n PtrSource) error {
 	return nil
 }
 
-func XMLXPathCompile(s string) (uintptr, error) {
+func XMLXPathCompile(s string) (unsafe.Pointer, error) {
 	if len(s) > MaxXPathExpressionLength {
-		return 0, ErrXPathExpressionTooLong
+		return nil, ErrXPathExpressionTooLong
 	}
 
 	var xcs [MaxXPathExpressionLength]C.xmlChar
@@ -1932,9 +1932,9 @@ func XMLXPathCompile(s string) (uintptr, error) {
 	xcsptr := unsafe.Pointer(&xcs[0])
 
 	if p := C.xmlXPathCompile((*C.xmlChar)(xcsptr)); p != nil {
-		return uintptr(unsafe.Pointer(p)), nil
+		return unsafe.Pointer(p), nil
 	}
-	return 0, ErrXPathCompileFailure
+	return nil, ErrXPathCompileFailure
 }
 
 func XMLXPathFreeCompExpr(x PtrSource) error {
@@ -2001,15 +2001,15 @@ func XMLXPathRegisterNS(x PtrSource, prefix, nsuri string) error {
 	return nil
 }
 
-func XMLEvalXPath(x PtrSource, expr PtrSource) (uintptr, error) {
+func XMLEvalXPath(x PtrSource, expr PtrSource) (unsafe.Pointer, error) {
 	xptr, err := validXPathContextPtr(x)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	exprptr, err := validXPathExpressionPtr(expr)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	// If there is no document associated with this context,
@@ -2028,10 +2028,10 @@ func XMLEvalXPath(x PtrSource, expr PtrSource) (uintptr, error) {
 
 	res := C.xmlXPathCompiledEval(exprptr, xptr)
 	if res == nil {
-		return 0, ErrXPathEmptyResult
+		return nil, ErrXPathEmptyResult
 	}
 
-	return uintptr(unsafe.Pointer(res)), nil
+	return unsafe.Pointer(res), nil
 }
 
 func XMLXPathFreeObject(x PtrSource) {
@@ -2084,7 +2084,7 @@ func XMLXPathObjectBool(x PtrSource) bool {
 	return xptr.boolval == 1
 }
 
-func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {
+func XMLXPathObjectNodeList(x PtrSource) ([]unsafe.Pointer, error) {
 	// Probably needs NodeList iterator
 	xptr, err := validXPathObjectPtr(x)
 	if err != nil {
@@ -2102,9 +2102,9 @@ func XMLXPathObjectNodeList(x PtrSource) ([]uintptr, error) {
 
 	nodes := unsafe.Slice(nodeset.nodeTab, nodeset.nodeNr)
 
-	ret := make([]uintptr, nodeset.nodeNr)
+	ret := make([]unsafe.Pointer, nodeset.nodeNr)
 	for i := 0; i < int(nodeset.nodeNr); i++ {
-		ret[i] = uintptr(unsafe.Pointer(nodes[i]))
+		ret[i] = unsafe.Pointer(nodes[i])
 	}
 
 	return ret, nil
@@ -2118,7 +2118,7 @@ func XMLTextData(n PtrSource) string {
 	return xmlCharToString(nptr.content)
 }
 
-func XMLSchemaParse(buf []byte, options ...option.Interface) (uintptr, error) {
+func XMLSchemaParse(buf []byte, options ...option.Interface) (unsafe.Pointer, error) {
 	var uri string
 	var encoding string
 	var coptions int
@@ -2132,7 +2132,7 @@ func XMLSchemaParse(buf []byte, options ...option.Interface) (uintptr, error) {
 
 	docctx := C.xmlCreateMemoryParserCtxt((*C.char)(unsafe.Pointer(&buf[0])), C.int(len(buf)))
 	if docctx == nil {
-		return 0, errors.New("error creating doc parser")
+		return nil, errors.New("error creating doc parser")
 	}
 
 	var curi *C.char
@@ -2149,22 +2149,22 @@ func XMLSchemaParse(buf []byte, options ...option.Interface) (uintptr, error) {
 
 	doc := C.xmlCtxtReadMemory(docctx, (*C.char)(unsafe.Pointer(&buf[0])), C.int(len(buf)), curi, cencoding, C.int(coptions))
 	if doc == nil {
-		return 0, errors.Errorf("failed to read schema from memory: %v",
-			xmlCtxtLastErrorRaw(uintptr(unsafe.Pointer(docctx))))
+		return nil, errors.Errorf("failed to read schema from memory: %v",
+			xmlCtxtLastErrorRaw(unsafe.Pointer(docctx)))
 	}
 
 	parserCtx := C.xmlSchemaNewDocParserCtxt((*C.xmlDoc)(unsafe.Pointer(doc)))
 	if parserCtx == nil {
-		return 0, errors.New("failed to create parser")
+		return nil, errors.New("failed to create parser")
 	}
 	defer C.xmlSchemaFreeParserCtxt(parserCtx)
 
 	s := C.xmlSchemaParse(parserCtx)
 	if s == nil {
-		return 0, errors.New("failed to parse schema")
+		return nil, errors.New("failed to parse schema")
 	}
 
-	return uintptr(unsafe.Pointer(s)), nil
+	return unsafe.Pointer(s), nil
 }
 
 func XMLSchemaValidateDocument(schema PtrSource, document PtrSource, options ...int) []error {
@@ -2209,11 +2209,11 @@ func validSchemaPtr(schema PtrSource) (*C.xmlSchema, error) {
 		return nil, ErrInvalidSchema
 	}
 	sptr := schema.Pointer()
-	if sptr == 0 {
+	if sptr == nil {
 		return nil, ErrInvalidSchema
 	}
 
-	return (*C.xmlSchema)(unsafe.Pointer(sptr)), nil
+	return (*C.xmlSchema)(sptr), nil
 }
 
 func XMLSchemaFree(s PtrSource) error {
@@ -2226,10 +2226,10 @@ func XMLSchemaFree(s PtrSource) error {
 	return nil
 }
 
-func XMLCtxtReadMemory(ctx PtrSource, file string, baseURL string, encoding string, options int) (uintptr, error) {
+func XMLCtxtReadMemory(ctx PtrSource, file string, baseURL string, encoding string, options int) (unsafe.Pointer, error) {
 	ctxptr, err := validParserCtxtPtr(ctx)
 	if err != nil {
-		return 0, errors.Wrap(err, "not a valid pointer")
+		return nil, errors.Wrap(err, "not a valid pointer")
 	}
 
 	var cfile, cbaseURL, cencoding *C.char
@@ -2250,7 +2250,7 @@ func XMLCtxtReadMemory(ctx PtrSource, file string, baseURL string, encoding stri
 
 	doc := C.xmlCtxtReadMemory(ctxptr, cfile, C.int(len(file)), cbaseURL, cencoding, C.int(options))
 	if doc == nil {
-		return 0, errors.Errorf("failed to read document from memory: %v", xmlCtxtLastError(ctx))
+		return nil, errors.Errorf("failed to read document from memory: %v", xmlCtxtLastError(ctx))
 	}
-	return uintptr(unsafe.Pointer(doc)), nil
+	return unsafe.Pointer(doc), nil
 }
