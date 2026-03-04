@@ -1,5 +1,6 @@
 # libxml2
 
+**UPDATE 5 Mar, 2026**: Might I refer you to [lestrrat-go/helium](https://github.com/lestrrat-go/helium)? This is a complete _port_ of libxml2 to Go. But please be aware that it's very alpha quality.
 
 **NOTICE**: Instead of making people use this library while wondering if this module is ever going to be modified any time soon, I've opted to archive it. I may come back to it later, but for the time being I have no motivation or pressing need to work on this project.
 
