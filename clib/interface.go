@@ -1,6 +1,9 @@
 package clib
 
-import "errors"
+import (
+	"errors"
+	"unsafe"
+)
 
 const (
 	MaxEncodingLength        = 256
@@ -23,7 +26,7 @@ type C14NMode int
 // where a Document node is expected, but it is the caller's
 // responsibility to align the argument list.
 type PtrSource interface {
-	Pointer() uintptr
+	Pointer() unsafe.Pointer
 }
 
 // XMLNodeType identifies the type of the underlying C struct

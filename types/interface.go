@@ -1,6 +1,10 @@
 package types
 
-import "github.com/lestrrat-go/libxml2/clib"
+import (
+	"unsafe"
+
+	"github.com/lestrrat-go/libxml2/clib"
+)
 
 // PtrSource defines the interface for things that is backed by
 // a C backend
@@ -9,7 +13,7 @@ type PtrSource interface {
 	// method to allow various internal go-libxml2 packages to interoperate
 	// on each other. End users are STRONGLY advised not to touch this
 	// method or its return values
-	Pointer() uintptr
+	Pointer() unsafe.Pointer
 
 	// Free releases the underlying resources
 	Free()

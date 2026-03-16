@@ -1,6 +1,8 @@
 package dom
 
 import (
+	"unsafe"
+
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
 	"github.com/lestrrat-go/libxml2/xpath"
@@ -29,7 +31,7 @@ func (n *XMLNode) RemoveChild(t types.Node) error {
 }
 
 // Pointer returns the pointer to the underlying C struct
-func (n *XMLNode) Pointer() uintptr {
+func (n *XMLNode) Pointer() unsafe.Pointer {
 	return n.ptr
 }
 
@@ -45,7 +47,7 @@ func (n *XMLNode) OwnerDocument() (types.Document, error) {
 		return nil, errors.Wrap(err, "failed to get valid owner document")
 	}
 
-	if ptr == 0 {
+	if ptr == nil {
 		return nil, errors.Wrap(clib.ErrInvalidDocument, "failed to get valid owner document")
 	}
 	return WrapDocument(ptr), nil
@@ -169,7 +171,7 @@ func (n *XMLNode) NextSibling() (types.Node, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get valid pointer to next child")
 	}
-	if ptr == 0 {
+	if ptr == nil {
 		return nil, nil
 	}
 	return WrapNode(ptr)
@@ -257,7 +259,7 @@ func (n *XMLNode) MakePersistent() {
 // Free releases the underlying C struct
 func (n *XMLNode) Free() {
 	_ = clib.XMLFreeNode(n)
-	n.ptr = 0
+	n.ptr = nil
 }
 
 func walk(n types.Node, fn func(types.Node) error) error {

@@ -2,6 +2,7 @@ package dom
 
 import (
 	"sync"
+	"unsafe"
 
 	"github.com/lestrrat-go/libxml2/xpath"
 )
@@ -20,7 +21,7 @@ func SetupXPathCallback() {
 	xpath.WrapNodeFunc = WrapNode
 }
 
-func WrapDocument(n uintptr) *Document {
+func WrapDocument(n unsafe.Pointer) *Document {
 	//nolint:forcetypeassert
 	doc := docPool.Get().(*Document)
 	doc.mortal = false

@@ -4,48 +4,49 @@ package dom
 
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
 )
 
-func wrapNamespaceNode(ptr uintptr) *Namespace {
+func wrapNamespaceNode(ptr unsafe.Pointer) *Namespace {
 	var n Namespace
 	n.ptr = ptr
 	return &n
 }
 
-func wrapAttributeNode(ptr uintptr) *Attribute {
+func wrapAttributeNode(ptr unsafe.Pointer) *Attribute {
 	var n Attribute
 	n.ptr = ptr
 	return &n
 }
 
-func wrapCDataSectionNode(ptr uintptr) *CDataSection {
+func wrapCDataSectionNode(ptr unsafe.Pointer) *CDataSection {
 	var n CDataSection
 	n.ptr = ptr
 	return &n
 }
 
-func wrapCommentNode(ptr uintptr) *Comment {
+func wrapCommentNode(ptr unsafe.Pointer) *Comment {
 	var n Comment
 	n.ptr = ptr
 	return &n
 }
 
-func wrapElementNode(ptr uintptr) *Element {
+func wrapElementNode(ptr unsafe.Pointer) *Element {
 	var n Element
 	n.ptr = ptr
 	return &n
 }
 
-func wrapTextNode(ptr uintptr) *Text {
+func wrapTextNode(ptr unsafe.Pointer) *Text {
 	var n Text
 	n.ptr = ptr
 	return &n
 }
 
-func wrapPiNode(ptr uintptr) *Pi {
+func wrapPiNode(ptr unsafe.Pointer) *Pi {
 	var n Pi
 	n.ptr = ptr
 	return &n
@@ -54,7 +55,7 @@ func wrapPiNode(ptr uintptr) *Pi {
 // WrapNode is a function created with the sole purpose of allowing
 // go-libxml2 consumers that can generate a C.xmlNode pointer to
 // create libxml2.Node types, e.g. go-xmlsec.
-func WrapNode(n uintptr) (types.Node, error) {
+func WrapNode(n unsafe.Pointer) (types.Node, error) {
 	switch typ := clib.XMLGetNodeTypeRaw(n); typ {
 	case clib.AttributeNode:
 		return wrapAttributeNode(n), nil

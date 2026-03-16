@@ -22,6 +22,7 @@ package xpath
 
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/lestrrat-go/libxml2/clib"
 	"github.com/lestrrat-go/libxml2/types"
@@ -29,7 +30,7 @@ import (
 )
 
 // Pointer returns the underlying C struct
-func (x Object) Pointer() uintptr {
+func (x Object) Pointer() unsafe.Pointer {
 	return x.ptr
 }
 
@@ -61,7 +62,7 @@ func (x Object) Bool() bool {
 // So this WrapNodeFunc is our workaround for this problem: when
 // github.com/lestrrat-go/libxml2/dom is loaded, it automatically
 // initializes this function to an appropriate function on the fly.
-var WrapNodeFunc func(uintptr) (types.Node, error)
+var WrapNodeFunc func(pointer unsafe.Pointer) (types.Node, error)
 
 // NodeList returns the list of nodes included in this Object
 func (x Object) NodeList() types.NodeList {
@@ -133,7 +134,7 @@ func NewExpression(s string) (*Expression, error) {
 }
 
 // Pointer returns the underlying C struct
-func (x *Expression) Pointer() uintptr {
+func (x *Expression) Pointer() unsafe.Pointer {
 	return x.ptr
 }
 
@@ -167,7 +168,7 @@ func NewContext(n ...types.Node) (*Context, error) {
 }
 
 // Pointer returns a pointer to the underlying C struct
-func (x *Context) Pointer() uintptr {
+func (x *Context) Pointer() unsafe.Pointer {
 	return x.ptr
 }
 

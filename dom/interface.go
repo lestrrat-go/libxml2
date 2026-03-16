@@ -2,6 +2,7 @@ package dom
 
 import (
 	"errors"
+	"unsafe"
 
 	"github.com/lestrrat-go/libxml2/clib"
 )
@@ -39,7 +40,7 @@ const (
 )
 
 type XMLNode struct {
-	ptr    uintptr // *C.xmlNode
+	ptr    unsafe.Pointer // *C.xmlNode
 	mortal bool
 }
 
@@ -64,7 +65,7 @@ type Element struct {
 }
 
 type Document struct {
-	ptr    uintptr // *C.xmlDoc
+	ptr    unsafe.Pointer // *C.xmlDoc
 	mortal bool
 }
 
